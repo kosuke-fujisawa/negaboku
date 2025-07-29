@@ -93,7 +93,7 @@ namespace NegabokuRPG.Systems
         }
 
         /// <summary>
-        /// ダンジョン探索開始
+        /// ダンジョン探索開始（2人パーティ固定）
         /// </summary>
         public bool StartDungeonExploration(string dungeonId, List<PlayerCharacter> party)
         {
@@ -104,9 +104,9 @@ namespace NegabokuRPG.Systems
                 return false;
             }
 
-            if (party == null || party.Count == 0)
+            if (party == null || party.Count != 2)
             {
-                Debug.LogWarning("Cannot start exploration with empty party");
+                Debug.LogWarning($"Cannot start exploration. Party must have exactly 2 members. Current: {party?.Count ?? 0}");
                 return false;
             }
 
@@ -363,7 +363,7 @@ namespace NegabokuRPG.Systems
         }
 
         /// <summary>
-        /// 関係値変更を適用
+        /// 関係値変更を適用（25刻みシステム対応）
         /// </summary>
         private bool ApplyRelationshipChange(ChoiceConsequence consequence)
         {
@@ -371,16 +371,22 @@ namespace NegabokuRPG.Systems
 
             if (consequence.targetId == "all")
             {
-                // パーティ内全員の関係値向上
-                for (int i = 0; i < currentParty.Count; i++)
+                // パーティ内全員の関係値向上（2人パーティ固定）
+                if (currentParty.Count == 2)
                 {
-                    for (int j = i + 1; j < currentParty.Count; j++)
-                    {
-                        relationshipSystem.ModifyMutualRelationship(
-                            currentParty[i].CharacterId, 
-                            currentParty[j].CharacterId, 
-                            consequence.value);
-                    }
+                    relationshipSystem.ModifyMutualRelationship(
+                        currentParty[0].CharacterId, 
+                        currentParty[1].CharacterId, 
+                        consequence.value);
+                }
+            }
+            else if (consequence.targetId.Contains("_"))
+            {
+                // 特定の2人の関係値変更 (例: "char1_char2")
+                var ids = consequence.targetId.Split('_');
+                if (ids.Length == 2)
+                {
+                    relationshipSystem.ModifyMutualRelationship(ids[0], ids[1], consequence.value);
                 }
             }
             return true;

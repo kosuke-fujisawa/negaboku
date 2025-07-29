@@ -80,7 +80,7 @@ namespace NegabokuRPG.Data
     public class RelationshipDefault
     {
         public string targetCharacterId;
-        [Range(0, 100)]
+        [Range(-25, 100)]
         public int value = 50;
     }
 

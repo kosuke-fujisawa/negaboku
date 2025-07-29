@@ -223,13 +223,14 @@ namespace NegabokuRPG.Core
         }
 
         /// <summary>
-        /// パーティを設定
+        /// パーティを設定（2人固定システム）
         /// </summary>
         public bool SetParty(List<string> characterIds)
         {
-            if (characterIds.Count > gameConfig.maxPartySize)
+            // 2人固定システムの検証
+            if (characterIds.Count != 2)
             {
-                Debug.LogWarning($"Party size exceeds maximum: {characterIds.Count} > {gameConfig.maxPartySize}");
+                Debug.LogWarning($"Party must be exactly 2 characters. Provided: {characterIds.Count}");
                 return false;
             }
 
@@ -293,13 +294,13 @@ namespace NegabokuRPG.Core
         }
 
         /// <summary>
-        /// バトル開始
+        /// バトル開始（2人パーティ）
         /// </summary>
         public void StartBattle(List<BattleEnemyData> enemies)
         {
-            if (currentParty.Count == 0)
+            if (currentParty.Count != 2)
             {
-                Debug.LogWarning("Cannot start battle with empty party");
+                Debug.LogWarning($"Cannot start battle. Party must have exactly 2 members. Current: {currentParty.Count}");
                 return;
             }
 
@@ -318,11 +319,15 @@ namespace NegabokuRPG.Core
         }
 
         /// <summary>
-        /// ダンジョン探索開始
+        /// ダンジョン探索開始（2人パーティ）
         /// </summary>
         public bool StartDungeonExploration(string dungeonId)
         {
-            if (dungeonSystem == null || currentParty.Count == 0) return false;
+            if (dungeonSystem == null || currentParty.Count != 2) 
+            {
+                Debug.LogWarning($"Cannot start dungeon exploration. Party must have exactly 2 members. Current: {currentParty.Count}");
+                return false;
+            }
 
             return dungeonSystem.StartDungeonExploration(dungeonId, currentParty);
         }
@@ -373,12 +378,13 @@ namespace NegabokuRPG.Core
         }
 
         /// <summary>
-        /// 初期パーティ設定
+        /// 初期パーティ設定（2人固定）
         /// </summary>
         private void SetupInitialParty()
         {
+            // 最初の2キャラクターで自動編成
             var initialCharacterIds = allCharacterData
-                .Take(gameConfig.initialPartySize)
+                .Take(2)
                 .Select(c => c.characterId)
                 .ToList();
                 
@@ -607,9 +613,9 @@ namespace NegabokuRPG.Core
     [CreateAssetMenu(fileName = "Game Configuration", menuName = "NegabokuRPG/Game Configuration")]
     public class GameConfiguration : ScriptableObject
     {
-        [Header("パーティ設定")]
-        public int maxPartySize = 4;
-        public int initialPartySize = 4;
+        [Header("パーティ設定 - 2人固定システム")]
+        public int maxPartySize = 2;
+        public int initialPartySize = 2;
         
         [Header("初期値")]
         public int initialGold = 1000;
