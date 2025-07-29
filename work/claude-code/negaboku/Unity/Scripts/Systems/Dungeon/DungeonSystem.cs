@@ -372,12 +372,17 @@ namespace NegabokuRPG.Systems
             if (consequence.targetId == "all")
             {
                 // パーティ内全員の関係値向上（2人パーティ固定）
-                if (currentParty.Count == 2)
+                if (currentParty != null && currentParty.Count == 2)
                 {
                     relationshipSystem.ModifyMutualRelationship(
                         currentParty[0].CharacterId, 
                         currentParty[1].CharacterId, 
                         consequence.value);
+                }
+                else
+                {
+                    Debug.LogWarning($"Cannot apply relationship change. Party must have exactly 2 members. Current: {currentParty?.Count ?? 0}");
+                    return false;
                 }
             }
             else if (consequence.targetId.Contains("_"))
