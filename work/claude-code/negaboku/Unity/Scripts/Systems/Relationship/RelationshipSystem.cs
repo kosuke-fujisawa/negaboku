@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using NegabokuRPG.Data;
+using NegabokuRPG.Utilities;
 
 namespace NegabokuRPG.Systems
 {
@@ -30,10 +31,10 @@ namespace NegabokuRPG.Systems
         }
 
         [Header("関係値設定 - 5段階システム")]
-        [SerializeField] private int minRelationshipValue = -25;
-        [SerializeField] private int maxRelationshipValue = 100;
-        [SerializeField] private int defaultRelationshipValue = 50;
-        [SerializeField] private int relationshipStep = 25;
+        [SerializeField] private int minRelationshipValue = RelationshipConstants.MIN_VALUE;
+        [SerializeField] private int maxRelationshipValue = RelationshipConstants.MAX_VALUE;
+        [SerializeField] private int defaultRelationshipValue = RelationshipConstants.DEFAULT_VALUE;
+        [SerializeField] private int relationshipStep = RelationshipConstants.STEP_SIZE;
 
         // 関係値データ [キャラクターID][対象キャラクターID] = 関係値
         private Dictionary<string, Dictionary<string, int>> relationships = new Dictionary<string, Dictionary<string, int>>();
@@ -82,14 +83,14 @@ namespace NegabokuRPG.Systems
         }
 
         /// <summary>
-        /// 関係値を取得
+        /// 関係値を取得（パフォーマンス最適化版）
         /// </summary>
         public int GetRelationshipValue(string character1Id, string character2Id)
         {
-            if (relationships.ContainsKey(character1Id) && 
-                relationships[character1Id].ContainsKey(character2Id))
+            if (relationships.TryGetValue(character1Id, out var char1Relations) &&
+                char1Relations.TryGetValue(character2Id, out var value))
             {
-                return relationships[character1Id][character2Id];
+                return value;
             }
             return defaultRelationshipValue;
         }
@@ -164,11 +165,11 @@ namespace NegabokuRPG.Systems
         /// </summary>
         public RelationshipLevel GetRelationshipLevel(int relationshipValue)
         {
-            if (relationshipValue >= 76) return RelationshipLevel.Intimate;  // 100-76: 親密
-            if (relationshipValue >= 51) return RelationshipLevel.Friendly;  // 75-51: 友好
-            if (relationshipValue >= 26) return RelationshipLevel.Neutral;   // 50-26: 普通
-            if (relationshipValue >= 1) return RelationshipLevel.Cold;       // 25-1: 冷淡
-            return RelationshipLevel.Hostile;                                // 0～-25: 敵対
+            if (relationshipValue >= RelationshipConstants.INTIMATE_THRESHOLD) return RelationshipLevel.Intimate;
+            if (relationshipValue >= RelationshipConstants.FRIENDLY_THRESHOLD) return RelationshipLevel.Friendly;
+            if (relationshipValue >= RelationshipConstants.NEUTRAL_THRESHOLD) return RelationshipLevel.Neutral;
+            if (relationshipValue >= RelationshipConstants.COLD_THRESHOLD) return RelationshipLevel.Cold;
+            return RelationshipLevel.Hostile;
         }
 
         /// <summary>
@@ -185,7 +186,7 @@ namespace NegabokuRPG.Systems
         /// </summary>
         public bool CanUseCooperationSkill(string character1Id, string character2Id)
         {
-            return GetRelationshipValue(character1Id, character2Id) >= 76;
+            return GetRelationshipValue(character1Id, character2Id) >= RelationshipConstants.COOPERATION_THRESHOLD;
         }
 
         /// <summary>
@@ -193,7 +194,7 @@ namespace NegabokuRPG.Systems
         /// </summary>
         public bool CanUseConflictSkill(string character1Id, string character2Id)
         {
-            return GetRelationshipValue(character1Id, character2Id) <= 0;
+            return GetRelationshipValue(character1Id, character2Id) <= RelationshipConstants.CONFLICT_THRESHOLD;
         }
 
         /// <summary>
@@ -207,24 +208,24 @@ namespace NegabokuRPG.Systems
             {
                 case BattleEventType.Cooperation:
                     // 大きな協力: +25 (1段階アップ)
-                    ModifyMutualRelationship(character1Id, character2Id, 25);
+                    ModifyMutualRelationship(character1Id, character2Id, RelationshipConstants.LARGE_POSITIVE_CHANGE);
                     break;
                 case BattleEventType.FriendlyFire:
                     // 大きな対立: -25 (1段階ダウン)
-                    ModifyMutualRelationship(character1Id, character2Id, -25);
+                    ModifyMutualRelationship(character1Id, character2Id, RelationshipConstants.LARGE_NEGATIVE_CHANGE);
                     break;
                 case BattleEventType.Protection:
                     // 守られた側: +25, 守った側: +12 (半段階)
-                    ModifyRelationshipValue(character2Id, character1Id, 25);
-                    ModifyRelationshipValue(character1Id, character2Id, 12);
+                    ModifyRelationshipValue(character2Id, character1Id, RelationshipConstants.PROTECTION_BENEFICIARY_CHANGE);
+                    ModifyRelationshipValue(character1Id, character2Id, RelationshipConstants.PROTECTION_PROTECTOR_CHANGE);
                     break;
                 case BattleEventType.Rivalry:
                     // 小さな対立: -12 (半段階ダウン)
-                    ModifyMutualRelationship(character1Id, character2Id, -12);
+                    ModifyMutualRelationship(character1Id, character2Id, RelationshipConstants.SMALL_NEGATIVE_CHANGE);
                     break;
                 case BattleEventType.Support:
                     // 小さな協力: +12 (半段階アップ)
-                    ModifyMutualRelationship(character1Id, character2Id, 12);
+                    ModifyMutualRelationship(character1Id, character2Id, RelationshipConstants.SMALL_POSITIVE_CHANGE);
                     break;
             }
         }
