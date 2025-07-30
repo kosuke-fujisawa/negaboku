@@ -15,9 +15,11 @@
 
 ### 技術環境
 - **プラットフォーム**: Windows（主要）、Mac（将来対応）
-- **ゲームエンジン**: Unity 2023.3 LTS以上
+- **ゲームエンジン**: Unity 6000.1.13f1以上（Unity 6）
 - **プログラミング言語**: C#
 - **ターゲット**: .NET Standard 2.1
+- **開発手法**: TDD（テスト駆動開発）- twadaスタイル
+- **アーキテクチャ**: DDD + クリーンアーキテクチャ
 
 ## 🎮 ゲームシステム仕様
 
@@ -133,26 +135,176 @@ git push origin main
 
 ## 📋 開発ガイドライン
 
-### C# コーディング規約
-- **命名規則**: 
-  - クラス: PascalCase (`GameManager`)
-  - メソッド: PascalCase (`StartGame`)
-  - プロパティ: PascalCase (`CurrentLevel`)
-  - フィールド: camelCase （privateは`_`プレフィックス）
-  - 定数: UPPER_SNAKE_CASE (`MAX_RELATIONSHIP`)
+### 🧪 開発手法
+
+#### TDD（テスト駆動開発）- twadaスタイル
+- **Red-Green-Refactor**: 失敗するテスト → 通るコード → リファクタリング
+- **テストファーストの徹底**: 実装前に必ずテストを作成
+- **小さな単位での実装**: 1つのテストに対して最小限の実装
+- **継続的リファクタリング**: グリーンになった後の品質向上
+
+```csharp
+// テスト例
+[Test]
+public void 関係値が25増加したとき_普通から友好レベルに変化する()
+{
+    // Arrange
+    var relationship = new RelationshipValue(-25, 100, 25);
+    relationship.SetValue(50); // 普通レベル
+    
+    // Act
+    relationship.ModifyValue(25);
+    
+    // Assert
+    Assert.AreEqual(RelationshipLevel.友好, relationship.GetLevel());
+}
+```
+
+#### Tidy First原則
+- **リファクタリングを小さく頻繁に**: 大きな変更前の準備
+- **構造の整理を優先**: 機能追加前にコードを理解しやすくする
+- **段階的改善**: 一度に全てを変更しない
+- **安全な変更**: テストによる安全網の活用
+
+#### DRY原則（Don't Repeat Yourself）
+- **重複コードの排除**: 同じロジックの共通化
+- **設定の一元化**: 定数やマジックナンバーの統一管理
+- **テンプレート化**: 類似パターンの抽象化
+- **ただし適度に**: 無理な共通化は避ける
+
+### 🏗️ アーキテクチャ設計
+
+#### DDD（ドメイン駆動設計）
+- **ドメインモデル中心**: ゲームルールをコードで表現
+- **ユビキタス言語**: ドメインエキスパートと開発者の共通言語
+- **境界付きコンテキスト**: システム間の明確な分離
+- **集約とエンティティ**: データの整合性を保つ設計
+
+```csharp
+// ドメインモデル例
+public class RelationshipAggregate
+{
+    private readonly RelationshipValue _value;
+    private readonly List<RelationshipEvent> _events;
+    
+    public void ModifyRelationship(int amount, string reason)
+    {
+        var oldLevel = _value.GetLevel();
+        _value.ModifyValue(amount);
+        var newLevel = _value.GetLevel();
+        
+        if (oldLevel != newLevel)
+        {
+            _events.Add(new RelationshipLevelChangedEvent(oldLevel, newLevel, reason));
+        }
+    }
+}
+```
+
+#### クリーンアーキテクチャ
+- **依存関係の逆転**: 外側が内側に依存、内側は外側を知らない
+- **レイヤー分離**: Entities → Use Cases → Interface Adapters → Frameworks
+- **ビジネスルールの保護**: フレームワークから独立したドメインロジック
+- **テスタブルな設計**: 外部依存を排除したユニットテスト
+
+```
+Unity/Scripts/
+├── Domain/                    # エンティティとビジネスルール
+│   ├── Entities/             # ドメインエンティティ
+│   ├── ValueObjects/         # 値オブジェクト
+│   └── Services/            # ドメインサービス
+├── Application/              # ユースケース
+│   ├── UseCases/            # アプリケーションサービス
+│   └── Interfaces/          # リポジトリインターフェース
+├── Infrastructure/           # 外部システム接続
+│   ├── Repositories/        # データ永続化
+│   └── Unity/              # Unity固有実装
+└── Presentation/            # UI・入力制御
+    ├── Controllers/         # MVPのPresenter
+    └── Views/              # Unity UI
+```
+
+### 🔧 クロスプラットフォーム対応
+
+#### プラットフォーム抽象化
+- **条件付きコンパイル**: `#if UNITY_STANDALONE_WIN` の適切な使用
+- **インターフェース分離**: プラットフォーム固有処理の抽象化
+- **設定ファイル分離**: Windows/Mac用の別設定管理
+- **パス処理統一**: `Path.Combine()` など標準ライブラリの活用
+
+```csharp
+// プラットフォーム抽象化例
+public interface IPlatformService
+{
+    string GetSaveDataPath();
+    void ShowNotification(string message);
+}
+
+#if UNITY_STANDALONE_WIN
+public class WindowsPlatformService : IPlatformService { }
+#elif UNITY_STANDALONE_OSX
+public class MacPlatformService : IPlatformService { }
+#endif
+```
+
+#### Unity設定の統一
+- **Scripting Backend**: IL2CPP（両プラットフォーム対応）
+- **API Compatibility Level**: .NET Standard 2.1
+- **Asset管理**: プラットフォーム別AssetBundle対応
+- **入力システム**: New Input System使用（クロスプラット対応）
+
+### 📝 C# コーディング規約
+
+#### 命名規則
+- **クラス**: PascalCase (`RelationshipSystem`)
+- **メソッド**: PascalCase (`ModifyRelationshipValue`)
+- **プロパティ**: PascalCase (`CurrentLevel`)
+- **フィールド**: camelCase （privateは`_`プレフィックス `_currentValue`）
+- **定数**: UPPER_SNAKE_CASE (`MAX_RELATIONSHIP_VALUE`)
+- **インターフェース**: I + PascalCase (`IRelationshipRepository`)
+
+#### 設計原則
+- **SOLID原則**: 単一責任、開放閉鎖、リスコフ置換、インターフェース分離、依存性逆転
+- **Tell, Don't Ask**: オブジェクトにデータを要求するのではなく、やりたいことを伝える
+- **Law of Demeter**: 直接の友達とのみ話す
+- **Composition over Inheritance**: 継承より合成を優先
+
+### 🧪 テスト戦略
+
+#### テストピラミッド
+- **Unit Tests**: ドメインロジックの詳細テスト（多数）
+- **Integration Tests**: システム間連携テスト（中程度）
+- **E2E Tests**: ゲームプレイ全体テスト（少数）
+
+#### Unity Test Framework活用
+- **Edit Mode Tests**: MonoBehaviourに依存しないロジックテスト
+- **Play Mode Tests**: Unity環境でのインテグレーションテスト
+- **Performance Tests**: フレームレートやメモリ使用量の監視
+
+```csharp
+// Unity Test例
+[UnityTest]
+public IEnumerator 関係値システム_実際のゲーム環境での動作確認()
+{
+    // Arrange
+    var gameObject = new GameObject();
+    var relationshipSystem = gameObject.AddComponent<RelationshipSystem>();
+    
+    // Act
+    relationshipSystem.Initialize();
+    yield return new WaitForSeconds(0.1f);
+    
+    // Assert
+    Assert.IsTrue(relationshipSystem.IsInitialized);
+}
+```
 
 ### Unity固有の規約
-- **MonoBehaviour**: UI制御、ゲームオブジェクト管理
+- **MonoBehaviour**: UI制御、ゲームオブジェクト管理に限定
 - **ScriptableObject**: データ定義、設定管理
-- **Singleton**: ゲーム状態管理（GameManager等）
-- **Coroutine**: 非同期処理、アニメーション
-- **Event System**: システム間通信
-
-### アーキテクチャ原則
-1. **MVPパターン**: UI分離による保守性向上
-2. **Component System**: Unity標準の拡張可能設計
-3. **Data-Driven**: ScriptableObjectによるデータ駆動
-4. **Event-Driven**: 疎結合なシステム間通信
+- **Singleton**: 必要最小限に抑制、DIコンテナ活用を検討
+- **Coroutine**: 非同期処理、アニメーション（async/awaitも検討）
+- **Event System**: 疎結合なシステム間通信
 
 ## 🎯 関係値システム詳細（5段階）
 
@@ -191,32 +343,43 @@ git push origin main
 
 ## 🚀 開発ロードマップ
 
-### Phase 1: コアシステム実装
-- [ ] GameManagerの完全実装
-- [ ] 5段階関係値システムのUnity統合
-- [ ] 基本UI画面の作成
-- [ ] セーブ/ロードシステム実装
+### Phase 1: 基盤アーキテクチャ構築（TDD）
+- [ ] テスト環境のセットアップ（Unity Test Framework）
+- [ ] ドメインモデルの設計と実装（関係値システム）
+- [ ] クリーンアーキテクチャの基盤実装
+- [ ] プラットフォーム抽象化レイヤーの構築
+- [ ] DIコンテナの導入と設定
 
-### Phase 2: ゲームプレイ実装
-- [ ] ダンジョン探索システム
-- [ ] 戦闘システムの実装
-- [ ] スキルシステムの統合
-- [ ] イベントシステムの構築
+### Phase 2: コアシステム実装（DDD）
+- [ ] 関係値ドメインの完全実装（TDD）
+- [ ] キャラクター集約の実装
+- [ ] ダンジョン探索ドメインの設計
+- [ ] 戦闘システムドメインの構築
+- [ ] イベントソーシングの実装
 
-### Phase 3: プラットフォーム最適化
-- [ ] Windows向け最適化
-- [ ] Mac対応の準備
-- [ ] パフォーマンス最適化
-- [ ] リリース準備
+### Phase 3: アプリケーション層構築
+- [ ] ユースケースの実装（TDD）
+- [ ] リポジトリパターンの実装
+- [ ] セーブ/ロードシステム（クロスプラット対応）
+- [ ] Unity統合レイヤーの実装
+- [ ] パフォーマンス監視とテスト
+
+### Phase 4: プレゼンテーション層とリリース
+- [ ] MVP/MVVMパターンでのUI実装
+- [ ] Windows向け最適化とテスト
+- [ ] Mac対応の実装と検証
+- [ ] E2Eテストとパフォーマンス調整
+- [ ] リリース用ビルドパイプライン構築
 
 ## 🔧 技術仕様
 
 ### 開発環境要件
-- **Unity**: 2023.3 LTS以上
+- **Unity**: 6000.1.13f1以上（Unity 6）
 - **Visual Studio**: 2022以上 (Windows)
 - **Visual Studio Code**: Unity拡張機能
 - **.NET**: Standard 2.1
 - **Git**: バージョン管理
+- **NUnit**: Unity Test Framework（TDD対応）
 
 ### プラットフォーム対応
 - **Windows**: x64対応、.NET Standard 2.1
