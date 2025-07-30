@@ -18,6 +18,7 @@ namespace NegabokuRPG.Presentation.Controllers
     {
         [Header("デバッグ設定")]
         [SerializeField] private bool _enableDebugLogs = true;
+        [SerializeField] private bool _initializeOnAwake = true;
         
         // ユースケース
         private ModifyRelationshipUseCase _modifyUseCase;
@@ -27,28 +28,54 @@ namespace NegabokuRPG.Presentation.Controllers
         private IRelationshipRepository _repository;
         private RelationshipDomainService _domainService;
         
+        // 初期化状態フラグ
+        private bool _isInitialized = false;
+        
         // イベント
         public event Action<string, string, RelationshipLevel, RelationshipLevel, string> RelationshipLevelChanged;
         
         private void Awake()
         {
-            InitializeDependencies();
+            if (_initializeOnAwake)
+            {
+                InitializeWithDefaultDependencies();
+            }
         }
         
         /// <summary>
-        /// 依存関係の初期化
+        /// 依存関係を外部から注入（テスト用）
         /// </summary>
-        private void InitializeDependencies()
+        /// <param name="repository">関係値リポジトリ</param>
+        /// <param name="domainService">ドメインサービス</param>
+        public void Initialize(IRelationshipRepository repository, RelationshipDomainService domainService)
         {
-            // インフラ層
-            _repository = new UnityRelationshipRepository();
-            
-            // ドメイン層
-            _domainService = new RelationshipDomainService();
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+            _domainService = domainService ?? throw new ArgumentNullException(nameof(domainService));
             
             // アプリケーション層
             _modifyUseCase = new ModifyRelationshipUseCase(_repository, _domainService);
             _getUseCase = new GetRelationshipUseCase(_repository, _domainService);
+            
+            _isInitialized = true;
+            
+            if (_enableDebugLogs)
+            {
+                Debug.Log("RelationshipController initialized with injected dependencies.");
+            }
+        }
+        
+        /// <summary>
+        /// デフォルトの依存関係で初期化（Unity実行時用）
+        /// </summary>
+        private void InitializeWithDefaultDependencies()
+        {
+            // インフラ層
+            var repository = new UnityRelationshipRepository();
+            
+            // ドメイン層
+            var domainService = new RelationshipDomainService();
+            
+            Initialize(repository, domainService);
         }
         
         /// <summary>
@@ -59,6 +86,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>関係値</returns>
         public RelationshipValue GetRelationship(string character1Id, string character2Id)
         {
+            ValidateInitialization();
+            
             try
             {
                 var char1 = new CharacterId(character1Id);
@@ -83,6 +112,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>変更後の関係値</returns>
         public RelationshipValue ModifyRelationship(string character1Id, string character2Id, int change, string reason)
         {
+            ValidateInitialization();
+            
             try
             {
                 var char1 = new CharacterId(character1Id);
@@ -114,6 +145,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>両方向の関係値</returns>
         public (RelationshipValue, RelationshipValue) ModifyMutualRelationship(string character1Id, string character2Id, int change, string reason)
         {
+            ValidateInitialization();
+            
             try
             {
                 var char1 = new CharacterId(character1Id);
@@ -144,6 +177,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>変更後の関係値</returns>
         public (RelationshipValue, RelationshipValue) HandleBattleEvent(BattleEventType eventType, string character1Id, string character2Id)
         {
+            ValidateInitialization();
+            
             try
             {
                 var char1 = new CharacterId(character1Id);
@@ -172,6 +207,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>平均関係値</returns>
         public float GetAveragePartyRelationship(List<string> partyMemberIds)
         {
+            ValidateInitialization();
+            
             try
             {
                 var characterIds = partyMemberIds.ConvertAll(id => new CharacterId(id));
@@ -191,6 +228,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>共闘技可能なペア</returns>
         public List<(string, string)> GetCooperationSkillPairs(List<string> partyMemberIds)
         {
+            ValidateInitialization();
+            
             try
             {
                 var characterIds = partyMemberIds.ConvertAll(id => new CharacterId(id));
@@ -212,6 +251,8 @@ namespace NegabokuRPG.Presentation.Controllers
         /// <returns>対立技可能なペア</returns>
         public List<(string, string)> GetConflictSkillPairs(List<string> partyMemberIds)
         {
+            ValidateInitialization();
+            
             try
             {
                 var characterIds = partyMemberIds.ConvertAll(id => new CharacterId(id));
@@ -232,6 +273,12 @@ namespace NegabokuRPG.Presentation.Controllers
         [ContextMenu("Debug Print Current Relationships")]
         public void DebugPrintCurrentRelationships()
         {
+            if (!_isInitialized)
+            {
+                Debug.LogWarning("RelationshipController is not initialized. Cannot print relationships.");
+                return;
+            }
+            
             // テスト用のキャラクターIDでデバッグ出力
             var testCharacters = new List<string> { "char1", "char2", "char3" };
             
@@ -247,5 +294,21 @@ namespace NegabokuRPG.Presentation.Controllers
                 }
             }
         }
+        
+        /// <summary>
+        /// 初期化状態を検証
+        /// </summary>
+        private void ValidateInitialization()
+        {
+            if (!_isInitialized)
+            {
+                throw new InvalidOperationException("RelationshipController is not properly initialized. Call Initialize() method first.");
+            }
+        }
+        
+        /// <summary>
+        /// 初期化済みかどうかを確認
+        /// </summary>
+        public bool IsInitialized => _isInitialized;
     }
 }
