@@ -153,37 +153,50 @@ namespace NegabokuRPG.Tests.Presentation
     
     /// <summary>
     /// テスト用のモックリポジトリ
+    /// IRelationshipRepositoryインターフェースに準拠
     /// </summary>
     public class MockRelationshipRepository : IRelationshipRepository
     {
-        private readonly Dictionary<(CharacterId, CharacterId), RelationshipValue> _relationships;
+        private RelationshipAggregate _aggregate;
         
         public MockRelationshipRepository()
         {
-            _relationships = new Dictionary<(CharacterId, CharacterId), RelationshipValue>();
+            _aggregate = new RelationshipAggregate();
         }
         
-        public RelationshipAggregate LoadAggregate()
+        public void Save(RelationshipAggregate aggregate)
         {
-            var aggregate = new RelationshipAggregate();
-            
-            foreach (var kvp in _relationships)
-            {
-                aggregate.InitializeRelationship(kvp.Key.Item1, kvp.Key.Item2, kvp.Value);
-            }
-            
-            return aggregate;
+            _aggregate = aggregate;
         }
         
-        public void SaveAggregate(RelationshipAggregate aggregate)
+        public RelationshipAggregate Load(List<CharacterId> characterIds)
         {
-            var relationships = aggregate.GetAllRelationships();
-            _relationships.Clear();
-            
-            foreach (var kvp in relationships)
+            // 初期値で関係値を設定
+            foreach (var char1 in characterIds)
             {
-                _relationships[kvp.Key] = kvp.Value;
+                foreach (var char2 in characterIds)
+                {
+                    if (char1 != char2)
+                    {
+                        var existing = _aggregate.GetRelationship(char1, char2);
+                        if (existing.Value == RelationshipValue.DEFAULT_VALUE)
+                        {
+                            _aggregate.InitializeRelationship(char1, char2, new RelationshipValue());
+                        }
+                    }
+                }
             }
+            return _aggregate;
+        }
+        
+        public bool Exists(CharacterId character1, CharacterId character2)
+        {
+            return true; // テスト用では常にtrue
+        }
+        
+        public void Clear()
+        {
+            _aggregate = new RelationshipAggregate();
         }
         
         /// <summary>
@@ -191,7 +204,7 @@ namespace NegabokuRPG.Tests.Presentation
         /// </summary>
         public void SetRelationship(CharacterId char1, CharacterId char2, RelationshipValue value)
         {
-            _relationships[(char1, char2)] = value;
+            _aggregate.InitializeRelationship(char1, char2, value);
         }
     }
 }
