@@ -8,6 +8,7 @@ using NegabokuRPG.Data;
 using NegabokuRPG.Characters;
 using NegabokuRPG.Systems;
 using NegabokuRPG.Utilities;
+using NegabokuRPG.Infrastructure.Unity;
 
 namespace NegabokuRPG.Core
 {
@@ -51,8 +52,8 @@ namespace NegabokuRPG.Core
         private GameData currentGameData;
         private List<PlayerCharacter> currentParty = new List<PlayerCharacter>();
         
-        // システム参照
-        private RelationshipSystem relationshipSystem;
+        // システム参照（新アーキテクチャ対応）
+        private RelationshipSystemAdapter relationshipSystemAdapter;
         private BattleSystem battleSystem;
         private DungeonSystem dungeonSystem;
         private SkillSystem skillSystem;
@@ -132,8 +133,8 @@ namespace NegabokuRPG.Core
         {
             yield return null; // 1フレーム待機
 
-            // システム参照を取得
-            relationshipSystem = RelationshipSystem.Instance;
+            // システム参照を取得（新アーキテクチャ対応）
+            relationshipSystemAdapter = RelationshipSystemAdapter.Instance;
             skillSystem = SkillSystem.Instance;
             dungeonSystem = DungeonSystem.Instance;
             saveSystem = SaveSystem.Instance;
@@ -147,10 +148,10 @@ namespace NegabokuRPG.Core
             // システム間の連携設定
             SetupSystemConnections();
 
-            // 初期キャラクター関係値設定
-            if (relationshipSystem != null)
+            // 初期キャラクター関係値設定（新アーキテクチャ対応）
+            if (relationshipSystemAdapter != null)
             {
-                relationshipSystem.InitializeRelationships(allCharacterData);
+                relationshipSystemAdapter.InitializeRelationships(allCharacterData);
             }
 
             Debug.Log("GameManager initialized successfully");
@@ -428,10 +429,12 @@ namespace NegabokuRPG.Core
             // パーティ復元
             RestorePartyFromSaveData(saveData.partyMembers);
 
-            // システム状態復元
-            if (relationshipSystem != null)
+            // システム状態復元（新アーキテクチャでは自動で復元されるため、互換性のみ保持）
+            if (relationshipSystemAdapter != null)
             {
-                relationshipSystem.LoadRelationships(saveData.relationships);
+                // 新アーキテクチャでは関係値は自動的に復元される
+                // 必要に応じて初期化のみ実行
+                relationshipSystemAdapter.InitializeRelationships(GetAvailableCharacters());
             }
 
             if (dungeonSystem != null)
@@ -482,10 +485,11 @@ namespace NegabokuRPG.Core
             // パーティデータ
             saveData.partyMembers = currentParty.Select(c => c.GetSaveData()).ToList();
 
-            // 関係値データ
-            if (relationshipSystem != null)
+            // 関係値データ（新アーキテクチャでは自動で永続化されるため、互換性のみ保持）
+            if (relationshipSystemAdapter != null)
             {
-                saveData.relationships = relationshipSystem.GetAllRelationships();
+                // 新アーキテクチャでは関係値は自動的に永続化される
+                saveData.relationships = new Dictionary<string, Dictionary<string, int>>();
             }
 
             // ダンジョンデータ
