@@ -5,9 +5,9 @@ Copyright (c) 2025 Kosuke Fujisawa
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction for NON-COMMERCIAL purposes only, including
+in the Software for NON-COMMERCIAL purposes only, including
 without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or share copies of the Software, and to permit persons to whom
+sublicense under this same license, and/or share copies of the Software, and to permit persons to whom
 the Software is furnished to do so, subject to the following conditions:
 
 ## NON-COMMERCIAL USE ONLY
@@ -74,7 +74,7 @@ SOFTWARE.
 
 ## COMMERCIAL LICENSING
 
-For commercial use, please contact the author at [contact information] to
+For commercial use, please contact the author via GitHub (@kosuke-fujisawa) to
 negotiate a separate commercial license agreement.
 
 ## VERSION AND UPDATES
