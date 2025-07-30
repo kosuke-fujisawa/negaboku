@@ -1,0 +1,17 @@
+{
+    "name": "NegabokuRPG.Infrastructure",
+    "rootNamespace": "NegabokuRPG.Infrastructure",
+    "references": [
+        "NegabokuRPG.Domain",
+        "NegabokuRPG.Application"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
