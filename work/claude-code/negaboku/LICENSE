@@ -1,0 +1,86 @@
+Negaboku RPG Non-Commercial License
+=====================================
+
+Copyright (c) 2025 Kosuke Fujisawa
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction for NON-COMMERCIAL purposes only, including
+without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or share copies of the Software, and to permit persons to whom
+the Software is furnished to do so, subject to the following conditions:
+
+## NON-COMMERCIAL USE ONLY
+
+1. **Permitted Uses:**
+   - Personal use and learning
+   - Educational purposes in academic institutions
+   - Open source contributions and modifications
+   - Non-profit research and development
+   - Portfolio demonstration (without monetization)
+   - Community mods and fan projects (without monetization)
+
+2. **Prohibited Commercial Uses:**
+   - Selling the game or any derivative works
+   - Monetization through advertising, sponsorships, or donations
+   - Asset store distribution (commercial or free)
+   - Integration into commercial products or services
+   - Use in freemium, premium, or subscription-based models
+   - Corporate training or enterprise use
+   - Use by companies with annual revenue exceeding $10,000 USD
+
+## ATTRIBUTION REQUIREMENTS
+
+3. **Attribution:**
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+   
+   Any public distribution or sharing must include:
+   - Original author credit: "Based on Negaboku RPG by Kosuke Fujisawa"
+   - Link to the original repository: https://github.com/kosuke-fujisawa/negaboku
+   - This license notice
+
+## UNITY ENGINE COMPLIANCE
+
+4. **Unity License Compliance:**
+   Users must comply with Unity Technologies' licensing terms. This license
+   does not grant commercial Unity license rights. Commercial use requires
+   appropriate Unity Pro/Enterprise licensing.
+
+## MODIFICATIONS AND DERIVATIVES
+
+5. **Modifications:**
+   - Modifications are permitted for non-commercial use only
+   - Derivative works must be distributed under this same license
+   - Significant modifications should be clearly documented
+   - Original attribution must be maintained
+
+## THIRD-PARTY ASSETS
+
+6. **Third-Party Content:**
+   This license applies only to original code and assets created by the author.
+   Third-party assets, libraries, and dependencies retain their original licenses.
+   Users are responsible for compliance with all third-party licenses.
+
+## DISCLAIMER
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## COMMERCIAL LICENSING
+
+For commercial use, please contact the author at [contact information] to
+negotiate a separate commercial license agreement.
+
+## VERSION AND UPDATES
+
+This license version: 1.0
+Last updated: July 30, 2025
+
+The author reserves the right to update this license for future versions
+while maintaining the non-commercial nature of the current release.
