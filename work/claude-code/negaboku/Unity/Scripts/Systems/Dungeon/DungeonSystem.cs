@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEngine;
 using NegabokuRPG.Data;
 using NegabokuRPG.Characters;
+using NegabokuRPG.Utilities;
 
 namespace NegabokuRPG.Systems
 {
@@ -104,9 +105,8 @@ namespace NegabokuRPG.Systems
                 return false;
             }
 
-            if (party == null || party.Count != 2)
+            if (!ValidationHelper.ValidatePartySize(party, nameof(StartDungeonExploration)))
             {
-                Debug.LogWarning($"Cannot start exploration. Party must have exactly 2 members. Current: {party?.Count ?? 0}");
                 return false;
             }
 
@@ -372,12 +372,16 @@ namespace NegabokuRPG.Systems
             if (consequence.targetId == "all")
             {
                 // パーティ内全員の関係値向上（2人パーティ固定）
-                if (currentParty.Count == 2)
+                if (ValidationHelper.ValidatePartySize(currentParty, "ApplyRelationshipChange"))
                 {
                     relationshipSystem.ModifyMutualRelationship(
                         currentParty[0].CharacterId, 
                         currentParty[1].CharacterId, 
                         consequence.value);
+                }
+                else
+                {
+                    return false;
                 }
             }
             else if (consequence.targetId.Contains("_"))

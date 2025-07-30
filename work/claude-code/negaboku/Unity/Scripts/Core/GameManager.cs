@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using NegabokuRPG.Data;
 using NegabokuRPG.Characters;
 using NegabokuRPG.Systems;
+using NegabokuRPG.Utilities;
 
 namespace NegabokuRPG.Core
 {
@@ -228,9 +229,8 @@ namespace NegabokuRPG.Core
         public bool SetParty(List<string> characterIds)
         {
             // 2人固定システムの検証
-            if (characterIds.Count != 2)
+            if (!ValidationHelper.ValidatePartySize(characterIds, nameof(SetParty)))
             {
-                Debug.LogWarning($"Party must be exactly 2 characters. Provided: {characterIds.Count}");
                 return false;
             }
 
@@ -298,9 +298,8 @@ namespace NegabokuRPG.Core
         /// </summary>
         public void StartBattle(List<BattleEnemyData> enemies)
         {
-            if (currentParty.Count != 2)
+            if (!ValidationHelper.ValidatePartySize(currentParty, nameof(StartBattle)))
             {
-                Debug.LogWarning($"Cannot start battle. Party must have exactly 2 members. Current: {currentParty.Count}");
                 return;
             }
 
@@ -323,9 +322,8 @@ namespace NegabokuRPG.Core
         /// </summary>
         public bool StartDungeonExploration(string dungeonId)
         {
-            if (dungeonSystem == null || currentParty.Count != 2) 
+            if (dungeonSystem == null || !ValidationHelper.ValidatePartySize(currentParty, nameof(StartDungeonExploration))) 
             {
-                Debug.LogWarning($"Cannot start dungeon exploration. Party must have exactly 2 members. Current: {currentParty.Count}");
                 return false;
             }
 
@@ -384,7 +382,7 @@ namespace NegabokuRPG.Core
         {
             // 最初の2キャラクターで自動編成
             var initialCharacterIds = allCharacterData
-                .Take(2)
+                .Take(GameConstants.INITIAL_PARTY_SIZE)
                 .Select(c => c.characterId)
                 .ToList();
                 
@@ -614,12 +612,12 @@ namespace NegabokuRPG.Core
     public class GameConfiguration : ScriptableObject
     {
         [Header("パーティ設定 - 2人固定システム")]
-        public int maxPartySize = 2;
-        public int initialPartySize = 2;
+        public int maxPartySize = GameConstants.MAX_PARTY_SIZE;
+        public int initialPartySize = GameConstants.INITIAL_PARTY_SIZE;
         
         [Header("初期値")]
-        public int initialGold = 1000;
-        public int initialLevel = 1;
+        public int initialGold = GameConstants.INITIAL_GOLD;
+        public int initialLevel = GameConstants.INITIAL_LEVEL;
         
         [Header("システム設定")]
         public bool autoSaveEnabled = true;
