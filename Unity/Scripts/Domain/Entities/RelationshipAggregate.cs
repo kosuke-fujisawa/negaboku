@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using NegabokuRPG.Domain.ValueObjects;
+using NegabokuRPG.Domain.Common;
+using NegabokuRPG.Domain.Events;
 
 namespace NegabokuRPG.Domain.Entities
 {
@@ -8,7 +10,7 @@ namespace NegabokuRPG.Domain.Entities
     /// 関係値集約（集約ルート）
     /// キャラクター間の関係値管理とビジネスルールを担当
     /// </summary>
-    public class RelationshipAggregate
+    public class RelationshipAggregate : AggregateRoot
     {
         // バトルイベント変動値
         private const int LARGE_POSITIVE_CHANGE = 25;  // 大きな協力
@@ -68,10 +70,21 @@ namespace NegabokuRPG.Domain.Entities
             
             _relationships[(character1, character2)] = newRelationship;
             
-            // レベル変化をチェック
+            // 従来のイベント発行（後方互換性のため維持）
             if (oldRelationship.Level != newRelationship.Level)
             {
                 RelationshipLevelChanged?.Invoke(character1, character2, oldRelationship.Level, newRelationship.Level, reason);
+                
+                // ドメインイベント発行
+                var relationshipEvent = new RelationshipLevelChangedEvent(
+                    character1, character2,
+                    oldRelationship.Level, newRelationship.Level,
+                    oldRelationship.Value, newRelationship.Value,
+                    reason);
+                AddDomainEvent(relationshipEvent);
+                
+                // スキル解放チェック
+                CheckAndRaiseSkillUnlockedEvents(character1, character2, oldRelationship, newRelationship);
             }
         }
         
@@ -125,6 +138,39 @@ namespace NegabokuRPG.Domain.Entities
         public Dictionary<(CharacterId, CharacterId), RelationshipValue> GetAllRelationships()
         {
             return new Dictionary<(CharacterId, CharacterId), RelationshipValue>(_relationships);
+        }
+        
+        /// <summary>
+        /// スキル解放イベントのチェックと発行
+        /// </summary>
+        /// <param name="character1">キャラクター1</param>
+        /// <param name="character2">キャラクター2</param>
+        /// <param name="oldRelationship">変更前の関係値</param>
+        /// <param name="newRelationship">変更後の関係値</param>
+        private void CheckAndRaiseSkillUnlockedEvents(CharacterId character1, CharacterId character2,
+            RelationshipValue oldRelationship, RelationshipValue newRelationship)
+        {
+            // 共闘技の解放チェック
+            if (!oldRelationship.CanUseCooperationSkill() && newRelationship.CanUseCooperationSkill())
+            {
+                var cooperationEvent = new SkillUnlockedEvent(
+                    character1, character2,
+                    SkillType.CooperationSkill,
+                    newRelationship.Level,
+                    newRelationship.Value);
+                AddDomainEvent(cooperationEvent);
+            }
+            
+            // 対立技の解放チェック
+            if (!oldRelationship.CanUseConflictSkill() && newRelationship.CanUseConflictSkill())
+            {
+                var conflictEvent = new SkillUnlockedEvent(
+                    character1, character2,
+                    SkillType.ConflictSkill,
+                    newRelationship.Level,
+                    newRelationship.Value);
+                AddDomainEvent(conflictEvent);
+            }
         }
     }
 }
