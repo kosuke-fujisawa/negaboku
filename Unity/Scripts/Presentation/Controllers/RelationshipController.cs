@@ -4,7 +4,7 @@ using NegabokuRPG.Application.Interfaces;
 using NegabokuRPG.Domain.Services;
 using NegabokuRPG.Domain.ValueObjects;
 using NegabokuRPG.Domain.Entities;
-using NegabokuRPG.Infrastructure.Repositories;
+using NegabokuRPG.Infrastructure.DI;
 using System.Collections.Generic;
 using System;
 
@@ -69,11 +69,11 @@ namespace NegabokuRPG.Presentation.Controllers
         /// </summary>
         private void InitializeWithDefaultDependencies()
         {
-            // インフラ層
-            var repository = new UnityRelationshipRepository();
+            var container = DIContainer.Instance;
             
-            // ドメイン層
-            var domainService = new RelationshipDomainService();
+            // 依存関係を解決
+            var repository = container.Resolve<IRelationshipRepository>();
+            var domainService = container.Resolve<RelationshipDomainService>();
             
             Initialize(repository, domainService);
         }
