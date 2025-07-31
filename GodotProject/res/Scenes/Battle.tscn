@@ -1,0 +1,124 @@
+[gd_scene load_steps=3 format=3 uid="uid://bpklj3pqx8e7j"]
+
+[ext_resource type="Script" path="res://Scripts/battle_scene.gd" id="1_qj5k1"]
+
+[sub_resource type="Environment" id="Environment_1kxrv"]
+background_mode = 1
+background_color = Color(0.3, 0.2, 0.2, 1)
+
+[node name="Battle" type="Node2D"]
+script = ExtResource("1_qj5k1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="BattleInterface" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PartyStatusPanel" type="Panel" parent="UI/BattleInterface"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -150.0
+offset_right = 400.0
+offset_bottom = -20.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/BattleInterface/PartyStatusPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+
+[node name="PartyLabel" type="Label" parent="UI/BattleInterface/PartyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "=== パーティ ==="
+
+[node name="Player1Status" type="Label" parent="UI/BattleInterface/PartyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "プレイヤー: HP 100/100"
+
+[node name="Player2Status" type="Label" parent="UI/BattleInterface/PartyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "パートナー: HP 100/100"
+
+[node name="RelationshipStatus" type="Label" parent="UI/BattleInterface/PartyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "関係値: 50 (普通)"
+
+[node name="EnemyStatusPanel" type="Panel" parent="UI/BattleInterface"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -400.0
+offset_right = -20.0
+offset_bottom = 150.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/BattleInterface/EnemyStatusPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+
+[node name="EnemyLabel" type="Label" parent="UI/BattleInterface/EnemyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "=== 敵 ==="
+
+[node name="Enemy1Status" type="Label" parent="UI/BattleInterface/EnemyStatusPanel/VBoxContainer"]
+layout_mode = 2
+text = "テスト敵: HP 50/50"
+
+[node name="ActionPanel" type="Panel" parent="UI/BattleInterface"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = -20.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/BattleInterface/ActionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+
+[node name="ActionLabel" type="Label" parent="UI/BattleInterface/ActionPanel/VBoxContainer"]
+layout_mode = 2
+text = "行動を選択してください"
+
+[node name="AttackButton" type="Button" parent="UI/BattleInterface/ActionPanel/VBoxContainer"]
+layout_mode = 2
+text = "攻撃"
+
+[node name="SkillButton" type="Button" parent="UI/BattleInterface/ActionPanel/VBoxContainer"]
+layout_mode = 2
+text = "スキル"
+
+[node name="DefendButton" type="Button" parent="UI/BattleInterface/ActionPanel/VBoxContainer"]
+layout_mode = 2
+text = "防御"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1kxrv")
