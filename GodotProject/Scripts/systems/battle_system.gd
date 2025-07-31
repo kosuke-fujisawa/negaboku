@@ -26,17 +26,17 @@ enum ActionType {
 }
 
 var current_state: BattleState = BattleState.IDLE
-var party_members = []
-var enemies = []
-var current_turn_character
-var turn_queue = []
-var relationship_system
+var party_members: Array[Character] = []
+var enemies: Array[Character] = []
+var current_turn_character: Character
+var turn_queue: Array[Character] = []
+var relationship_system: RelationshipSystem
 
 class BattleAction:
 	var type: ActionType
 	var skill_id: String = ""
 	var item_id: String = ""
-	var targets = []
+	var targets: Array[Character] = []
 	
 	func _init(action_type: ActionType = ActionType.ATTACK):
 		type = action_type
@@ -44,13 +44,13 @@ class BattleAction:
 class BattleResult:
 	var victory: bool = false
 	var experience_gained: int = 0
-	var items_obtained = []
+	var items_obtained: Array = []
 	var relationship_changes: Dictionary = {}
 
 func _ready():
 	print("BattleSystem: 初期化完了")
 
-func initialize(party: Array, rel_system) -> bool:
+func initialize(party: Array[Character], rel_system: RelationshipSystem) -> bool:
 	if party == null or party.is_empty():
 		push_error("BattleSystem: パーティが無効です")
 		return false
@@ -70,7 +70,7 @@ func initialize(party: Array, rel_system) -> bool:
 	print("BattleSystem: パーティとシステム設定完了")
 	return true
 
-func start_battle(enemy_list: Array) -> bool:
+func start_battle(enemy_list: Array[Character]) -> bool:
 	if current_state != BattleState.IDLE:
 		push_warning("BattleSystem: 既にバトル中です")
 		return false
@@ -119,7 +119,7 @@ func setup_turn_queue() -> bool:
 		return false
 	
 	# パーティメンバーと敵を速度順でソート
-	var all_combatants = []
+	var all_combatants: Array[Character] = []
 	
 	# nullチェックしながら追加
 	for member in party_members:
@@ -138,8 +138,12 @@ func setup_turn_queue() -> bool:
 		push_error("BattleSystem: 戦闘参加者がいません")
 		return false
 	
-	# 速度でソート（降順）
-	all_combatants.sort_custom(func(a, b): return a.speed > b.speed)
+	# 速度でソート（降順）- null安全性チェック付き
+	all_combatants.sort_custom(func(a: Character, b: Character) -> bool:
+		if a == null or b == null:
+			return a != null
+		return a.speed > b.speed
+	)
 	turn_queue = all_combatants
 	
 	print("BattleSystem: ターン順序決定 - %d人" % turn_queue.size())
@@ -188,7 +192,7 @@ func start_next_turn():
 		# プレイヤーの入力待ち（UIシステムから呼び出される）
 		pass
 
-func perform_action(actor, action):
+func perform_action(actor: Character, action: BattleAction):
 	if current_state != BattleState.IN_PROGRESS or actor != current_turn_character:
 		print("BattleSystem: 無効なアクション")
 		return
@@ -211,7 +215,7 @@ func perform_action(actor, action):
 	await get_tree().create_timer(1.0).timeout  # 演出待機
 	start_next_turn()
 
-func perform_attack(actor, targets: Array) -> bool:
+func perform_attack(actor: Character, targets: Array[Character]) -> bool:
 	if actor == null:
 		push_error("BattleSystem: 攻撃者がnullです")
 		return false
@@ -220,10 +224,7 @@ func perform_attack(actor, targets: Array) -> bool:
 		push_error("BattleSystem: 攻撃対象が指定されていません")
 		return false
 	
-	if targets.size() == 0:
-		push_error("BattleSystem: 攻撃対象配列が空です")
-		return false
-	
+	# 配列境界チェックは既に上記で実施済み
 	var target = targets[0]
 	if target == null:
 		push_error("BattleSystem: 攻撃対象がnullです")
@@ -237,7 +238,7 @@ func perform_attack(actor, targets: Array) -> bool:
 	print("BattleSystem: %s が %s に %d ダメージ" % [actor.name, target.name, damage])
 	return true
 
-func perform_skill(actor, skill_id: String, targets: Array):
+func perform_skill(actor: Character, skill_id: String, targets: Array[Character]):
 	var skill = get_skill_data(skill_id)
 	if not skill:
 		print("BattleSystem: スキル %s が見つかりません" % skill_id)
@@ -258,7 +259,7 @@ func perform_skill(actor, skill_id: String, targets: Array):
 	
 	skill_activated.emit(actor, skill, targets)
 
-func check_relationship_skill_condition(actor, skill) -> bool:
+func check_relationship_skill_condition(actor: Character, skill: Dictionary) -> bool:
 	if not relationship_system:
 		return false
 	
@@ -275,13 +276,13 @@ func check_relationship_skill_condition(actor, skill) -> bool:
 		_:
 			return true
 
-func get_partner(character):
+func get_partner(character: Character) -> Character:
 	for member in party_members:
 		if member != character:
 			return member
 	return null
 
-func calculate_attack_damage(attacker, target) -> int:
+func calculate_attack_damage(attacker: Character, target: Character) -> int:
 	var base_damage = attacker.attack - target.defense
 	base_damage = max(1, base_damage)  # 最低1ダメージ
 	
@@ -295,23 +296,23 @@ func calculate_attack_damage(attacker, target) -> int:
 	var variance = randf() * 0.2 + 0.9  # 0.9〜1.1倍
 	return int(base_damage * variance)
 
-func get_relationship_damage_bonus(char1, char2) -> float:
+func get_relationship_damage_bonus(char1: Character, char2: Character) -> float:
 	var level = relationship_system.get_relationship_level_enum(char1.character_id, char2.character_id)
 	match level:
-		3:  # INTIMATE
+		RelationshipSystem.RelationshipLevel.INTIMATE:
 			return 1.2  # 親密：+20%
-		2:  # FRIENDLY
+		RelationshipSystem.RelationshipLevel.FRIENDLY:
 			return 1.1  # 友好：+10%
-		1:  # NORMAL
+		RelationshipSystem.RelationshipLevel.NORMAL:
 			return 1.0  # 普通：変化なし
-		0:  # COLD
+		RelationshipSystem.RelationshipLevel.COLD:
 			return 0.9  # 冷淡：-10%
-		-1: # HOSTILE
+		RelationshipSystem.RelationshipLevel.HOSTILE:
 			return 0.8  # 敵対：-20%
 		_:
 			return 1.0
 
-func process_ai_turn(ai_character):
+func process_ai_turn(ai_character: Character):
 	if ai_character == null:
 		push_error("BattleSystem: AIキャラクターがnullです")
 		start_next_turn()
@@ -342,7 +343,11 @@ func process_ai_turn(ai_character):
 		start_next_turn()
 		return
 	
-	valid_targets.sort_custom(func(a, b): return a.current_hp < b.current_hp)
+	valid_targets.sort_custom(func(a: Character, b: Character) -> bool:
+		if a == null or b == null:
+			return a != null
+		return a.current_hp < b.current_hp
+	)
 	var selected_target = valid_targets[0]
 	
 	if selected_target == null:
@@ -391,9 +396,9 @@ func calculate_experience() -> int:
 		total_exp += enemy.level * 10
 	return total_exp
 
-func get_skill_data(skill_id: String):
+func get_skill_data(skill_id: String) -> Dictionary:
 	# スキルの仮実装データ
-	var skill_data = {}
+	var skill_data: Dictionary = {}
 	
 	match skill_id:
 		"cooperation_skill":
@@ -426,7 +431,7 @@ func get_skill_data(skill_id: String):
 	
 	return skill_data
 
-func apply_skill_effects(actor, skill, targets: Array):
+func apply_skill_effects(actor: Character, skill: Dictionary, targets: Array[Character]):
 	# スキル効果の適用（仮実装）
 	for target in targets:
 		var damage = skill.power
@@ -434,7 +439,7 @@ func apply_skill_effects(actor, skill, targets: Array):
 		target.current_hp = max(0, target.current_hp)
 		print("BattleSystem: %s のスキル %s で %s に %d ダメージ" % [actor.name, skill.name, target.name, damage])
 
-func process_skill_relationship_effects(actor, skill):
+func process_skill_relationship_effects(actor: Character, skill: Dictionary):
 	var partner = get_partner(actor)
 	if not partner or not relationship_system:
 		return
@@ -445,10 +450,10 @@ func process_skill_relationship_effects(actor, skill):
 		"conflict":
 			relationship_system.process_battle_event("conflict", actor.character_id, partner.character_id)
 
-func use_item(actor, item_id: String, targets: Array):
+func use_item(actor: Character, item_id: String, targets: Array[Character]):
 	print("BattleSystem: %s がアイテム %s を使用" % [actor.name, item_id])
 	# TODO: アイテム効果の実装
 
-func perform_defend(actor):
+func perform_defend(actor: Character):
 	print("BattleSystem: %s が防御" % actor.name)
 	# 防御効果（次のダメージ半減など）

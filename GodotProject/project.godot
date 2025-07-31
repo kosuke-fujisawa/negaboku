@@ -19,3 +19,12 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameManager="*res://Scripts/game_manager.gd"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+
+[debug]
+
+gdscript/warnings/enable=true
+gdscript/warnings/treat_warnings_as_errors=false

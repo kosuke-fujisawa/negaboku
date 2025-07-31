@@ -225,7 +225,7 @@ func update_status_display():
 		enemy1_status.text = "%s: HP %d/%d" % [enemy.name, enemy.current_hp, enemy.max_hp]
 
 # デバッグ用：強制勝利
-func _input(event):
+func _input(event: InputEvent):
 	if event.is_action_pressed("ui_select") and Input.is_action_pressed("ui_up"):
 		# Shift+Space で強制勝利
 		for enemy in enemies:

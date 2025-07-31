@@ -129,7 +129,7 @@ func hide_choices():
 	clear_choice_buttons()
 
 # キーボード入力での選択
-func _input(event):
+func _input(event: InputEvent):
 	if not visible:
 		return
 	

@@ -3,10 +3,10 @@ extends Node2D
 # メインシーン
 # 全システムを統合し、動作確認可能な最小サイクルを実装
 
-var game_manager
-var dialogue_box
-var choice_panel
-var effect_layer
+var game_manager: Node
+var dialogue_box: Control
+var choice_panel: Control
+var effect_layer: Control
 
 # デバッグUI要素
 var relationship_label: Label
@@ -20,14 +20,14 @@ var save_button: Button
 var load_button: Button
 
 # テスト用データ
-var test_dialogue_lines = [
+var test_dialogue_lines: Array[String] = [
 	"こんにちは、テストダイアログです。",
 	"これは関係値重視型RPGのプロトタイプです。",
 	"選択肢によって関係値が変化し、スキル発動条件が変わります。",
 	"Godot 4.xで実装されています。"
 ]
 
-var test_choices = [
+var test_choices: Array[String] = [
 	"協力的な選択肢（関係値+25）",
 	"普通の選択肢（変化なし）",
 	"対立的な選択肢（関係値-25）",
@@ -47,16 +47,22 @@ func setup_references():
 	choice_panel = $UI/GameInterface/ChoicePanel
 	effect_layer = $UI/GameInterface/EffectLayer
 	
-	# デバッグUI要素の参照
-	relationship_label = $UI/DebugInterface/DebugPanel/VBoxContainer/RelationshipLabel
-	test_dialogue_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestDialogueButton
-	test_choices_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestChoicesButton
-	test_battle_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestBattleButton
-	test_effects_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestEffectsButton
-	increase_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/IncreaseButton
-	decrease_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/DecreaseButton
-	save_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SaveButton
-	load_button = $UI/DebugInterface/DebugPanel/VBoxContainer/LoadButton
+	# デバッグUI要素の参照（デバッグビルドのみ）
+	if OS.is_debug_build():
+		relationship_label = $UI/DebugInterface/DebugPanel/VBoxContainer/RelationshipLabel
+		test_dialogue_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestDialogueButton
+		test_choices_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestChoicesButton
+		test_battle_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestBattleButton
+		test_effects_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestEffectsButton
+		increase_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/IncreaseButton
+		decrease_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/DecreaseButton
+		save_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SaveButton
+		load_button = $UI/DebugInterface/DebugPanel/VBoxContainer/LoadButton
+	else:
+		# 本番ビルドではデバッグUIを無効化
+		var debug_interface = $UI/DebugInterface
+		if debug_interface:
+			debug_interface.visible = false
 
 func setup_signals():
 	# ダイアログシステムのシグナル接続
@@ -68,15 +74,16 @@ func setup_signals():
 	# エフェクトシステムのシグナル接続
 	effect_layer.effect_completed.connect(_on_effect_completed)
 	
-	# デバッグボタンのシグナル接続
-	test_dialogue_button.pressed.connect(_on_test_dialogue_pressed)
-	test_choices_button.pressed.connect(_on_test_choices_pressed)
-	test_battle_button.pressed.connect(_on_test_battle_pressed)
-	test_effects_button.pressed.connect(_on_test_effects_pressed)
-	increase_button.pressed.connect(_on_increase_relationship_pressed)
-	decrease_button.pressed.connect(_on_decrease_relationship_pressed)
-	save_button.pressed.connect(_on_save_pressed)
-	load_button.pressed.connect(_on_load_pressed)
+	# デバッグボタンのシグナル接続（デバッグビルドのみ）
+	if OS.is_debug_build():
+		test_dialogue_button.pressed.connect(_on_test_dialogue_pressed)
+		test_choices_button.pressed.connect(_on_test_choices_pressed)
+		test_battle_button.pressed.connect(_on_test_battle_pressed)
+		test_effects_button.pressed.connect(_on_test_effects_pressed)
+		increase_button.pressed.connect(_on_increase_relationship_pressed)
+		decrease_button.pressed.connect(_on_decrease_relationship_pressed)
+		save_button.pressed.connect(_on_save_pressed)
+		load_button.pressed.connect(_on_load_pressed)
 
 func setup_game_manager():
 	# GameManagerは既にAutoLoadとして利用可能
@@ -106,9 +113,11 @@ func update_relationship_display():
 	if not game_manager or not game_manager.relationship_system:
 		return
 	
-	var rel_value = game_manager.relationship_system.get_relationship("player", "partner")
-	var rel_level = game_manager.relationship_system.get_relationship_level_string("player", "partner")
-	relationship_label.text = "関係値: %d (%s)" % [rel_value, rel_level]
+	# デバッグビルドでのみ表示更新
+	if OS.is_debug_build() and relationship_label:
+		var rel_value = game_manager.relationship_system.get_relationship("player", "partner")
+		var rel_level = game_manager.relationship_system.get_relationship_level_string("player", "partner")
+		relationship_label.text = "関係値: %d (%s)" % [rel_value, rel_level]
 
 # ダイアログシステムのテスト
 func _on_test_dialogue_pressed():
@@ -153,16 +162,8 @@ func _on_choice_selected(choice_index: int, choice_text: String):
 func _on_test_battle_pressed():
 	print("MainScene: バトルシステムテスト開始")
 	
-	# テスト用の敵を作成
-	var character_script = load("res://Scripts/character.gd")
-	if character_script == null:
-		push_error("MainScene: Characterスクリプトの読み込みに失敗しました")
-		return
-	
-	var enemy = character_script.new()
-	if enemy == null:
-		push_error("MainScene: 敵キャラクターの生成に失敗しました")
-		return
+	# テスト用の敵を作成（class_nameを使用し、直接インスタンス化）
+	var enemy = Character.new()
 	
 	enemy.character_id = "test_enemy"
 	enemy.name = "テスト敵"
@@ -262,7 +263,7 @@ func start_demo_cycle():
 	], "システム")
 
 # キーボードショートカット
-func _input(event):
+func _input(event: InputEvent):
 	if event.is_action_pressed("ui_select"):  # スペースキー
 		if not dialogue_box.visible and not choice_panel.visible:
 			start_demo_cycle()

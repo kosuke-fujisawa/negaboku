@@ -73,11 +73,21 @@ func setup_ui():
 	skip_button.pressed.connect(_on_skip_button_pressed)
 	background_panel.add_child(skip_button)
 
-func _input(event):
+func _input(event: InputEvent):
 	if not visible or not is_waiting_for_input:
 		return
 	
-	if event.is_action_pressed("ui_accept") or event is InputEventMouseButton:
+	# マウスボタン入力の改善（左クリックのみ有効）
+	var should_advance: bool = false
+	
+	if event.is_action_pressed("ui_accept"):
+		should_advance = true
+	elif event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_LEFT:
+			should_advance = true
+	
+	if should_advance:
 		if is_typing:
 			complete_current_line()
 		else:

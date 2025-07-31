@@ -20,6 +20,13 @@ enum RelationshipLevel {
 # 関係値データ
 var relationships: Dictionary = {}
 
+# 関係値レベルの境界値定数
+const HOSTILE_MAX: int = 0
+const COLD_MAX: int = 25
+const NORMAL_MAX: int = 50
+const FRIENDLY_MAX: int = 75
+const INTIMATE_MIN: int = 76
+
 # 関係値の境界値
 const MIN_VALUE = -25
 const MAX_VALUE = 100
@@ -107,13 +114,13 @@ func get_relationship_level_string(char1_id: String, char2_id: String) -> String
 
 # 値から関係値レベルを判定
 func get_relationship_level(value: int) -> RelationshipLevel:
-	if value <= 0:
+	if value <= HOSTILE_MAX:
 		return RelationshipLevel.HOSTILE
-	elif value <= 25:
+	elif value <= COLD_MAX:
 		return RelationshipLevel.COLD
-	elif value <= 50:
+	elif value <= NORMAL_MAX:
 		return RelationshipLevel.NORMAL
-	elif value <= 75:
+	elif value <= FRIENDLY_MAX:
 		return RelationshipLevel.FRIENDLY
 	else:
 		return RelationshipLevel.INTIMATE
@@ -137,12 +144,12 @@ func level_to_string(level: RelationshipLevel) -> String:
 # 共闘技が使用可能かチェック
 func can_use_cooperation_skill(char1_id: String, char2_id: String) -> bool:
 	var level = get_relationship_level_enum(char1_id, char2_id)
-	return level == RelationshipLevel.INTIMATE  # 親密レベル（76以上）で使用可能
+	return level == RelationshipLevel.INTIMATE  # 親密レベル（INTIMATE_MIN以上）で使用可能
 
 # 対立技が使用可能かチェック
 func can_use_conflict_skill(char1_id: String, char2_id: String) -> bool:
 	var level = get_relationship_level_enum(char1_id, char2_id)
-	return level == RelationshipLevel.HOSTILE  # 敵対レベル（0以下）で使用可能
+	return level == RelationshipLevel.HOSTILE  # 敵対レベル（HOSTILE_MAX以下）で使用可能
 
 # バトルイベントによる関係値変化を処理
 func process_battle_event(event_type: String, char1_id: String, char2_id: String):
@@ -162,7 +169,7 @@ func process_battle_event(event_type: String, char1_id: String, char2_id: String
 
 # 関係値のキーを生成（双方向対応）
 func get_relationship_key(char1_id: String, char2_id: String) -> String:
-	var ids = [char1_id, char2_id]
+	var ids: Array[String] = [char1_id, char2_id]
 	ids.sort()
 	return ids[0] + "_" + ids[1]
 
