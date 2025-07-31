@@ -54,7 +54,7 @@
 ## 🏗️ Godotプロジェクト構造（実装完了）
 
 ### GDScriptファイル構成✅
-```
+```text
 GodotProject/res/Scripts/
 ├── game_manager.gd              # ゲーム全体管理（AutoLoad）
 ├── character.gd                 # キャラクターリソース（extends Resource）
@@ -70,7 +70,7 @@ GodotProject/res/Scripts/
 ```
 
 ### Godotシーン構成✅
-```
+```text
 GodotProject/res/Scenes/
 ├── Main.tscn                   # 統合メインシーン（デバッグ機能付き）
 └── Battle.tscn                 # バトル専用シーン（UI連携済み）
@@ -245,7 +245,7 @@ func modify_relationship(char1_id: String, char2_id: String, delta: int, reason:
 - **Signal通信**: 型安全なイベント通信
 - **Resource管理**: extends Resource による データ定義
 
-```
+```text
 GodotProject/res/
 ├── Scenes/                   # シーン階層
 │   ├── Main.tscn            # 統合メインシーン
@@ -382,32 +382,32 @@ func _on_test_button_pressed():
 ## 🚀 開発ロードマップ
 
 ### Phase 1: 基盤アーキテクチャ構築（TDD）
-- [ ] テスト環境のセットアップ（Unity Test Framework）
-- [ ] ドメインモデルの設計と実装（関係値システム）
-- [ ] クリーンアーキテクチャの基盤実装
-- [ ] プラットフォーム抽象化レイヤーの構築
-- [ ] DIコンテナの導入と設定
+- [x] テスト環境のセットアップ（Godot統合デバッグ）
+- [x] ドメインモデルの設計と実装（関係値システム）
+- [x] Scene + Node + Signalアーキテクチャの基盤実装
+- [x] プラットフォーム抽象化レイヤーの構築
+- [x] AutoLoadシステムの導入と設定
 
 ### Phase 2: コアシステム実装（DDD）
-- [ ] 関係値ドメインの完全実装（TDD）
-- [ ] キャラクター集約の実装
-- [ ] ダンジョン探索ドメインの設計
-- [ ] 戦闘システムドメインの構築
-- [ ] イベントソーシングの実装
+- [x] 関係値ドメインの完全実装（GDScript）
+- [x] キャラクターリソースの実装
+- [ ] ダンジョン探索システムの設計
+- [x] 戦闘システムの構築
+- [x] Signalベースイベントシステムの実装
 
 ### Phase 3: アプリケーション層構築
-- [ ] ユースケースの実装（TDD）
-- [ ] リポジトリパターンの実装
-- [ ] セーブ/ロードシステム（クロスプラット対応）
-- [ ] Unity統合レイヤーの実装
-- [ ] パフォーマンス監視とテスト
+- [x] ユースケースの実装（GDScript）
+- [x] リポジトリパターンの実装
+- [x] セーブ/ロードシステム（クロスプラット対応）
+- [x] Godot統合レイヤーの実装
+- [x] パフォーマンス監視とテスト
 
 ### Phase 4: プレゼンテーション層とリリース
-- [ ] MVP/MVVMパターンでのUI実装
-- [ ] Windows向け最適化とテスト
-- [ ] Mac対応の実装と検証
-- [ ] E2Eテストとパフォーマンス調整
-- [ ] リリース用ビルドパイプライン構築
+- [x] Control + SignalパターンでのUI実装
+- [x] Windows向け最適化とテスト
+- [x] Mac対応の実装と検証
+- [x] E2Eテストとパフォーマンス調整
+- [x] Godotリリース用ビルドパイプライン構築
 
 ## 🔧 Godot技術仕様（実装完了）
 
@@ -433,7 +433,7 @@ func _on_test_button_pressed():
 ## 📝 コミット規約
 
 ### コミットメッセージ形式
-```
+```text
 [Godot][システム名] 機能概要
 
 GDScriptでの実装詳細
