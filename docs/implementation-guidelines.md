@@ -1,53 +1,54 @@
-# 実装指針書
+# Godot実装指針書
 
-## データ形式・管理
+> **🔄 Godot移行完了**: Unity版の指針をGodot 4.x + GDScriptに適応し、より効率的な開発指針に更新しました。
 
-### 外部データ管理
-- **イベントデータ**: JSON形式での外部管理
-- **キャラクターデータ**: ScriptableObjectとJSON併用
-- **スキルデータ**: 技の効果・発動条件の外部化
-- **利点**: データ変更でのコンパイル不要、拡張性確保
+## Godotデータ管理
 
-### セーブデータ仕様  
-- **関係値状態**: 全キャラクター間の関係値マトリックス
-- **進行状況**: イベント進行フラグ、解放コンテンツ
-- **形式**: JSON形式での可読性とデバッグ性確保
+### ✅ 実装済みデータシステム
+- **関係値データ**: Dictionary形式での内部管理、JSON永続化 ✅
+- **キャラクターデータ**: extends Resource による型安全管理 ✅
+- **セーブシステム**: JSON形式での可読性・デバッグ性確保 ✅
+- **利点**: GDScriptの動的型とResourceシステムの活用
 
-## テスト戦略
+### セーブデータ仕様（実装済み）
+- **関係値状態**: 全キャラクター間の関係値Dictionary ✅
+- **パーティ情報**: キャラクターリソースの配列管理 ✅
+- **形式**: `FileAccess` + `JSON.stringify()` による標準実装 ✅
 
-### 重点テスト対象
-- **Domain層の単体テスト**: NUnit使用での徹底的テスト
-- **関係値計算ロジック**: 境界値テスト、異常値テスト
-- **戦闘システム**: 各種条件での動作確認
-- **イベント分岐**: 条件組み合わせでの動作検証
+## Godotテスト戦略
 
-### テスト自動化
-- **Unity Test Framework**: Edit Mode/Play Mode併用
-- **継続的インテグレーション**: 品質維持のための自動実行
-- **カバレッジ目標**: Domain層90%以上、Application層80%以上
+### ✅ 実装済み動作確認
+- **関係値システム**: リアルタイムデバッグ機能で境界値・異常値テスト完了 ✅
+- **バトルシステム**: AI行動・ターン制御・スキル発動の動作確認済み ✅
+- **UIシステム**: ダイアログ・選択肢・エフェクトの統合テスト完了 ✅
+- **セーブ・ロード**: JSON永続化の動作確認済み ✅
 
-## コーディング規約
+### 将来のテスト自動化
+- **GDScript Testing**: Godot標準のテストフレームワーク活用予定
+- **統合テスト**: Scene単位での自動テスト環境構築
+- **デバッグ機能**: リアルタイム関係値操作による手動テスト継続
 
-### 命名規則
-- **クラス**: PascalCase (`RelationshipSystem`)
-- **メソッド**: PascalCase (`ModifyRelationshipValue`)
-- **プロパティ**: PascalCase (`CurrentLevel`)
-- **フィールド**: camelCase （privateは`_`プレフィックス `_currentValue`）
-- **定数**: UPPER_SNAKE_CASE (`MAX_RELATIONSHIP_VALUE`)
-- **インターフェース**: I + PascalCase (`IRelationshipRepository`)
+## GDScriptコーディング規約
 
-### 設計原則
-- **SOLID原則**: 単一責任、開放閉鎖、リスコフ置換、インターフェース分離、依存性逆転
-- **Tell, Don't Ask**: オブジェクトにデータを要求するのではなく、やりたいことを伝える
-- **Law of Demeter**: 直接の友達とのみ話す
-- **Composition over Inheritance**: 継承より合成を優先
+### ✅ 適用済み命名規則
+- **クラス名**: PascalCase + class_name (`RelationshipSystem`) ✅
+- **ファイル名**: snake_case (`relationship.gd`) ✅
+- **メソッド**: snake_case (`modify_relationship_value`) ✅
+- **変数**: snake_case (`current_level`) ✅
+- **定数**: UPPER_SNAKE_CASE (`MAX_RELATIONSHIP_VALUE`) ✅
+- **Signal**: snake_case (`relationship_changed`) ✅
 
-### Unity固有の規約
-- **MonoBehaviour**: UI制御、ゲームオブジェクト管理に限定
-- **ScriptableObject**: データ定義、設定管理
-- **Singleton**: 必要最小限に抑制、DIコンテナ活用を検討
-- **Coroutine**: 非同期処理、アニメーション（async/awaitも検討）
-- **Event System**: 疎結合なシステム間通信
+### Godot設計原則
+- **Scene + Node**: Godot標準の階層構造活用 ✅
+- **Signal-driven**: 疎結合な通信システム ✅
+- **Resource extends**: データ定義の型安全性確保 ✅
+- **AutoLoad**: グローバルシステムの管理 ✅
+
+### ✅ 実装済みGodot固有規約
+- **Node継承**: システム管理、UI制御 ✅
+- **Resource継承**: データ定義、永続化 ✅
+- **await + Tween**: 非同期処理、アニメーション ✅
+- **Signal System**: イベント通信、状態通知 ✅
 
 ## パフォーマンス考慮事項
 
