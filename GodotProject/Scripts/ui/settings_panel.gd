@@ -89,8 +89,11 @@ func _update_volume_labels():
 func _on_master_volume_changed(value: float):
 	master_volume_value.text = "%d%%" % int(value)
 	settings_manager.set_setting("master_volume", value)
-	# 実際の音量調整はAudioManagerで実装される予定
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), linear_to_db(value / 100.0))
+	var master_bus = AudioServer.get_bus_index("Master")
+	if master_bus >= 0:
+		AudioServer.set_bus_volume_db(master_bus, linear_to_db(value / 100.0))
+	else:
+		push_warning("SettingsPanel: Masterバスが見つかりません")
 
 func _on_bgm_volume_changed(value: float):
 	bgm_volume_value.text = "%d%%" % int(value)
@@ -179,9 +182,10 @@ func _close_settings():
 	settings_closed.emit()
 	queue_free()
 
-func _input(event):
+func _unhandled_input(event):
 	if event.is_action_pressed("ui_cancel"):
 		_on_close_pressed()
+		get_viewport().set_input_as_handled()
 
 # 設定管理クラス
 class SettingsManager:

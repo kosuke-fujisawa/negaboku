@@ -158,15 +158,20 @@ func _quit_game():
 	
 	tween.tween_callback(get_tree().quit).set_delay(0.3)
 
-func _input(event):
+func _unhandled_input(event):
 	if event.is_action_pressed("ui_cancel"):
 		_on_quit_pressed()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_accept"):
 		if new_game_button.has_focus():
 			_on_new_game_pressed()
+			get_viewport().set_input_as_handled()
 		elif load_game_button.has_focus() and not load_game_button.disabled:
 			_on_load_game_pressed()
+			get_viewport().set_input_as_handled()
 		elif settings_button.has_focus():
 			_on_settings_pressed()
+			get_viewport().set_input_as_handled()
 		elif quit_button.has_focus():
 			_on_quit_pressed()
+			get_viewport().set_input_as_handled()
