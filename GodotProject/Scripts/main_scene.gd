@@ -18,6 +18,7 @@ var increase_button: Button
 var decrease_button: Button
 var save_button: Button
 var load_button: Button
+var return_to_title_button: Button
 
 # テスト用データ
 var test_dialogue_lines: Array[String] = [
@@ -58,6 +59,7 @@ func setup_references():
 		decrease_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/DecreaseButton
 		save_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SaveButton
 		load_button = $UI/DebugInterface/DebugPanel/VBoxContainer/LoadButton
+		return_to_title_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ReturnToTitleButton
 	else:
 		# 本番ビルドではデバッグUIを無効化
 		var debug_interface = $UI/DebugInterface
@@ -84,6 +86,7 @@ func setup_signals():
 		decrease_button.pressed.connect(_on_decrease_relationship_pressed)
 		save_button.pressed.connect(_on_save_pressed)
 		load_button.pressed.connect(_on_load_pressed)
+		return_to_title_button.pressed.connect(_on_return_to_title_pressed)
 
 func setup_game_manager():
 	# GameManagerは既にAutoLoadとして利用可能
@@ -216,6 +219,10 @@ func _on_load_pressed():
 	else:
 		print("MainScene: ロード失敗")
 
+func _on_return_to_title_pressed():
+	print("MainScene: タイトル画面に戻ります")
+	GameManager.return_to_title()
+
 # 関係値変更の通知
 func _on_relationship_changed(char1_id: String, char2_id: String, old_value: int, new_value: int):
 	print("MainScene: 関係値変更 %s↔%s: %d → %d" % [char1_id, char2_id, old_value, new_value])
@@ -268,4 +275,5 @@ func _input(event: InputEvent):
 		if not dialogue_box.visible and not choice_panel.visible:
 			start_demo_cycle()
 	elif event.is_action_pressed("ui_cancel"):  # ESCキー
-		get_tree().quit()
+		# タイトル画面に戻る
+		GameManager.return_to_title()

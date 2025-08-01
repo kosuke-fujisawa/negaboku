@@ -120,5 +120,12 @@ text = "セーブ"
 layout_mode = 2
 text = "ロード"
 
+[node name="HSeparator4" type="HSeparator" parent="UI/DebugInterface/DebugPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ReturnToTitleButton" type="Button" parent="UI/DebugInterface/DebugPanel/VBoxContainer"]
+layout_mode = 2
+text = "タイトルに戻る"
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1p5qt")
