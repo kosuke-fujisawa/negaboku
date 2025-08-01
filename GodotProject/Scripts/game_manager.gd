@@ -99,6 +99,22 @@ func change_scene(scene_path: String):
 	get_tree().change_scene_to_file(scene_path)
 	scene_changed.emit(current_scene_name)
 
+func start_new_game():
+	print("GameManager: 新規ゲーム開始")
+	# ゲーム状態をリセット
+	game_progress.clear()
+	current_dungeon = ""
+	
+	# パーティとシステムを再初期化
+	setup_initial_party()
+	
+	# メインゲームシーンに遷移
+	change_scene("res://Scenes/Main.tscn")
+
+func return_to_title():
+	print("GameManager: タイトル画面に戻る")
+	change_scene("res://Scenes/MainMenu.tscn")
+
 func get_party_member(character_id: String):
 	if character_id.is_empty():
 		push_error("GameManager: キャラクターIDが空です")
