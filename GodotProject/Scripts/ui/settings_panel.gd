@@ -28,11 +28,19 @@ var resolution_options = [
 ]
 
 func _ready():
+	if not _validate_ui_references():
+		push_error("SettingsPanel: 必要なUI要素が見つかりません")
+		return
 	settings_manager = SettingsManager.new()
 	_setup_resolution_options()
 	_connect_signals()
 	_load_settings()
 	_play_show_animation()
+
+func _validate_ui_references() -> bool:
+	return master_volume_slider != null and bgm_volume_slider != null and \
+		   sfx_volume_slider != null and fullscreen_check != null and \
+		   resolution_option != null
 
 func _setup_resolution_options():
 	resolution_option.clear()
@@ -91,6 +99,8 @@ func _on_bgm_volume_changed(value: float):
 	var bgm_bus = AudioServer.get_bus_index("BGM")
 	if bgm_bus >= 0:
 		AudioServer.set_bus_volume_db(bgm_bus, linear_to_db(value / 100.0))
+	else:
+		push_warning("SettingsPanel: BGMバスが見つかりません")
 
 func _on_sfx_volume_changed(value: float):
 	sfx_volume_value.text = "%d%%" % int(value)
@@ -99,6 +109,8 @@ func _on_sfx_volume_changed(value: float):
 	var sfx_bus = AudioServer.get_bus_index("SFX")
 	if sfx_bus >= 0:
 		AudioServer.set_bus_volume_db(sfx_bus, linear_to_db(value / 100.0))
+	else:
+		push_warning("SettingsPanel: SFXバスが見つかりません")
 
 func _on_fullscreen_toggled(pressed: bool):
 	settings_manager.set_setting("fullscreen", pressed)
@@ -142,8 +154,7 @@ func _play_show_animation():
 	modulate.a = 0.0
 	scale = Vector2(0.8, 0.8)
 	
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.set_parallel(true)
 	
@@ -151,14 +162,18 @@ func _play_show_animation():
 	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.3)
 
 func _play_hide_animation():
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.set_parallel(true)
 	
 	tween.tween_property(self, "modulate:a", 0.0, 0.3)
 	tween.tween_property(self, "scale", Vector2(0.8, 0.8), 0.3)
 	tween.tween_callback(_close_settings).set_delay(0.3)
+
+func _cleanup_tween():
+	if tween and tween.is_valid():
+		tween.kill()
+	tween = null
 
 func _close_settings():
 	settings_closed.emit()

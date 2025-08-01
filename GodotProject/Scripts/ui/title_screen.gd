@@ -48,8 +48,7 @@ func _update_load_button_availability():
 		load_game_button.modulate = Color(1, 1, 1, 0.5)
 
 func _play_intro_animation():
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.set_parallel(true)
 	
@@ -66,16 +65,19 @@ func _play_intro_animation():
 		delay += 0.1
 
 func _on_button_hover(button: Button):
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.tween_property(button, "modulate", Color(1.2, 1.2, 1.2, 1.0), 0.1)
 
 func _on_button_unhover(button: Button):
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.tween_property(button, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.1)
+
+func _cleanup_tween():
+	if tween and tween.is_valid():
+		tween.kill()
+	tween = null
 
 func _on_new_game_pressed():
 	_play_button_press_effect(new_game_button)
@@ -92,7 +94,16 @@ func _on_load_game_pressed():
 	if GameManager.load_game():
 		_transition_to_game()
 	else:
-		print("TitleScreen: ゲームロードに失敗しました")
+		_show_load_error_message()
+
+func _show_load_error_message():
+	# TODO: モーダルダイアログまたはトーストメッセージでユーザーに通知
+	print("TitleScreen: ゲームロードに失敗しました")
+	# 暫定的にボタンを一時的に赤くしてユーザーにフィードバック
+	_cleanup_tween()
+	tween = create_tween()
+	tween.tween_property(load_game_button, "modulate", Color(1.5, 0.5, 0.5, 1.0), 0.2)
+	tween.tween_property(load_game_button, "modulate", Color(1.0, 1.0, 1.0, 0.5), 0.5)
 
 func _on_settings_pressed():
 	_play_button_press_effect(settings_button)
@@ -114,16 +125,14 @@ func _on_quit_pressed():
 	_quit_game()
 
 func _play_button_press_effect(button: Button):
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.tween_property(button, "scale", Vector2(0.95, 0.95), 0.1)
 	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.1)
 
 func _transition_to_game():
 	# ゲーム画面への遷移アニメーション
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.set_parallel(true)
 	
@@ -139,8 +148,7 @@ func _change_to_game_scene():
 
 func _quit_game():
 	# 終了アニメーション
-	if tween:
-		tween.kill()
+	_cleanup_tween()
 	tween = create_tween()
 	tween.set_parallel(true)
 	
