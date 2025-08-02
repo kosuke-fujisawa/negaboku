@@ -23,6 +23,7 @@ var current_character_index: int = 0
 var text_speed: float = 0.05
 var is_text_animating: bool = false
 var text_tween: Tween
+var _is_processing_advance: bool = false
 
 # テキストログ
 var text_history: Array[Dictionary] = []
@@ -82,24 +83,36 @@ func _setup_initial_state():
 	clear_text()
 
 func _unhandled_input(event):
-	if event.is_action_pressed("ui_accept") or event is InputEventMouseButton:
-		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			_advance_text()
+	if event.is_action_pressed("ui_accept"):
+		_advance_text()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_cancel"):
 		if log_panel.visible:
 			_close_log()
+			get_viewport().set_input_as_handled()
 
 func _on_text_window_input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_advance_text()
+		get_viewport().set_input_as_handled()
 
 func _advance_text():
+	# 連続実行防止
+	if _is_processing_advance:
+		return
+	
+	_is_processing_advance = true
+	
 	if is_text_animating:
 		# アニメーション中なら即座に完了
 		_complete_text_animation()
 	elif continue_indicator.visible:
 		# テキスト表示完了後なら次へ
 		text_finished.emit()
+	
+	# 次フレームで実行可能にする
+	await get_tree().process_frame
+	_is_processing_advance = false
 
 func set_background(texture_path: String):
 	"""背景CGを設定"""
