@@ -18,6 +18,7 @@ var increase_button: Button
 var decrease_button: Button
 var save_button: Button
 var load_button: Button
+var settings_button: Button
 var return_to_title_button: Button
 
 # テスト用データ
@@ -59,6 +60,7 @@ func setup_references():
 		decrease_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ModifyRelationshipContainer/DecreaseButton
 		save_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SaveButton
 		load_button = $UI/DebugInterface/DebugPanel/VBoxContainer/LoadButton
+		settings_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SettingsButton
 		return_to_title_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ReturnToTitleButton
 	else:
 		# 本番ビルドではデバッグUIを無効化
@@ -86,6 +88,7 @@ func setup_signals():
 		decrease_button.pressed.connect(_on_decrease_relationship_pressed)
 		save_button.pressed.connect(_on_save_pressed)
 		load_button.pressed.connect(_on_load_pressed)
+		settings_button.pressed.connect(_on_settings_pressed)
 		return_to_title_button.pressed.connect(_on_return_to_title_pressed)
 
 func setup_game_manager():
@@ -219,6 +222,10 @@ func _on_load_pressed():
 	else:
 		print("MainScene: ロード失敗")
 
+func _on_settings_pressed():
+	print("MainScene: 設定画面を開きます")
+	open_settings_panel()
+
 func _on_return_to_title_pressed():
 	print("MainScene: タイトル画面に戻ります")
 	GameManager.return_to_title()
@@ -241,6 +248,20 @@ func _on_relationship_level_changed(char1_id: String, char2_id: String, old_leve
 
 func _on_effect_completed(effect_name: String):
 	print("MainScene: エフェクト '%s' 完了" % effect_name)
+
+func open_settings_panel():
+	# 設定パネルのシーンを読み込み
+	var settings_scene = preload("res://Scenes/UI/SettingsPanel.tscn")
+	var settings_instance = settings_scene.instantiate()
+	
+	# メインUIレイヤーに追加（最前面に表示）
+	$UI.add_child(settings_instance)
+	
+	# 設定画面が閉じられたときのシグナル接続
+	settings_instance.settings_closed.connect(_on_settings_closed)
+
+func _on_settings_closed():
+	print("MainScene: 設定画面が閉じられました")
 
 # ゲームサイクルのデモンストレーション
 func start_demo_cycle():
