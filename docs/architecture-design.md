@@ -22,7 +22,7 @@
 - **責任**: ゲームロジック、関係値・バトル管理 ✅
 - **Godot実装**: class_name + Signal通信
 - **実装済み**:
-  - `relationship.gd`: 関係値システム（-25〜100の5段階管理）
+  - `relationship.gd`: 関係値システム（3段階管理：対立/通常/親密）
   - `battle_system.gd`: ターン制バトル、AI行動、スキル発動
 
 ### シーン管理層（`res/Scenes/`）
@@ -68,7 +68,98 @@ public class MacPlatformService : IPlatformService { }
 #endif
 ```
 
-### Unity設定統一
-- **Scripting Backend**: IL2CPP（両プラットフォーム対応）
-- **API Compatibility Level**: .NET Standard 2.1
-- **入力システム**: New Input System使用（クロスプラット対応）
+### Godot設定統一
+- **レンダリング**: Forward Plus（全プラットフォーム対応）
+- **ビルドテンプレート**: 標準テンプレートで全OS対応
+- **入力システム**: Godot標準のInput（自動でデバイス対応）
+- **リソース管理**: .tres/.res形式（プラットフォーム非依存）
+
+## 新系統詳細仕様
+
+### プレゼントシステム詳細
+
+#### プレゼント効果データ
+```gdscript
+# res/Scripts/systems/present_system.gd
+class_name PresentSystem
+extends Node
+
+enum PresentReaction {
+    FAVORITE = 10,  # 好物：相手の好みにピッタリ適合
+    NORMAL = 5,     # 普通：無難なアイテム選択
+    DISLIKE = -5    # 嫌い：致命傷にならない軽微なペナルティ
+}
+
+# キャラ別好みデータ（初回リアクションで情報開示）
+var character_preferences = {
+    "yuzuki": {"flowers": PresentReaction.FAVORITE, "books": PresentReaction.NORMAL, "weapons": PresentReaction.DISLIKE},
+    "retsuji": {"weapons": PresentReaction.FAVORITE, "food": PresentReaction.NORMAL, "flowers": PresentReaction.DISLIKE}
+}
+```
+
+### イベントシステム詳細
+
+#### 汎用イベント管理
+- **序盤～中盤**: 共通イベント多め、自然変動許容で程よい関係性変化
+- **後半ルート確定**: 親密/通常/対立ルートが確定後に専用イベント発生
+- **推奨ペア限定**: 専用エンディングCGは推奨ペアのみに提供
+
+#### 超対立技発動条件
+- **特定ペアのみ**: 恋愛的嫉妬が発生する特定組み合わせ
+- **数値条件**: 関係値-100達成が必須
+- **リスク要素**: 高火力だが運用困難なハイリスクスキル
+
+### ラスボス戦（AIリラ）詳細
+
+#### 戦闘メカニクス
+```gdscript
+# res/Scripts/systems/lira_boss_system.gd
+class_name LiraBossSystem
+extends Node
+
+# 基本スペック設定
+var lira_stats = {
+    "attack_type": "physical_main",  # 物理攻撃主体
+    "target_type": "single_high",   # 単体高火力
+    "physical_defense": "high",     # 高物理耐久
+    "magic_weakness": true          # 魔法攻撃が有効
+}
+
+# フルパワーモード管理
+var is_full_power_mode = false
+var turn_limit = 10  # タイムリミット
+
+func on_hp_half():
+    is_full_power_mode = true
+    apply_endurance_debuff()  # 耐久デバフ
+    enable_high_power_attacks()  # 高威力攻撃解放
+    start_turn_countdown()  # タイムリミット開始
+```
+
+#### 断片アイテムシステム
+```gdscript
+# 断片収集とデバフ効果
+var fragment_count = 0
+const REQUIRED_FRAGMENTS = 5
+
+func check_fragments_before_battle() -> bool:
+    fragment_count = inventory_system.count_lira_fragments()
+    
+    if fragment_count < REQUIRED_FRAGMENTS:
+        show_forced_defeat_cutscene()  # 強制敗北演出
+        return false  # 戦闘不可
+    
+    apply_fragment_debuffs()  # 断片数に応じたデバフ
+    return true  # 戦闘開始可能
+
+func apply_fragment_debuffs():
+    var debuff_ratio = fragment_count * 0.15  # 断片、1個あたり15%デバフ
+    lira_stats.defense_multiplier *= (1.0 - debuff_ratio)
+    lira_stats.attack_multiplier *= (1.0 - debuff_ratio * 0.5)
+```
+
+#### 救済システム
+- **戦闘前再編成**: ラスボス戦直前にペア再編成機会を提供
+- **サイトウアドバイス**: 全滅時に戦略的アドバイスを提供
+- **リトライシステム**: 死亡時の状態を保持して再挑戦可能
+- **難易度バランス**: クリア可能性を保証しつつ挑戦的な難易度を維持
