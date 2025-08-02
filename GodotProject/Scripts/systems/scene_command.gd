@@ -210,8 +210,18 @@ func _set_background_with_transition(texture_path: String, transition_time: floa
 	if not current_text_scene:
 		return
 	
-	# 即座設定（将来的にフェード効果を追加可能）
-	if current_text_scene.has_method("set_background"):
+	# AssetResourceManagerを使用して背景を設定
+	if current_text_scene.has_method("set_background_texture"):
+		# 新しいメソッドがある場合（直接テクスチャ設定）
+		var asset_manager = AssetResourceManager.get_instance()
+		var bg_name = texture_path.get_file().get_basename()  # パスからファイル名を抽出
+		var result = asset_manager.get_background_texture(bg_name)
+		if result.texture:
+			current_text_scene.set_background_texture(result.texture)
+		else:
+			print("警告: 背景テクスチャ設定に失敗: %s" % bg_name)
+	elif current_text_scene.has_method("set_background"):
+		# 従来のパス指定メソッド
 		current_text_scene.set_background(texture_path)
 	
 	# トランジション時間待機
@@ -225,8 +235,26 @@ func _set_character_with_transition(position: String, character_path: String, tr
 	if not current_text_scene:
 		return
 	
-	# 即座設定（将来的にフェード効果を追加可能）
-	if current_text_scene.has_method("set_character_portrait"):
+	# AssetResourceManagerを使用してキャラクター立ち絵を設定
+	if current_text_scene.has_method("set_character_texture"):
+		# 新しいメソッドがある場合（直接テクスチャ設定）
+		var asset_manager = AssetResourceManager.get_instance()
+		var char_name = character_path.get_file().get_basename()  # パスからファイル名を抽出
+		
+		# ファイル名から character_name と face を分離
+		var parts = char_name.split("_")
+		if parts.size() >= 2:
+			var character_name = parts[0]
+			var face_expression = parts[1]
+			var result = asset_manager.get_character_texture(character_name, face_expression)
+			if result.texture:
+				current_text_scene.set_character_texture(position, result.texture)
+			else:
+				print("警告: キャラクターテクスチャ設定に失敗: %s" % char_name)
+		else:
+			print("警告: キャラクター名の形式が不正: %s" % char_name)
+	elif current_text_scene.has_method("set_character_portrait"):
+		# 従来のパス指定メソッド
 		current_text_scene.set_character_portrait(position, character_path)
 	
 	# トランジション時間待機
@@ -239,7 +267,7 @@ func _execute_wait_async(wait_time: float):
 	wait_completed.emit()
 
 func _resolve_background_path(asset_name: String) -> String:
-	"""背景アセット名をフルパスに解決"""
+	"""背景アセット名をフルパスに解決（AssetResourceManager使用）"""
 	if asset_name.is_empty():
 		return ""
 	
@@ -247,35 +275,41 @@ func _resolve_background_path(asset_name: String) -> String:
 	if asset_name.begins_with("res://"):
 		return asset_name
 	
-	# デフォルトパス
-	var full_path = "res://Assets/images/backgrounds/" + asset_name
+	# AssetResourceManagerを使用してテクスチャ解決
+	var asset_manager = AssetResourceManager.get_instance()
+	var result = asset_manager.get_background_texture(asset_name)
 	
-	# ファイル存在確認
-	if ResourceLoader.exists(full_path):
-		return full_path
+	if result.texture:
+		if result.is_fallback:
+			print("警告: 背景ファイルが見つからないためフォールバック使用: %s" % asset_name)
+		return result.source_path
 	else:
-		print("警告: 背景ファイルが見つかりません: %s" % full_path)
+		print("エラー: 背景テクスチャの生成に失敗: %s" % asset_name)
 		return ""
 
 func _resolve_character_path(character_name: String, face_expression: String) -> String:
-	"""キャラクター名と表情からパスを解決"""
+	"""キャラクター名と表情からパスを解決（AssetResourceManager使用）"""
 	if character_name.is_empty():
 		return ""
 	
-	var full_path = "res://Assets/images/characters/%s_%s.png" % [character_name.to_lower(), face_expression]
+	# AssetResourceManagerを使用してテクスチャ解決
+	var asset_manager = AssetResourceManager.get_instance()
+	var result = asset_manager.get_character_texture(character_name, face_expression)
 	
-	# ファイル存在確認
-	if ResourceLoader.exists(full_path):
-		return full_path
+	if result.texture:
+		if result.is_fallback:
+			print("警告: キャラクターファイルが見つからないためフォールバック使用: %s_%s" % [character_name, face_expression])
+		return result.source_path
 	else:
-		# フォールバック: ノーマル表情
-		var fallback_path = "res://Assets/images/characters/%s_normal.png" % character_name.to_lower()
-		if ResourceLoader.exists(fallback_path):
-			print("警告: 表情ファイルが見つからないため通常表情を使用: %s" % fallback_path)
-			return fallback_path
-		else:
-			print("警告: キャラクターファイルが見つかりません: %s" % full_path)
-			return ""
+		# ノーマル表情にフォールバック
+		if face_expression != "normal":
+			print("警告: %s_%s が見つからないため normal を試行" % [character_name, face_expression])
+			var normal_result = asset_manager.get_character_texture(character_name, "normal")
+			if normal_result.texture:
+				return normal_result.source_path
+		
+		print("エラー: キャラクターテクスチャの解決に失敗: %s_%s" % [character_name, face_expression])
+		return ""
 
 func _calculate_time_diff(start_time: Dictionary, end_time: Dictionary) -> float:
 	"""時間差を計算（秒）"""
