@@ -25,7 +25,7 @@ class SceneData:
 
 # 現在の状態
 var current_scene_data: SceneData
-var text_scene: TextScene
+var text_scene: Control
 var is_waiting_for_input: bool = false
 
 # シナリオデータ（サンプル）
@@ -44,11 +44,15 @@ func _load_sample_scenario():
 		SceneData.new("scene_04", "", "", "", "ソウマ", "学校に到着しました。今日はどうしましょうか？", ["教室に向かう", "屋上に行く", "図書館に行く"])
 	]
 
-func initialize_with_scene(scene: TextScene):
+func initialize_with_scene(scene: Control):
 	"""テキストシーンと連携を初期化"""
 	text_scene = scene
-	text_scene.text_finished.connect(_on_text_finished)
-	text_scene.choice_selected.connect(_on_choice_selected)
+	
+	# シグナル接続（存在する場合のみ）
+	if text_scene.has_signal("text_finished"):
+		text_scene.text_finished.connect(_on_text_finished)
+	if text_scene.has_signal("choice_selected"):
+		text_scene.choice_selected.connect(_on_choice_selected)
 	
 	# 最初のシーンを表示
 	current_scene_index = 0
@@ -64,15 +68,17 @@ func _display_current_scene():
 	current_scene_data = scenario_data[current_scene_index]
 	
 	# 背景設定
-	if not current_scene_data.background_path.is_empty():
+	if not current_scene_data.background_path.is_empty() and text_scene.has_method("set_background"):
 		text_scene.set_background(current_scene_data.background_path)
 	
 	# 立ち絵設定
-	text_scene.set_character_portrait("left", current_scene_data.character_left_path)
-	text_scene.set_character_portrait("right", current_scene_data.character_right_path)
+	if text_scene.has_method("set_character_portrait"):
+		text_scene.set_character_portrait("left", current_scene_data.character_left_path)
+		text_scene.set_character_portrait("right", current_scene_data.character_right_path)
 	
 	# テキスト表示
-	text_scene.show_text(current_scene_data.speaker_name, current_scene_data.text)
+	if text_scene.has_method("show_text"):
+		text_scene.show_text(current_scene_data.speaker_name, current_scene_data.text)
 	
 	is_waiting_for_input = true
 	print("シーン表示: %s" % current_scene_data.scene_id)
@@ -128,9 +134,32 @@ func _finish_scenario():
 
 # 外部からのシーン制御API
 func load_scenario_from_file(file_path: String):
-	"""外部ファイルからシナリオを読み込み"""
-	# TODO: JSONやCSVからのシナリオ読み込み実装
-	print("シナリオファイル読み込み: %s" % file_path)
+	"""マークダウンファイルからシナリオを読み込み"""
+	print("マークダウンシナリオ読み込み開始: %s" % file_path)
+	
+	# ScenarioLoaderを使用してマークダウンファイルを読み込み
+	var scenario_loader = ScenarioLoader.new()
+	var loaded_scenario_data = scenario_loader.load_scenario_file(file_path)
+	
+	if loaded_scenario_data == null:
+		print("エラー: シナリオファイルの読み込みに失敗: %s" % file_path)
+		return
+	
+	# ScenarioDataをTextSceneManager.SceneDataに変換
+	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
+	if converted_scenes.is_empty():
+		print("エラー: シーンデータの変換に失敗: %s" % file_path)
+		return
+	
+	# 既存のシナリオデータを置き換え
+	scenario_data = converted_scenes
+	current_scene_index = 0
+	
+	print("マークダウンシナリオ読み込み完了: %d シーン" % scenario_data.size())
+	
+	# 最初のシーンを表示
+	if text_scene:
+		_display_current_scene()
 
 func jump_to_scene(scene_id: String):
 	"""指定されたシーンIDにジャンプ"""
@@ -144,17 +173,17 @@ func jump_to_scene(scene_id: String):
 
 func set_background(background_path: String):
 	"""現在のシーンの背景を変更"""
-	if text_scene:
+	if text_scene and text_scene.has_method("set_background"):
 		text_scene.set_background(background_path)
 
 func set_character(position: String, character_path: String):
 	"""現在のシーンの立ち絵を変更"""
-	if text_scene:
+	if text_scene and text_scene.has_method("set_character_portrait"):
 		text_scene.set_character_portrait(position, character_path)
 
 func show_message(speaker: String, message: String):
 	"""即座にメッセージを表示"""
-	if text_scene:
+	if text_scene and text_scene.has_method("show_text"):
 		text_scene.show_text(speaker, message)
 
 func get_current_scene_id() -> String:
@@ -165,6 +194,22 @@ func get_current_scene_id() -> String:
 
 func get_text_history() -> Array[Dictionary]:
 	"""テキスト履歴を取得"""
-	if text_scene:
+	if text_scene and text_scene.has_method("get_log_history"):
 		return text_scene.get_log_history()
 	return []
+
+# マークダウンシナリオ関連の新メソッド
+func load_sample_markdown_scenario():
+	"""サンプルのマークダウンシナリオを読み込み"""
+	var sample_scenario_path = "res://Assets/scenarios/scene01.md"
+	load_scenario_from_file(sample_scenario_path)
+
+func get_available_scenarios() -> Array[String]:
+	"""利用可能なシナリオファイルのリストを取得"""
+	var scenario_loader = ScenarioLoader.new()
+	return scenario_loader.get_scenario_list()
+
+func test_markdown_parsing(file_path: String):
+	"""マークダウン解析のテスト"""
+	var scenario_loader = ScenarioLoader.new()
+	scenario_loader.test_scenario_loading(file_path)

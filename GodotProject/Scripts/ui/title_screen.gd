@@ -144,7 +144,7 @@ func _transition_to_game():
 	tween.tween_callback(_change_to_game_scene).set_delay(0.5)
 
 func _change_to_game_scene():
-	get_tree().change_scene_to_file("res://Scenes/TextScene.tscn")
+	get_tree().change_scene_to_file("res://Scenes/FixedTextScene.tscn")
 
 func _quit_game():
 	# 終了アニメーション
