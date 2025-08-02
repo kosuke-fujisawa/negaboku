@@ -141,9 +141,33 @@ func start_typing_effect(text: String):
 	typing_tween.tween_callback(complete_current_line)
 
 func set_partial_text(full_text: String, char_count: int):
-	if char_count > full_text.length():
-		char_count = full_text.length()
-	content_label.text = full_text.substr(0, char_count)
+	# 安全な境界チェック
+	if full_text.is_empty():
+		content_label.text = ""
+		return
+	
+	var safe_char_count = max(0, min(char_count, full_text.length()))
+	content_label.text = _safe_substr(full_text, 0, safe_char_count)
+
+func _safe_substr(source: String, start: int, length: int) -> String:
+	"""安全なsubstr実装"""
+	if source.is_empty():
+		return ""
+	
+	if start < 0:
+		start = 0
+	
+	if start >= source.length():
+		return ""
+	
+	if length < 0:
+		return ""
+	
+	var end_pos = start + length
+	if end_pos > source.length():
+		end_pos = source.length()
+	
+	return source.substr(start, end_pos - start)
 
 func complete_current_line():
 	if typing_tween:

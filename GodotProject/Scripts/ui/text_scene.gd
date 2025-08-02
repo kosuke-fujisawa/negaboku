@@ -119,41 +119,126 @@ func set_background(texture_path: String):
 	if texture_path.is_empty():
 		background.texture = null
 		background.color = Color.BLACK
+		print("背景をクリア")
 		return
 	
-	var texture = load(texture_path) as Texture2D
-	if texture:
-		background.texture = texture
-		background.color = Color.WHITE
-		print("背景を設定: %s" % texture_path)
+	# パスの妥当性チェック
+	if not texture_path.begins_with("res://") and not texture_path.begins_with("user://"):
+		print("エラー: 不正な背景パス形式: %s" % texture_path)
+		_set_background_fallback()
+		return
+	
+	# ファイル存在チェック
+	if not ResourceLoader.exists(texture_path):
+		print("エラー: 背景ファイルが存在しません: %s" % texture_path)
+		_set_background_fallback()
+		return
+	
+	# リソース読み込み
+	var texture: Texture2D = null
+	var error = _safe_load_texture(texture_path)
+	if error.has("texture"):
+		texture = error.texture
 	else:
-		print("背景の読み込みに失敗: %s" % texture_path)
+		print("エラー: 背景の読み込みに失敗: %s - %s" % [texture_path, error.get("message", "不明なエラー")])
+		_set_background_fallback()
+		return
+	
+	# 背景設定
+	background.texture = texture
+	background.color = Color.WHITE
+	print("背景を設定: %s" % texture_path)
+
+func _safe_load_texture(path: String) -> Dictionary:
+	"""安全なテクスチャ読み込み"""
+	var result = {}
+	
+	# ResourceLoaderを使用した安全な読み込み
+	if ResourceLoader.exists(path, "Texture2D"):
+		var resource = ResourceLoader.load(path, "Texture2D")
+		if resource and resource is Texture2D:
+			result["texture"] = resource
+		else:
+			result["message"] = "テクスチャ形式が不正です"
+	else:
+		result["message"] = "リソースが見つかりません"
+	
+	return result
+
+func _set_background_fallback():
+	"""背景設定のフォールバック処理"""
+	background.texture = null
+	background.color = Color.BLACK
+	print("フォールバック: 背景を黒色に設定")
 
 func set_character_portrait(position: String, texture_path: String):
 	"""立ち絵を設定 (position: "left" or "right")"""
-	var character_node: TextureRect
+	# 入力パラメータ検証
+	if position.is_empty():
+		print("エラー: 立ち絵位置が指定されていません")
+		return
 	
-	match position.to_lower():
+	var character_node: TextureRect = null
+	var normalized_position = position.to_lower().strip_edges()
+	
+	match normalized_position:
 		"left":
 			character_node = character_left
 		"right":
 			character_node = character_right
 		_:
-			print("不正な立ち絵位置: %s" % position)
+			print("エラー: 不正な立ち絵位置: '%s' (有効値: 'left', 'right')" % position)
 			return
 	
+	# ノードの存在確認
+	if not character_node:
+		print("エラー: 立ち絵ノードが見つかりません (%s)" % position)
+		return
+	
+	# 空のパスの場合は立ち絵をクリア
 	if texture_path.is_empty():
 		character_node.texture = null
 		character_node.visible = false
+		print("立ち絵をクリア (%s)" % position)
 		return
 	
-	var texture = load(texture_path) as Texture2D
-	if texture:
-		character_node.texture = texture
-		character_node.visible = true
-		print("立ち絵を設定 (%s): %s" % [position, texture_path])
+	# パスの妥当性チェック
+	if not texture_path.begins_with("res://") and not texture_path.begins_with("user://"):
+		print("エラー: 不正な立ち絵パス形式 (%s): %s" % [position, texture_path])
+		_set_character_fallback(character_node, position)
+		return
+	
+	# ファイル存在チェック
+	if not ResourceLoader.exists(texture_path):
+		print("エラー: 立ち絵ファイルが存在しません (%s): %s" % [position, texture_path])
+		_set_character_fallback(character_node, position)
+		return
+	
+	# リソース読み込み
+	var texture: Texture2D = null
+	var error = _safe_load_texture(texture_path)
+	if error.has("texture"):
+		texture = error.texture
 	else:
-		print("立ち絵の読み込みに失敗 (%s): %s" % [position, texture_path])
+		print("エラー: 立ち絵の読み込みに失敗 (%s): %s - %s" % [position, texture_path, error.get("message", "不明なエラー")])
+		_set_character_fallback(character_node, position)
+		return
+	
+	# テクスチャサイズ検証（異常に大きなテクスチャを防ぐ）
+	if texture.get_width() > 2048 or texture.get_height() > 2048:
+		print("警告: 立ち絵サイズが大きすぎます (%s): %dx%d" % [position, texture.get_width(), texture.get_height()])
+	
+	# 立ち絵設定
+	character_node.texture = texture
+	character_node.visible = true
+	print("立ち絵を設定 (%s): %s" % [position, texture_path])
+
+func _set_character_fallback(character_node: TextureRect, position: String):
+	"""立ち絵設定のフォールバック処理"""
+	if character_node:
+		character_node.texture = null
+		character_node.visible = false
+		print("フォールバック: 立ち絵を非表示に設定 (%s)" % position)
 
 func show_text(speaker_name: String, text: String):
 	"""テキストを表示"""
@@ -189,8 +274,40 @@ func _start_text_animation():
 
 func _update_text_display(char_count: int):
 	"""テキスト表示の更新"""
-	var displayed_text = current_text.substr(0, char_count)
+	# 境界チェック
+	if current_text.is_empty():
+		text_label.text = ""
+		return
+	
+	# char_countの範囲チェック
+	var safe_char_count = max(0, min(char_count, current_text.length()))
+	
+	# substrの安全な使用
+	var displayed_text = _safe_substr(current_text, 0, safe_char_count)
 	text_label.text = displayed_text
+
+func _safe_substr(source: String, start: int, length: int) -> String:
+	"""安全なsubstr実装"""
+	# 入力検証
+	if source.is_empty():
+		return ""
+	
+	if start < 0:
+		start = 0
+	
+	if start >= source.length():
+		return ""
+	
+	if length < 0:
+		return ""
+	
+	# 境界を超えないように調整
+	var end_pos = start + length
+	if end_pos > source.length():
+		end_pos = source.length()
+	
+	# 安全なsubstr呼び出し
+	return source.substr(start, end_pos - start)
 
 func _complete_text_animation():
 	"""テキストアニメーションを即座に完了"""
