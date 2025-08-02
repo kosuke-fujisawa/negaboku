@@ -111,38 +111,41 @@ func _update_volume_labels():
 	sfx_volume_value.text = "%d%%" % int(sfx_volume_slider.value)
 
 func _on_master_volume_changed(value: float):
-	master_volume_value.text = "%d%%" % int(value)
-	temp_settings["master_volume"] = value
+	var clamped_value = clamp(value, 0.0, 100.0)
+	master_volume_value.text = "%d%%" % int(clamped_value)
+	temp_settings["master_volume"] = clamped_value
 	_check_changes()
 	
 	# プレビューのために音量を一時的に適用
 	var master_bus = AudioServer.get_bus_index("Master")
 	if master_bus >= 0:
-		AudioServer.set_bus_volume_db(master_bus, linear_to_db(value / 100.0))
+		AudioServer.set_bus_volume_db(master_bus, linear_to_db(clamped_value / 100.0))
 	else:
 		push_warning("SettingsPanel: Masterバスが見つかりません")
 
 func _on_bgm_volume_changed(value: float):
-	bgm_volume_value.text = "%d%%" % int(value)
-	temp_settings["bgm_volume"] = value
+	var clamped_value = clamp(value, 0.0, 100.0)
+	bgm_volume_value.text = "%d%%" % int(clamped_value)
+	temp_settings["bgm_volume"] = clamped_value
 	_check_changes()
 	
 	# プレビューのためにBGM音量を一時的に適用
 	var bgm_bus = AudioServer.get_bus_index("BGM")
 	if bgm_bus >= 0:
-		AudioServer.set_bus_volume_db(bgm_bus, linear_to_db(value / 100.0))
+		AudioServer.set_bus_volume_db(bgm_bus, linear_to_db(clamped_value / 100.0))
 	else:
 		push_warning("SettingsPanel: BGMバスが見つかりません")
 
 func _on_sfx_volume_changed(value: float):
-	sfx_volume_value.text = "%d%%" % int(value)
-	temp_settings["sfx_volume"] = value
+	var clamped_value = clamp(value, 0.0, 100.0)
+	sfx_volume_value.text = "%d%%" % int(clamped_value)
+	temp_settings["sfx_volume"] = clamped_value
 	_check_changes()
 	
 	# プレビューのためにSFX音量を一時的に適用
 	var sfx_bus = AudioServer.get_bus_index("SFX")
 	if sfx_bus >= 0:
-		AudioServer.set_bus_volume_db(sfx_bus, linear_to_db(value / 100.0))
+		AudioServer.set_bus_volume_db(sfx_bus, linear_to_db(clamped_value / 100.0))
 	else:
 		push_warning("SettingsPanel: SFXバスが見つかりません")
 
@@ -314,6 +317,8 @@ func _restore_background_ui():
 	for ui_node in hidden_ui_nodes:
 		if is_instance_valid(ui_node):
 			ui_node.visible = true
+		else:
+			push_warning("SettingsPanel: 復元しようとしたUIノードが無効です")
 	hidden_ui_nodes.clear()
 
 func _unhandled_input(event):
