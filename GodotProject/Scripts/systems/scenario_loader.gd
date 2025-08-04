@@ -281,6 +281,17 @@ func clear_cache():
 	loaded_scenarios.clear()
 	print("シナリオキャッシュをクリア")
 
+func force_reload_scenario_file(file_path: String) -> ScenarioData:
+	# ファイルを強制的に再読み込み（キャッシュ無視）# 
+	print("シナリオファイル強制再読み込み: %s" % file_path)
+	
+	# キャッシュから削除
+	if loaded_scenarios.has(file_path):
+		loaded_scenarios.erase(file_path)
+	
+	# 通常の読み込み処理を実行
+	return load_scenario_file(file_path)
+
 func get_scenario_metadata(file_path: String) -> Dictionary:
 	# シナリオのメタデータを取得# 
 	var scenario_data = load_scenario_file(file_path)

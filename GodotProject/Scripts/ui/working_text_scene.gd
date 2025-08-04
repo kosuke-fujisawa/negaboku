@@ -117,10 +117,9 @@ func _load_markdown_scenario():
 	
 	# ScenarioLoaderを使用してマークダウンファイルを読み込み
 	scenario_loader = ScenarioLoader.new()
-	# キャッシュをクリアして最新のファイル内容を確実に読み込む
-	scenario_loader.clear_cache()
 	var scenario_path = "res://Assets/scenarios/scene01.md"
-	var loaded_scenario_data = scenario_loader.load_scenario_file(scenario_path)
+	# 強制再読み込みで最新のファイル内容を確実に読み込む
+	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
 	
 	if loaded_scenario_data == null:
 		print("WorkingTextScene: マークダウン読み込み失敗、デフォルトテキストを使用")
