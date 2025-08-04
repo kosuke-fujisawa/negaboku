@@ -91,7 +91,7 @@ func parse_markdown_file(file_path: String) -> Array:
 	return elements
 
 func _read_file_safely(file_path: String) -> String:
-	# 安全なファイル読み込み# 
+	# 安全なファイル読み込み（開発時は常に最新を読み込み）# 
 	# パス検証
 	if not file_path.begins_with("res://") and not file_path.begins_with("user://"):
 		print("エラー: 不正なファイルパス形式: %s" % file_path)
@@ -102,7 +102,8 @@ func _read_file_safely(file_path: String) -> String:
 		print("エラー: ファイルが存在しません: %s" % file_path)
 		return ""
 	
-	# ファイル読み込み
+	# ファイル読み込み（開発時は常に最新ファイルを読み込む）
+	print("MarkdownParser: ファイル読み込み - %s" % file_path)
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
 		print("エラー: ファイルを開けません: %s" % file_path)
@@ -114,6 +115,8 @@ func _read_file_safely(file_path: String) -> String:
 	# エンコーディング確認（UTF-8前提）
 	if content.is_empty():
 		print("警告: ファイルが空です: %s" % file_path)
+	else:
+		print("MarkdownParser: ファイル読み込み成功 - %d文字" % content.length())
 	
 	return content
 

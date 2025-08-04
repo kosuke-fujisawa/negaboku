@@ -68,7 +68,6 @@ func _create_scenario_loader() -> bool:
 	if scenario_loader == null:
 		push_error("ScenarioLoaderの作成に失敗しました")
 		return false
-	add_child(scenario_loader)
 	return true
 
 func _create_transition_overlay() -> bool:

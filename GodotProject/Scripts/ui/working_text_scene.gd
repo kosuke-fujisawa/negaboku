@@ -113,15 +113,37 @@ func _create_ui():
 	print("WorkingTextScene: ログオーバーレイ作成完了")
 
 func _load_markdown_scenario():
-	print("WorkingTextScene: デフォルトテキストシナリオを使用")
+	print("WorkingTextScene: マークダウンシナリオ読み込み開始")
 	
-	# マークダウン読み込みをスキップして、デフォルトテキストを直接使用
-	converted_scenes.clear()
+	# ScenarioLoaderを使用してマークダウンファイルを読み込み
+	scenario_loader = ScenarioLoader.new()
+	var scenario_path = "res://Assets/scenarios/scene01.md"
+	# 強制再読み込みで最新のファイル内容を確実に読み込む
+	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
+	
+	if loaded_scenario_data == null:
+		print("WorkingTextScene: マークダウン読み込み失敗、デフォルトテキストを使用")
+		converted_scenes.clear()
+		scene_index = 0
+		current_index = 0
+		_show_current_scene()
+		return
+	
+	# ScenarioDataをTextSceneManager.SceneDataに変換
+	converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
+	if converted_scenes.is_empty():
+		print("WorkingTextScene: シーンデータ変換失敗、デフォルトテキストを使用")
+		scene_index = 0
+		current_index = 0
+		_show_current_scene()
+		return
+	
+	print("WorkingTextScene: マークダウンシナリオ読み込み成功: %d シーン" % converted_scenes.size())
 	scene_index = 0
 	current_index = 0
 	
-	# デフォルトテキストから最初のシーンを表示
-	_show_current_scene()
+	# マークダウンシナリオから最初のシーンを表示
+	_show_markdown_scene_with_commands()
 
 func _show_current_scene():
 	print("WorkingTextScene: _show_current_scene()開始 - current_index=%d, test_texts.size()=%d" % [current_index, test_texts.size()])

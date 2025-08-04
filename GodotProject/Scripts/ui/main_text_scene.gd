@@ -206,7 +206,8 @@ func _try_load_markdown():
 		print("MainTextScene: ScenarioLoaderの作成に失敗")
 		return
 	
-	var scenario_data = scenario_loader.load_scenario_file(SCENARIO_PATH)
+	# 強制再読み込みで最新のファイル内容を確実に読み込む
+	var scenario_data = scenario_loader.force_reload_scenario_file(SCENARIO_PATH)
 	if not scenario_data:
 		print("MainTextScene: マークダウンファイルの読み込みに失敗")
 		return

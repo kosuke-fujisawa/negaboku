@@ -14,11 +14,11 @@ class SceneBlock:
 	func add_element(element):
 		# 要素をシーンブロックに追加# 
 		# 型チェックを緩和
-		if element and element.has("type"):
+		if element and element is MarkdownParser.ParsedElement:
 			match element.type:
-				0: # COMMAND
+				MarkdownParser.ParsedElement.Type.COMMAND:
 					commands.append(element)
-				1, 2: # SPEAKER, TEXT
+				MarkdownParser.ParsedElement.Type.SPEAKER, MarkdownParser.ParsedElement.Type.TEXT:
 					text_elements.append(element)
 	
 	func get_all_elements() -> Array:
@@ -46,15 +46,19 @@ var loaded_scenarios: Dictionary = {}
 
 func _init():
 	markdown_parser = MarkdownParser.new()
+	scenario_library = ScenarioLibrary.new()
 
 func load_scenario_file(file_path: String) -> ScenarioData:
 	# マークダウンシナリオファイルを読み込み# 
+	print("ScenarioLoader: load_scenario_file()開始: %s" % file_path)
+	
 	# キャッシュチェック
+	print("ScenarioLoader: キャッシュチェック中...")
 	if loaded_scenarios.has(file_path):
-		print("キャッシュからシナリオを取得: %s" % file_path)
+		print("⚠️ ScenarioLoader: キャッシュからシナリオを取得: %s" % file_path)
 		return loaded_scenarios[file_path]
 	
-	print("シナリオファイル読み込み開始: %s" % file_path)
+	print("✅ ScenarioLoader: キャッシュなし、新規読み込み開始: %s" % file_path)
 	
 	# マークダウン解析
 	var parsed_elements = markdown_parser.parse_markdown_file(file_path)
@@ -281,6 +285,30 @@ func clear_cache():
 	loaded_scenarios.clear()
 	print("シナリオキャッシュをクリア")
 
+func force_reload_scenario_file(file_path: String) -> ScenarioData:
+	# ファイルを強制的に再読み込み（キャッシュ無視）# 
+	print("★★★ ScenarioLoader: 強制再読み込み開始: %s" % file_path)
+	
+	# キャッシュ状況確認
+	print("ScenarioLoader: キャッシュ削除前の状況:")
+	print("  全キャッシュ数: %d" % loaded_scenarios.size())
+	print("  対象ファイルがキャッシュ済み: %s" % loaded_scenarios.has(file_path))
+	
+	# キャッシュから削除
+	if loaded_scenarios.has(file_path):
+		loaded_scenarios.erase(file_path)
+		print("✅ ScenarioLoader: キャッシュから削除完了: %s" % file_path)
+	else:
+		print("ScenarioLoader: キャッシュに存在しませんでした: %s" % file_path)
+	
+	print("ScenarioLoader: キャッシュ削除後の状況:")
+	print("  全キャッシュ数: %d" % loaded_scenarios.size())
+	print("  対象ファイルがキャッシュ済み: %s" % loaded_scenarios.has(file_path))
+	
+	# 通常の読み込み処理を実行
+	print("ScenarioLoader: load_scenario_file()を呼び出し")
+	return load_scenario_file(file_path)
+
 func get_scenario_metadata(file_path: String) -> Dictionary:
 	# シナリオのメタデータを取得# 
 	var scenario_data = load_scenario_file(file_path)
@@ -358,10 +386,6 @@ class ScenarioLibrary:
 
 # シナリオライブラリインスタンス
 var scenario_library: ScenarioLibrary
-
-func _init():
-	markdown_parser = MarkdownParser.new()
-	scenario_library = ScenarioLibrary.new()
 
 # 高度なシナリオ管理機能
 func load_scenario_library(config_file_path: String = "res://Assets/scenarios/library_config.json") -> bool:
