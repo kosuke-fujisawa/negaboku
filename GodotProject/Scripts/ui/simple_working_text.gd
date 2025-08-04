@@ -1,8 +1,9 @@
 extends Control
 
-# 最もシンプルなテキスト表示テスト
+# 最もシンプルなテキスト表示 - マークダウンシナリオ対応
 
-var test_messages = [
+# フォールバック用テストメッセージ
+var fallback_messages = [
 	"システム: 願い石と僕たちの絆 - デモンストレーション",
 	"ソウマ: ……ここが噂の遺跡、か。",
 	"ユズキ: うん。……緊張してる？",
@@ -12,6 +13,9 @@ var test_messages = [
 	"システム: この後、選択肢システムや関係値システムが表示されます。",
 	"システム: テキストダイアログシステム - 動作確認完了"
 ]
+
+# 実際に使用するメッセージ配列
+var current_messages = []
 
 var current_index = 0
 var text_label: Label
@@ -67,13 +71,16 @@ func _ready():
 	text_panel.add_child(continue_indicator)
 	print("SimpleWorkingText: 進行インジケーター作成完了")
 	
+	# マークダウンシナリオを読み込み
+	load_markdown_scenario()
+	
 	# 最初のメッセージを表示
 	show_current_message()
 	print("=== SimpleWorkingText: 初期化完了 ===")
 
 func show_current_message():
-	if current_index < test_messages.size():
-		var message = test_messages[current_index]
+	if current_index < current_messages.size():
+		var message = current_messages[current_index]
 		var parts = message.split(": ", false, 1)
 		
 		if parts.size() == 2:
@@ -92,6 +99,40 @@ func show_current_message():
 		text_label.text = "テキストダイアログシステム動作確認完了\n\nESCキーでタイトルに戻る"
 		continue_indicator.visible = false
 		print("SimpleWorkingText: テスト完了")
+
+func load_markdown_scenario():
+	# scene01.mdからシナリオを読み込み# 
+	print("SimpleWorkingText: マークダウンシナリオ読み込み開始")
+	
+	var scenario_loader = ScenarioLoader.new()
+	var scenario_path = "res://Assets/scenarios/scene01.md"
+	
+	# 強制再読み込みで最新のファイル内容を確実に読み込む
+	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
+	
+	if loaded_scenario_data == null:
+		print("SimpleWorkingText: マークダウン読み込み失敗、フォールバックメッセージを使用")
+		current_messages = fallback_messages.duplicate()
+		return
+	
+	# ScenarioDataをメッセージ配列に変換
+	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
+	if converted_scenes.is_empty():
+		print("SimpleWorkingText: シーンデータ変換失敗、フォールバックメッセージを使用")
+		current_messages = fallback_messages.duplicate()
+		return
+	
+	# シーンデータをシンプルなメッセージ形式に変換
+	current_messages.clear()
+	for scene_data in converted_scenes:
+		var message = ""
+		if scene_data.speaker_name.is_empty():
+			message = scene_data.text
+		else:
+			message = "%s: %s" % [scene_data.speaker_name, scene_data.text]
+		current_messages.append(message)
+	
+	print("SimpleWorkingText: マークダウンシナリオ読み込み成功: %d メッセージ" % current_messages.size())
 
 func _input(event):
 	if event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.pressed):
