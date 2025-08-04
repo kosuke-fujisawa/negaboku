@@ -1,9 +1,9 @@
 extends Control
 
-# メインのテキストシーン - マークダウンシナリオ対応
+# 超シンプルなテスト用スクリプト
 
 var test_texts = [
-	"システム: TextSceneが開始されました。",
+	"システム: MinimalTestSceneが開始されました。",
 	"システム: マークダウンシナリオの読み込みを試行します...",
 	"ソウマ: ……ここが噂の遺跡、か。",
 	"ユズキ: うん。……緊張してる？",
@@ -30,7 +30,7 @@ var log_close_button: Button
 var text_history: Array
 
 func _ready():
-	print("=== TextScene: 開始 ===")
+	print("=== MinimalTestScene: 開始 ===")
 	
 	# フルスクリーンに設定
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -40,7 +40,7 @@ func _ready():
 	background_rect.color = Color.DARK_BLUE
 	background_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background_rect)
-	print("TextScene: 背景作成完了")
+	print("MinimalTestScene: 背景作成完了")
 	
 	# テキストパネル作成
 	text_panel = Panel.new()
@@ -48,7 +48,7 @@ func _ready():
 	text_panel.position.y = -180
 	text_panel.size.y = 160
 	add_child(text_panel)
-	print("TextScene: パネル作成完了")
+	print("MinimalTestScene: パネル作成完了")
 	
 	# 名前ラベル作成
 	name_label = Label.new()
@@ -57,7 +57,7 @@ func _ready():
 	name_label.add_theme_font_size_override("font_size", 18)
 	name_label.visible = false
 	text_panel.add_child(name_label)
-	print("TextScene: 名前ラベル作成完了")
+	print("MinimalTestScene: 名前ラベル作成完了")
 	
 	# テキストラベル作成
 	text_label = Label.new()
@@ -67,7 +67,7 @@ func _ready():
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	text_panel.add_child(text_label)
-	print("TextScene: テキストラベル作成完了")
+	print("MinimalTestScene: テキストラベル作成完了")
 	
 	# 継続インジケーター作成
 	continue_indicator = Label.new()
@@ -79,7 +79,7 @@ func _ready():
 	continue_indicator.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	continue_indicator.visible = true
 	text_panel.add_child(continue_indicator)
-	print("TextScene: 継続インジケーター作成完了")
+	print("MinimalTestScene: 継続インジケーター作成完了")
 	
 	# ログボタン作成
 	log_button = Button.new()
@@ -91,7 +91,7 @@ func _ready():
 	if not log_button.pressed.is_connected(_on_log_button_pressed):
 		log_button.pressed.connect(_on_log_button_pressed)
 	add_child(log_button)
-	print("TextScene: ログボタン作成完了 - 位置: %s, サイズ: %s" % [log_button.position, log_button.size])
+	print("MinimalTestScene: ログボタン作成完了 - 位置: %s, サイズ: %s" % [log_button.position, log_button.size])
 	
 	# ログパネル作成
 	log_panel = Panel.new()
@@ -116,7 +116,7 @@ func _ready():
 	log_close_button.size = Vector2(70, 30)
 	log_close_button.pressed.connect(_on_log_close_button_pressed)
 	log_panel.add_child(log_close_button)
-	print("TextScene: ログパネル作成完了")
+	print("MinimalTestScene: ログパネル作成完了")
 	
 	# マークダウンシナリオの読み込みを試行
 	_try_load_markdown()
@@ -124,7 +124,7 @@ func _ready():
 	# 最初のテキストを表示
 	show_current_text()
 	
-	print("=== TextScene: 初期化完了 ===")
+	print("=== MinimalTestScene: 初期化完了 ===")
 
 func show_current_text():
 	if current_index < test_texts.size():
@@ -145,19 +145,19 @@ func show_current_text():
 		# ログに追加
 		_add_to_log(parts[0] if parts.size() == 2 else "", parts[1] if parts.size() == 2 else text)
 		
-		print("TextScene: テキスト表示 [%d]: %s" % [current_index, text])
+		print("MinimalTestScene: テキスト表示 [%d]: %s" % [current_index, text])
 	else:
 		name_label.visible = false
 		text_label.text = "テスト終了: タイトルに戻るにはESCキーを押してください"
 		continue_indicator.visible = false
-		print("TextScene: テスト終了")
+		print("MinimalTestScene: テスト終了")
 
 func _unhandled_input(event):
 	if event.is_action_pressed("ui_accept"):
 		if log_panel.visible:
 			_close_log()
 		else:
-			print("TextScene: ui_accept入力検出")
+			print("MinimalTestScene: ui_accept入力検出")
 			current_index += 1
 			show_current_text()
 		get_viewport().set_input_as_handled()
@@ -165,7 +165,7 @@ func _unhandled_input(event):
 		if log_panel.visible:
 			_close_log()
 		else:
-			print("TextScene: ui_cancel入力検出 - タイトルに戻る")
+			print("MinimalTestScene: ui_cancel入力検出 - タイトルに戻る")
 			GameManager.return_to_title()
 		get_viewport().set_input_as_handled()
 
@@ -174,14 +174,14 @@ func _input(event):
 		if log_panel.visible:
 			_close_log()
 		else:
-			print("TextScene: マウスクリック検出")
+			print("MinimalTestScene: マウスクリック検出")
 			current_index += 1
 			show_current_text()
 		get_viewport().set_input_as_handled()
 
 func _try_load_markdown():
 	# 安全にマークダウンシナリオを読み込み# 
-	print("TextScene: マークダウン読み込み試行開始")
+	print("MinimalTestScene: マークダウン読み込み試行開始")
 	
 	# try-catch的なエラーハンドリング
 	var scenario_loader = null
@@ -191,28 +191,28 @@ func _try_load_markdown():
 	# ScenarioLoaderの作成を試行
 	var loader_script = load("res://Scripts/systems/scenario_loader.gd")
 	if loader_script == null:
-		print("TextScene: ScenarioLoaderスクリプトが見つかりません")
+		print("MinimalTestScene: ScenarioLoaderスクリプトが見つかりません")
 		return
 	
 	scenario_loader = loader_script.new()
 	if scenario_loader == null:
-		print("TextScene: ScenarioLoaderの作成に失敗")
+		print("MinimalTestScene: ScenarioLoaderの作成に失敗")
 		return
 	
 	# シナリオファイルの読み込みを試行
 	scenario_data = scenario_loader.load_scenario_file("res://Assets/scenarios/scene01.md")
 	if scenario_data == null:
-		print("TextScene: マークダウンファイルの読み込みに失敗")
+		print("MinimalTestScene: マークダウンファイルの読み込みに失敗")
 		return
 	
 	# シーンデータの変換を試行
 	converted_scenes = scenario_loader.convert_to_text_scene_data(scenario_data)
 	if converted_scenes == null or converted_scenes.is_empty():
-		print("TextScene: シーンデータの変換に失敗")
+		print("MinimalTestScene: シーンデータの変換に失敗")
 		return
 	
 	# 成功した場合、マークダウンテキストを使用
-	print("TextScene: マークダウン読み込み成功: %d シーン" % converted_scenes.size())
+	print("MinimalTestScene: マークダウン読み込み成功: %d シーン" % converted_scenes.size())
 	
 	scenario_texts.clear()
 	for scene_data in converted_scenes:
@@ -227,7 +227,7 @@ func _try_load_markdown():
 	if scenario_texts.size() > 0:
 		use_markdown = true
 		test_texts = scenario_texts.duplicate()
-		print("TextScene: マークダウンテキストを使用します")
+		print("MinimalTestScene: マークダウンテキストを使用します")
 
 func _add_to_log(speaker_name: String, text: String):
 	# テキストログに追加# 
@@ -245,7 +245,7 @@ func _add_to_log(speaker_name: String, text: String):
 
 func _on_log_button_pressed():
 	# ログボタン押下# 
-	print("TextScene: ログボタン押下")
+	print("MinimalTestScene: ログボタン押下")
 	_show_log()
 
 func _show_log():
@@ -266,7 +266,7 @@ func _update_log_display():
 
 func _on_log_close_button_pressed():
 	# ログ閉じるボタン押下# 
-	print("TextScene: ログ閉じるボタン押下")
+	print("MinimalTestScene: ログ閉じるボタン押下")
 	_close_log()
 
 func _close_log():

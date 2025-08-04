@@ -52,7 +52,7 @@ func _ready():
 	print("MarkdownTextScene: 初期化完了")
 
 func _initialize_systems():
-	"""システムを初期化"""
+	# システムを初期化# 
 	# AssetResourceManager初期化
 	asset_manager = AssetResourceManager.get_instance()
 	asset_manager.preload_common_assets()
@@ -68,7 +68,7 @@ func _initialize_systems():
 	sequence_controller.set_command_execution_delay(0.5)
 
 func _create_ui():
-	"""UI要素を作成"""
+	# UI要素を作成# 
 	# 背景
 	background_rect = TextureRect.new()
 	background_rect.name = "Background"
@@ -139,7 +139,7 @@ func _create_ui():
 		_create_debug_panel()
 
 func _create_debug_panel():
-	"""デバッグパネルを作成"""
+	# デバッグパネルを作成# 
 	debug_panel = Panel.new()
 	debug_panel.name = "DebugPanel"
 	debug_panel.position = Vector2(10, 10)
@@ -159,7 +159,7 @@ func _create_debug_panel():
 	_update_debug_info()
 
 func _connect_signals():
-	"""シグナル接続"""
+	# シグナル接続# 
 	# SequenceControllerのシグナル
 	sequence_controller.sequence_completed.connect(_on_sequence_completed)
 	sequence_controller.command_executed.connect(_on_command_executed)
@@ -169,20 +169,20 @@ func _connect_signals():
 	text_panel.gui_input.connect(_on_text_panel_input)
 
 func _input(event):
-	"""入力処理"""
+	# 入力処理# 
 	if event.is_action_pressed("ui_accept") and is_waiting_for_input:
 		_advance_text()
 	elif event.is_action_pressed("ui_cancel"):
 		get_tree().change_scene_to_file("res://Scenes/MainMenu.tscn")
 
 func _on_text_panel_input(event):
-	"""テキストパネルクリック処理"""
+	# テキストパネルクリック処理# 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if is_waiting_for_input:
 			_advance_text()
 
 func _advance_text():
-	"""テキスト進行"""
+	# テキスト進行# 
 	if is_waiting_for_input:
 		is_waiting_for_input = false
 		continue_indicator.visible = false
@@ -192,7 +192,7 @@ func _advance_text():
 # 背景・キャラクター設定メソッド（SceneCommandExecutorから呼ばれる）
 
 func set_background(texture_path: String):
-	"""背景設定（パス指定）"""
+	# 背景設定（パス指定）# 
 	print("MarkdownTextScene: 背景設定 - %s" % texture_path)
 	if texture_path.is_empty():
 		background_rect.texture = null
@@ -205,12 +205,12 @@ func set_background(texture_path: String):
 		print("警告: 背景テクスチャの読み込み失敗: %s" % texture_path)
 
 func set_background_texture(texture: Texture2D):
-	"""背景設定（テクスチャ直指定）"""
+	# 背景設定（テクスチャ直指定）# 
 	background_rect.texture = texture
 	print("MarkdownTextScene: 背景テクスチャ設定完了")
 
 func set_character_portrait(position: String, texture_path: String):
-	"""キャラクター立ち絵設定（パス指定）"""
+	# キャラクター立ち絵設定（パス指定）# 
 	print("MarkdownTextScene: キャラクター設定 - %s: %s" % [position, texture_path])
 	
 	var character_rect = character_left_rect if position == "left" else character_right_rect
@@ -228,7 +228,7 @@ func set_character_portrait(position: String, texture_path: String):
 		print("警告: キャラクターテクスチャの読み込み失敗: %s" % texture_path)
 
 func set_character_texture(position: String, texture: Texture2D):
-	"""キャラクター立ち絵設定（テクスチャ直指定）"""
+	# キャラクター立ち絵設定（テクスチャ直指定）# 
 	var character_rect = character_left_rect if position == "left" else character_right_rect
 	
 	if texture:
@@ -240,7 +240,7 @@ func set_character_texture(position: String, texture: Texture2D):
 		character_rect.visible = false
 
 func show_text(speaker_name: String, text: String):
-	"""テキスト表示"""
+	# テキスト表示# 
 	current_speaker = speaker_name
 	current_text = text
 	
@@ -268,25 +268,25 @@ func show_text(speaker_name: String, text: String):
 # シグナルハンドラー
 
 func _on_sequence_completed():
-	"""シーケンス完了"""
+	# シーケンス完了# 
 	print("MarkdownTextScene: シーケンス完了")
 	show_text("システム", "シナリオが完了しました。ESCキーでタイトルに戻ります。")
 	sequence_completed.emit()
 
 func _on_command_executed(command_name: String, parameters: Dictionary):
-	"""コマンド実行完了"""
+	# コマンド実行完了# 
 	print("MarkdownTextScene: コマンド実行 - %s %s" % [command_name, parameters])
 	if show_debug_info:
 		_update_debug_info()
 
 func _on_text_displayed(speaker: String, text: String):
-	"""テキスト表示完了"""
+	# テキスト表示完了# 
 	print("MarkdownTextScene: テキスト表示通知 - %s: %s" % [speaker, text])
 
 # デバッグ機能
 
 func _update_debug_info():
-	"""デバッグ情報更新"""
+	# デバッグ情報更新# 
 	if not debug_label:
 		return
 	
@@ -294,13 +294,13 @@ func _update_debug_info():
 	var scene_state = sequence_controller.get_current_scene_state()
 	var state = sequence_controller.get_current_state()
 	
-	var debug_text = """[b]Debug Info[/b]
+	var debug_text = # [b]Debug Info[/b]
 State: %s
 Progress: %d/%d (%.1f%%)
 Background: %s
 Left: %s
 Right: %s
-Waiting: %s""" % [
+Waiting: %s#  % [
 		sequence_controller._state_to_string(state),
 		progress.current_index,
 		progress.total_elements,
@@ -316,14 +316,14 @@ Waiting: %s""" % [
 # テスト機能
 
 func _start_test_scenario():
-	"""テストシナリオを開始"""
-	print("MarkdownTextScene: Phase2テストシナリオ開始")
+	# テストシナリオを開始# 
+	print("MarkdownTextScene: シナリオ開始")
 	# 少し遅らせて実行
 	await get_tree().create_timer(1.0).timeout
-	load_markdown_scenario("res://Assets/scenarios/phase2_test.md")
+	load_markdown_scenario("res://Assets/scenarios/scene01.md")
 
 func load_markdown_scenario(file_path: String):
-	"""マークダウンシナリオを読み込み・実行"""
+	# マークダウンシナリオを読み込み・実行# 
 	print("MarkdownTextScene: マークダウンシナリオ読み込み - %s" % file_path)
 	sequence_controller.load_and_execute_markdown_file(file_path)
 
