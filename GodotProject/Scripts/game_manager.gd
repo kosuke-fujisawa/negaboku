@@ -152,9 +152,9 @@ func start_new_game():
 	else:
 		print("警告: シナリオライブラリの読み込みに失敗しました")
 	
-	# フォールバック: テキストシーンに遷移
+	# フォールバック: メインテキストシーンに遷移
 	print("GameManager: フォールバックシーンに遷移")
-	change_scene("res://Scenes/TextScene.tscn")
+	change_scene("res://Scenes/MainTextScene.tscn")
 
 func return_to_title():
 	print("GameManager: タイトル画面に戻る")

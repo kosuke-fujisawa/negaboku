@@ -36,20 +36,20 @@ var texture_cache: Dictionary = {}
 var fallback_texture_cache: Dictionary = {}
 
 func get_background_texture(background_name: String) -> Dictionary:
-	"""背景テクスチャを取得
+	# 背景テクスチャを取得
 	Returns: {"texture": Texture2D, "is_fallback": bool, "source_path": String}
-	"""
+	# 
 	return get_asset_texture(AssetType.BACKGROUND, background_name)
 
 func get_character_texture(character_name: String, face_expression: String = "normal") -> Dictionary:
-	"""キャラクターテクスチャを取得
+	# キャラクターテクスチャを取得
 	Returns: {"texture": Texture2D, "is_fallback": bool, "source_path": String}
-	"""
+	# 
 	var full_name = "%s_%s" % [character_name.to_lower(), face_expression]
 	return get_asset_texture(AssetType.CHARACTER, full_name)
 
 func get_asset_texture(asset_type: AssetType, asset_name: String) -> Dictionary:
-	"""汎用アセットテクスチャ取得"""
+	# 汎用アセットテクスチャ取得# 
 	var result = {
 		"texture": null,
 		"is_fallback": false,
@@ -85,7 +85,7 @@ func get_asset_texture(asset_type: AssetType, asset_name: String) -> Dictionary:
 	return result
 
 func _resolve_asset_path(asset_type: AssetType, asset_name: String) -> String:
-	"""アセットファイルパスを解決"""
+	# アセットファイルパスを解決# 
 	var base_path = ASSET_PATHS[asset_type]
 	
 	# 拡張子を含まない場合、各拡張子を試行
@@ -110,14 +110,14 @@ func _resolve_asset_path(asset_type: AssetType, asset_name: String) -> String:
 	return ""
 
 func _has_extension(filename: String) -> bool:
-	"""ファイル名に拡張子が含まれているかチェック"""
+	# ファイル名に拡張子が含まれているかチェック# 
 	for ext in SUPPORTED_EXTENSIONS:
 		if filename.ends_with(ext):
 			return true
 	return false
 
 func _load_texture_safely(file_path: String) -> Texture2D:
-	"""安全なテクスチャ読み込み"""
+	# 安全なテクスチャ読み込み# 
 	if not ResourceLoader.exists(file_path):
 		return null
 	
@@ -129,7 +129,7 @@ func _load_texture_safely(file_path: String) -> Texture2D:
 		return null
 
 func _generate_fallback_texture(asset_type: AssetType, asset_name: String, cache_key: String) -> Dictionary:
-	"""フォールバックテクスチャを生成"""
+	# フォールバックテクスチャを生成# 
 	var result = {
 		"texture": null,
 		"is_fallback": true,
@@ -151,7 +151,7 @@ func _generate_fallback_texture(asset_type: AssetType, asset_name: String, cache
 	return result
 
 func _create_colored_texture(asset_type: AssetType, asset_name: String) -> ImageTexture:
-	"""色付きフォールバックテクスチャを作成"""
+	# 色付きフォールバックテクスチャを作成# 
 	var size = _get_default_size_for_type(asset_type)
 	var color = FALLBACK_COLORS.get(asset_type, Color.GRAY)
 	
@@ -169,7 +169,7 @@ func _create_colored_texture(asset_type: AssetType, asset_name: String) -> Image
 	return texture
 
 func _get_default_size_for_type(asset_type: AssetType) -> Vector2i:
-	"""アセットタイプに応じたデフォルトサイズを取得"""
+	# アセットタイプに応じたデフォルトサイズを取得# 
 	match asset_type:
 		AssetType.BACKGROUND:
 			return Vector2i(1024, 576)  # 16:9 HD解像度
@@ -183,7 +183,7 @@ func _get_default_size_for_type(asset_type: AssetType) -> Vector2i:
 			return Vector2i(256, 256)
 
 func _draw_text_on_image(image: Image, text: String, size: Vector2i):
-	"""画像にテキストを描画（簡易実装）"""
+	# 画像にテキストを描画（簡易実装）# 
 	# Godot 4では画像への直接テキスト描画が制限されているため
 	# 簡易的な実装として中央に点を描画
 	var center_x = size.x / 2
@@ -200,13 +200,13 @@ func _draw_text_on_image(image: Image, text: String, size: Vector2i):
 # キャッシュ管理
 
 func clear_cache():
-	"""キャッシュをクリア"""
+	# キャッシュをクリア# 
 	texture_cache.clear()
 	fallback_texture_cache.clear()
 	print("AssetResourceManager: キャッシュクリア完了")
 
 func get_cache_info() -> Dictionary:
-	"""キャッシュ情報を取得"""
+	# キャッシュ情報を取得# 
 	return {
 		"texture_cache_size": texture_cache.size(),
 		"fallback_cache_size": fallback_texture_cache.size(),
@@ -216,7 +216,7 @@ func get_cache_info() -> Dictionary:
 # プリロード機能
 
 func preload_common_assets():
-	"""よく使用されるアセットをプリロード"""
+	# よく使用されるアセットをプリロード# 
 	print("AssetResourceManager: 共通アセットのプリロード開始")
 	
 	# 共通背景
@@ -238,7 +238,7 @@ func preload_common_assets():
 # デバッグ機能
 
 func debug_print_cache():
-	"""キャッシュ内容をデバッグ出力"""
+	# キャッシュ内容をデバッグ出力# 
 	print("=== テクスチャキャッシュ ===")
 	for key in texture_cache.keys():
 		var entry = texture_cache[key]
@@ -249,7 +249,7 @@ func debug_print_cache():
 		print("  %s: generated" % key)
 
 func test_asset_loading():
-	"""アセット読み込みテスト"""
+	# アセット読み込みテスト# 
 	print("=== アセット読み込みテスト ===")
 	
 	# 背景テスト
@@ -273,11 +273,28 @@ func test_asset_loading():
 	
 	print("テスト完了")
 
-# 静的インスタンス（シングルトン的使用）
+# シングルトンパターン（スレッドセーフ実装）
 static var _instance: AssetResourceManager = null
+static var _mutex: Mutex = Mutex.new()
 
 static func get_instance() -> AssetResourceManager:
-	"""シングルトンインスタンスを取得"""
+	# スレッドセーフなシングルトンインスタンス取得
 	if _instance == null:
-		_instance = AssetResourceManager.new()
+		_mutex.lock()
+		# ダブルチェックロッキング
+		if _instance == null:
+			_instance = AssetResourceManager.new()
+		_mutex.unlock()
 	return _instance
+
+static func cleanup_instance():
+	# インスタンスのクリーンアップ（テスト用）
+	_mutex.lock()
+	if _instance != null:
+		_instance._cleanup_internal()
+		_instance = null
+	_mutex.unlock()
+
+func _cleanup_internal():
+	# 内部リソースのクリーンアップ
+	clear_cache()
