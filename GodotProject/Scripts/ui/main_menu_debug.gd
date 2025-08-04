@@ -73,9 +73,9 @@ func _on_new_game_pressed():
 		await GameManager.start_new_game()
 	else:
 		print("MainMenuDebug: GameManagerが見つかりません")
-		# 直接メインテキストシーンに遷移をテスト
-		print("MainMenuDebug: 直接MainTextScene.tscnに遷移")
-		get_tree().change_scene_to_file("res://Scenes/MainTextScene.tscn")
+		# 直接SimpleWorkingTextシーンに遷移をテスト
+		print("MainMenuDebug: 直接SimpleWorkingText.tscnに遷移")
+		get_tree().change_scene_to_file("res://Scenes/SimpleWorkingText.tscn")
 
 func _on_load_pressed():
 	print("★★★ MainMenuDebug: ロードボタンが押されました ★★★")

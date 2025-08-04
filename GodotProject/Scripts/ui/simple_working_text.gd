@@ -21,7 +21,8 @@ var background: ColorRect
 var text_panel: Panel
 
 func _ready():
-	print("=== SimpleWorkingText: 開始 ===")
+	print("🚀🚀🚀 SimpleWorkingText: _ready()開始 🚀🚀🚀")
+	print("SimpleWorkingText: このスクリプトが実行されています！")
 	
 	# 背景を作成
 	background = ColorRect.new()
@@ -68,11 +69,14 @@ func _ready():
 	print("SimpleWorkingText: 進行インジケーター作成完了")
 	
 	# マークダウンシナリオの読み込みを試行（失敗時はtest_messagesをそのまま使用）
+	print("🎯 SimpleWorkingText: _try_load_markdown_scenario()を呼び出します")
 	_try_load_markdown_scenario()
+	print("🎯 SimpleWorkingText: _try_load_markdown_scenario()から戻りました")
 	
 	# 最初のメッセージを表示
+	print("🎯 SimpleWorkingText: show_current_message()を呼び出します")
 	show_current_message()
-	print("=== SimpleWorkingText: 初期化完了 ===")
+	print("🚀🚀🚀 SimpleWorkingText: 初期化完了 🚀🚀🚀")
 
 func show_current_message():
 	if current_index < test_messages.size():
@@ -100,6 +104,26 @@ func _try_load_markdown_scenario():
 	# scene01.mdからシナリオを読み込み、成功時のみtest_messagesを置き換える
 	print("★★★ SimpleWorkingText: マークダウンシナリオ読み込み試行開始 ★★★")
 	
+	# まず、scene01.mdファイルの存在確認
+	var scenario_path = "res://Assets/scenarios/scene01.md"
+	print("SimpleWorkingText: ファイル存在確認: %s" % scenario_path)
+	if not FileAccess.file_exists(scenario_path):
+		print("❌ SimpleWorkingText: scene01.mdファイルが存在しません: %s" % scenario_path)
+		return
+	print("✅ SimpleWorkingText: scene01.mdファイル存在確認")
+	
+	# ファイル内容の直接読み込みテスト
+	print("SimpleWorkingText: ファイル内容の直接読み込みテスト...")
+	var file = FileAccess.open(scenario_path, FileAccess.READ)
+	if file == null:
+		print("❌ SimpleWorkingText: ファイルが開けません: %s" % scenario_path)
+		return
+	var content = file.get_as_text()
+	file.close()
+	print("✅ SimpleWorkingText: ファイル読み込み成功 - %d文字" % content.length())
+	print("SimpleWorkingText: ファイル内容の最初の100文字:")
+	print(content.left(100))
+	
 	# ScenarioLoaderクラスが利用可能かチェック
 	print("SimpleWorkingText: ScenarioLoaderスクリプトを読み込み中...")
 	var scenario_loader_script = load("res://Scripts/systems/scenario_loader.gd")
@@ -123,12 +147,16 @@ func _try_load_markdown_scenario():
 	print("✅ SimpleWorkingText: force_reload_scenario_fileメソッド存在確認")
 	
 	# シナリオファイルを読み込み
-	var scenario_path = "res://Assets/scenarios/scene01.md"
 	print("SimpleWorkingText: シナリオファイル読み込み中: %s" % scenario_path)
 	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
 	
 	if loaded_scenario_data == null:
 		print("❌ SimpleWorkingText: マークダウン読み込み失敗。デフォルトメッセージを使用します。")
+		# 詳細なエラー診断を実行
+		print("SimpleWorkingText: エラー診断開始...")
+		var markdown_parser = MarkdownParser.new()
+		var parsed_elements = markdown_parser.parse_markdown_file(scenario_path)
+		print("SimpleWorkingText: MarkdownParser結果: %d要素" % parsed_elements.size())
 		return
 	print("✅ SimpleWorkingText: シナリオデータ読み込み成功")
 	

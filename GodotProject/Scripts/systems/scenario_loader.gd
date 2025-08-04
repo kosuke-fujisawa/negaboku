@@ -14,11 +14,11 @@ class SceneBlock:
 	func add_element(element):
 		# 要素をシーンブロックに追加# 
 		# 型チェックを緩和
-		if element and element.has("type"):
+		if element and element is MarkdownParser.ParsedElement:
 			match element.type:
-				0: # COMMAND
+				MarkdownParser.ParsedElement.Type.COMMAND:
 					commands.append(element)
-				1, 2: # SPEAKER, TEXT
+				MarkdownParser.ParsedElement.Type.SPEAKER, MarkdownParser.ParsedElement.Type.TEXT:
 					text_elements.append(element)
 	
 	func get_all_elements() -> Array:
@@ -46,6 +46,7 @@ var loaded_scenarios: Dictionary = {}
 
 func _init():
 	markdown_parser = MarkdownParser.new()
+	scenario_library = ScenarioLibrary.new()
 
 func load_scenario_file(file_path: String) -> ScenarioData:
 	# マークダウンシナリオファイルを読み込み# 
@@ -385,10 +386,6 @@ class ScenarioLibrary:
 
 # シナリオライブラリインスタンス
 var scenario_library: ScenarioLibrary
-
-func _init():
-	markdown_parser = MarkdownParser.new()
-	scenario_library = ScenarioLibrary.new()
 
 # 高度なシナリオ管理機能
 func load_scenario_library(config_file_path: String = "res://Assets/scenarios/library_config.json") -> bool:
