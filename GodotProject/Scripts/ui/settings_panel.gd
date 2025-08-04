@@ -25,7 +25,7 @@ var temp_settings: Dictionary = {}
 var original_settings: Dictionary = {}
 
 # 背景UI管理
-var hidden_ui_nodes: Array[Node] = []
+var hidden_ui_nodes: Array = []
 
 # 解像度オプション
 var resolution_options = [

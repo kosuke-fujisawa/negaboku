@@ -30,7 +30,7 @@ func _init():
 	_compile_regex_patterns()
 
 func _compile_regex_patterns():
-	"""正規表現パターンをコンパイル"""
+	# 正規表現パターンをコンパイル# 
 	# コマンドパターン: [bg storage=forest.jpg time=500]
 	command_regex = RegEx.new()
 	command_regex.compile(r'\[([a-zA-Z_]+)([^\]]*)\]')
@@ -43,9 +43,9 @@ func _compile_regex_patterns():
 	separator_regex = RegEx.new()
 	separator_regex.compile(r'^---+\s*$')
 
-func parse_markdown_file(file_path: String) -> Array[ParsedElement]:
-	"""マークダウンファイルを解析してParsedElementの配列を返す"""
-	var elements: Array[ParsedElement] = []
+func parse_markdown_file(file_path: String) -> Array:
+	# マークダウンファイルを解析してParsedElementの配列を返す# 
+	var elements: Array = []
 	
 	# ファイル読み込み
 	var file_content = _read_file_safely(file_path)
@@ -91,7 +91,7 @@ func parse_markdown_file(file_path: String) -> Array[ParsedElement]:
 	return elements
 
 func _read_file_safely(file_path: String) -> String:
-	"""安全なファイル読み込み"""
+	# 安全なファイル読み込み# 
 	# パス検証
 	if not file_path.begins_with("res://") and not file_path.begins_with("user://"):
 		print("エラー: 不正なファイルパス形式: %s" % file_path)
@@ -118,7 +118,7 @@ func _read_file_safely(file_path: String) -> String:
 	return content
 
 func _parse_command_line(line: String) -> ParsedElement:
-	"""コマンド行を解析"""
+	# コマンド行を解析# 
 	var result = command_regex.search(line)
 	if not result:
 		return null
@@ -137,7 +137,7 @@ func _parse_command_line(line: String) -> ParsedElement:
 	)
 
 func _parse_command_parameters(params_string: String) -> Dictionary:
-	"""コマンドパラメータを解析 (key=value形式)"""
+	# コマンドパラメータを解析 (key=value形式)# 
 	var parameters = {}
 	
 	# パラメータ文字列をクリーンアップ
@@ -165,7 +165,7 @@ func _parse_command_parameters(params_string: String) -> Dictionary:
 	return parameters
 
 func _parse_speaker_text(line: String) -> ParsedElement:
-	"""スピーカーテキスト行を解析"""
+	# スピーカーテキスト行を解析# 
 	var result = speaker_text_regex.search(line)
 	if not result:
 		return null
@@ -179,9 +179,9 @@ func _parse_speaker_text(line: String) -> ParsedElement:
 		speaker_name
 	)
 
-func get_commands_by_type(elements: Array[ParsedElement], command_type: String) -> Array[ParsedElement]:
-	"""指定されたコマンドタイプの要素を取得"""
-	var filtered_elements: Array[ParsedElement] = []
+func get_commands_by_type(elements: Array, command_type: String) -> Array:
+	# 指定されたコマンドタイプの要素を取得# 
+	var filtered_elements: Array = []
 	
 	for element in elements:
 		if element.type == ParsedElement.Type.COMMAND and element.content == command_type:
@@ -189,9 +189,9 @@ func get_commands_by_type(elements: Array[ParsedElement], command_type: String) 
 	
 	return filtered_elements
 
-func get_text_elements(elements: Array[ParsedElement]) -> Array[ParsedElement]:
-	"""テキスト要素（SPEAKER + TEXT）を取得"""
-	var text_elements: Array[ParsedElement] = []
+func get_text_elements(elements: Array) -> Array:
+	# テキスト要素（SPEAKER + TEXT）を取得# 
+	var text_elements: Array = []
 	
 	for element in elements:
 		if element.type == ParsedElement.Type.SPEAKER or element.type == ParsedElement.Type.TEXT:
@@ -199,8 +199,8 @@ func get_text_elements(elements: Array[ParsedElement]) -> Array[ParsedElement]:
 	
 	return text_elements
 
-func validate_syntax(elements: Array[ParsedElement]) -> Dictionary:
-	"""マークダウン構文の検証"""
+func validate_syntax(elements: Array) -> Dictionary:
+	# マークダウン構文の検証# 
 	var validation_result = {
 		"is_valid": true,
 		"errors": [],
@@ -220,7 +220,7 @@ func validate_syntax(elements: Array[ParsedElement]) -> Dictionary:
 	return validation_result
 
 func _validate_command(element: ParsedElement, validation_result: Dictionary):
-	"""個別コマンドの検証"""
+	# 個別コマンドの検証# 
 	match element.content:
 		"bg":
 			if not element.parameters.has("storage"):
@@ -240,8 +240,8 @@ func _validate_command(element: ParsedElement, validation_result: Dictionary):
 			validation_result.warnings.append("未知のコマンド: %s" % element.content)
 
 # デバッグ・テスト用ユーティリティ
-func print_parsed_elements(elements: Array[ParsedElement]):
-	"""解析結果をデバッグ出力"""
+func print_parsed_elements(elements: Array):
+	# 解析結果をデバッグ出力# 
 	print("=== 解析結果 (%d要素) ===" % elements.size())
 	
 	for i in range(elements.size()):
@@ -259,7 +259,7 @@ func print_parsed_elements(elements: Array[ParsedElement]):
 				print("[%d] %s" % [i, type_name])
 
 func _get_type_name(type: ParsedElement.Type) -> String:
-	"""タイプ名を文字列で取得"""
+	# タイプ名を文字列で取得# 
 	match type:
 		ParsedElement.Type.COMMAND:
 			return "COMMAND"

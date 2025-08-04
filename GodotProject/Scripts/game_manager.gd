@@ -25,7 +25,7 @@ func _ready():
 	# シングルトンとして初期化
 	initialize_game()
 
-func initialize_game():
+func initialize_game() -> void:
 	print("GameManager: ゲーム初期化開始...")
 	
 	# 各システムの初期化
@@ -40,7 +40,7 @@ func initialize_game():
 	if OS.is_debug_build():
 		print_system_diagnostics()
 
-func setup_systems():
+func setup_systems() -> void:
 	# 関係值システムの初期化
 	if relationship_system == null:
 		var relationship_script = load("res://Scripts/systems/relationship.gd")
@@ -72,7 +72,7 @@ func setup_systems():
 	# Phase 3: シーン遷移システムの初期化
 	setup_scene_transition_system()
 
-func setup_initial_party():
+func setup_initial_party() -> void:
 	if relationship_system == null:
 		push_error("GameManager: RelationshipSystemが初期化されていません")
 		return
@@ -105,13 +105,13 @@ func setup_initial_party():
 	
 	print("GameManager: 初期パーティ設定完了")
 
-func change_scene(scene_path: String):
+func change_scene(scene_path: String) -> void:
 	print("GameManager: シーン変更 -> ", scene_path)
 	current_scene_name = scene_path.get_file().get_basename()
 	get_tree().change_scene_to_file(scene_path)
 	scene_changed.emit(current_scene_name)
 
-func start_new_game():
+func start_new_game() -> void:
 	print("GameManager: 新規ゲーム開始")
 	
 	# 初期化確認
@@ -156,11 +156,11 @@ func start_new_game():
 	print("GameManager: フォールバックシーンに遷移")
 	change_scene("res://Scenes/MainTextScene.tscn")
 
-func return_to_title():
+func return_to_title() -> void:
 	print("GameManager: タイトル画面に戻る")
 	change_scene("res://Scenes/MainMenu.tscn")
 
-func get_party_member(character_id: String):
+func get_party_member(character_id: String) -> Character:
 	if character_id.is_empty():
 		push_error("GameManager: キャラクターIDが空です")
 		return null
@@ -315,7 +315,7 @@ func load_game() -> bool:
 # Phase 3: シーン遷移システム統合機能
 # ===========================================
 
-func setup_scene_transition_system():
+func setup_scene_transition_system() -> void:
 	# 
 	print("GameManager: シーン遷移システム初期化開始")
 	
@@ -375,17 +375,19 @@ func start_scenario(scenario_id: String, scene_id: String = "") -> bool:
 	return await scene_transition_manager.jump_to_scenario(scenario_id, scene_id)
 
 func transition_to_scene(scene_id: String) -> bool:
-	# 
 	if scene_transition_manager == null:
-		print("エラー: SceneTransitionManagerが初期化されていません")
+		push_error("GameManager: SceneTransitionManagerが初期化されていません")
+		return false
+	
+	if scene_id.is_empty():
+		push_error("GameManager: シーンIDが空です")
 		return false
 	
 	return await scene_transition_manager.transition_to_scene(scene_id)
 
 func go_back_scene() -> bool:
-	# 
 	if scene_transition_manager == null:
-		print("エラー: SceneTransitionManagerが初期化されていません")
+		push_error("GameManager: SceneTransitionManagerが初期化されていません")
 		return false
 	
 	return await scene_transition_manager.go_back()
@@ -417,7 +419,7 @@ func get_available_scenarios() -> Array:
 	return scene_transition_manager.get_loaded_scenarios()
 
 # シーン遷移システムのイベントハンドラ
-func _on_scenario_completed(scenario_id: String):
+func _on_scenario_completed(scenario_id: String) -> void:
 	# 
 	print("GameManager: シナリオ完了 - %s" % scenario_id)
 	
@@ -432,13 +434,13 @@ func _on_scenario_completed(scenario_id: String):
 	# セーブデータを自動更新
 	save_game()
 
-func _on_scene_transition_completed(scene_id: String):
+func _on_scene_transition_completed(scene_id: String) -> void:
 	# 
 	print("GameManager: シーン遷移完了 - %s" % scene_id)
 	current_scene_name = scene_id
 
 # デバッグ・テスト機能
-func test_phase3_systems():
+func test_phase3_systems() -> void:
 	# 
 	print("=== Phase 3 システムテスト開始 ===")
 	
@@ -476,7 +478,7 @@ func get_phase3_status() -> Dictionary:
 	return status
 
 # デバッグ・診断機能
-func print_system_diagnostics():
+func print_system_diagnostics() -> void:
 	# 
 	print("=== GameManager システム診断 ===")
 	print("初期化状態: %s" % ("完了" if is_initialized else "未完了"))

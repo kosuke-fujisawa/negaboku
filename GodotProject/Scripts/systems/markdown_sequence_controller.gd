@@ -20,7 +20,7 @@ enum State {
 }
 
 var current_state: State = State.IDLE
-var current_elements: Array[MarkdownParser.ParsedElement] = []
+var current_elements: Array = []
 var current_element_index: int = 0
 var is_auto_advance: bool = false
 
@@ -46,7 +46,7 @@ func _init():
 	add_child(scene_command_executor)
 
 func initialize(target_text_scene: Control):
-	"""テキストシーンとの連携を初期化"""
+	# テキストシーンとの連携を初期化# 
 	text_scene = target_text_scene
 	scene_command_executor.initialize(text_scene)
 	
@@ -59,7 +59,7 @@ func initialize(target_text_scene: Control):
 	print("MarkdownSequenceController: 初期化完了")
 
 func load_and_execute_markdown_file(file_path: String):
-	"""マークダウンファイルを読み込み、順次実行を開始"""
+	# マークダウンファイルを読み込み、順次実行を開始# 
 	if current_state != State.IDLE:
 		print("警告: 既に実行中または処理中です")
 		return
@@ -92,7 +92,7 @@ func load_and_execute_markdown_file(file_path: String):
 	_execute_next_element()
 
 func _execute_next_element():
-	"""次の要素を実行"""
+	# 次の要素を実行# 
 	if current_state != State.EXECUTING:
 		return
 	
@@ -125,7 +125,7 @@ func _execute_next_element():
 		_execute_next_element()
 
 func _execute_command_element(element: MarkdownParser.ParsedElement):
-	"""コマンド要素を実行"""
+	# コマンド要素を実行# 
 	var result = scene_command_executor.execute_command(element)
 	
 	# 成功したコマンドの状態を記録
@@ -166,7 +166,7 @@ func _execute_command_element(element: MarkdownParser.ParsedElement):
 				await scene_command_executor.wait_completed
 
 func _execute_speaker_element(element: MarkdownParser.ParsedElement):
-	"""スピーカー要素を実行"""
+	# スピーカー要素を実行# 
 	if text_scene and text_scene.has_method("show_text"):
 		text_scene.show_text(element.speaker, element.content)
 		text_displayed.emit(element.speaker, element.content)
@@ -180,7 +180,7 @@ func _execute_speaker_element(element: MarkdownParser.ParsedElement):
 			await get_tree().create_timer(auto_advance_delay).timeout
 
 func _execute_text_element(element: MarkdownParser.ParsedElement):
-	"""テキスト要素を実行（地の文など）"""
+	# テキスト要素を実行（地の文など）# 
 	if text_scene and text_scene.has_method("show_text"):
 		text_scene.show_text("", element.content)  # スピーカー名なし
 		text_displayed.emit("", element.content)
@@ -192,49 +192,49 @@ func _execute_text_element(element: MarkdownParser.ParsedElement):
 			await get_tree().create_timer(auto_advance_delay).timeout
 
 func _execute_separator_element(element: MarkdownParser.ParsedElement):
-	"""セパレーター要素を実行"""
+	# セパレーター要素を実行# 
 	# セパレーターは区切りなので、短い遅延のみ
 	await get_tree().create_timer(0.2).timeout
 
 func _wait_for_user_input():
-	"""ユーザー入力待機"""
+	# ユーザー入力待機# 
 	# テキストシーンからのtext_finishedシグナルを待つ
 	if text_scene and text_scene.has_signal("text_finished"):
 		await text_scene.text_finished
 
 func _complete_sequence():
-	"""シーケンス実行完了"""
+	# シーケンス実行完了# 
 	current_state = State.COMPLETED
 	print("MarkdownSequenceController: シーケンス実行完了")
 	sequence_completed.emit()
 
 func _on_command_executed(command_name: String, result):
-	"""コマンド実行完了時の処理"""
+	# コマンド実行完了時の処理# 
 	print("コマンド実行完了: %s" % command_name)
 
 func _on_background_changed(texture_path: String):
-	"""背景変更完了時の処理"""
+	# 背景変更完了時の処理# 
 	print("背景変更完了: %s" % texture_path)
 
 func _on_character_shown(name: String, position: String, face: String):
-	"""キャラクター表示完了時の処理"""
+	# キャラクター表示完了時の処理# 
 	print("キャラクター表示完了: %s (%s, %s)" % [name, face, position])
 
 func _on_character_hidden(name: String):
-	"""キャラクター非表示完了時の処理"""
+	# キャラクター非表示完了時の処理# 
 	print("キャラクター非表示完了: %s" % name)
 
 # 制御メソッド
 
 func pause_sequence():
-	"""シーケンス実行を一時停止"""
+	# シーケンス実行を一時停止# 
 	if current_state == State.EXECUTING:
 		current_state = State.PAUSED
 		sequence_paused.emit()
 		print("シーケンス一時停止")
 
 func resume_sequence():
-	"""シーケンス実行を再開"""
+	# シーケンス実行を再開# 
 	if current_state == State.PAUSED:
 		current_state = State.EXECUTING
 		sequence_resumed.emit()
@@ -242,7 +242,7 @@ func resume_sequence():
 		_execute_next_element()
 
 func stop_sequence():
-	"""シーケンス実行を停止"""
+	# シーケンス実行を停止# 
 	current_state = State.IDLE
 	current_element_index = 0
 	current_elements.clear()
@@ -250,29 +250,29 @@ func stop_sequence():
 	print("シーケンス停止")
 
 func set_text_advance_mode(mode: String):
-	"""テキスト進行モードを設定 ("manual" or "auto")"""
+	# テキスト進行モードを設定 ("manual" or "auto")# 
 	if mode in ["manual", "auto"]:
 		text_advance_mode = mode
 		print("テキスト進行モード: %s" % mode)
 
 func set_auto_advance_delay(delay: float):
-	"""自動進行時の遅延時間を設定"""
+	# 自動進行時の遅延時間を設定# 
 	auto_advance_delay = max(0.5, delay)
 	print("自動進行遅延: %.1f秒" % auto_advance_delay)
 
 func set_command_execution_delay(delay: float):
-	"""コマンド実行間の遅延時間を設定"""
+	# コマンド実行間の遅延時間を設定# 
 	command_execution_delay = max(0.0, delay)
 	print("コマンド実行遅延: %.1f秒" % command_execution_delay)
 
 # 状態取得メソッド
 
 func get_current_state() -> State:
-	"""現在の実行状態を取得"""
+	# 現在の実行状態を取得# 
 	return current_state
 
 func get_progress() -> Dictionary:
-	"""実行進捗を取得"""
+	# 実行進捗を取得# 
 	return {
 		"current_index": current_element_index,
 		"total_elements": current_elements.size(),
@@ -280,7 +280,7 @@ func get_progress() -> Dictionary:
 	}
 
 func get_current_scene_state() -> Dictionary:
-	"""現在のシーン状態を取得"""
+	# 現在のシーン状態を取得# 
 	return {
 		"background": current_background,
 		"character_left": current_character_left,
@@ -290,7 +290,7 @@ func get_current_scene_state() -> Dictionary:
 # ユーティリティメソッド
 
 func _element_to_string(element: MarkdownParser.ParsedElement) -> String:
-	"""要素を文字列表現に変換"""
+	# 要素を文字列表現に変換# 
 	match element.type:
 		MarkdownParser.ParsedElement.Type.COMMAND:
 			return "COMMAND: %s %s" % [element.content, element.parameters]
@@ -306,7 +306,7 @@ func _element_to_string(element: MarkdownParser.ParsedElement) -> String:
 # デバッグ機能
 
 func debug_print_sequence():
-	"""シーケンス内容をデバッグ出力"""
+	# シーケンス内容をデバッグ出力# 
 	print("=== シーケンス内容 (%d要素) ===" % current_elements.size())
 	for i in range(current_elements.size()):
 		var element = current_elements[i]
@@ -314,14 +314,14 @@ func debug_print_sequence():
 		print("%s[%d] %s" % [prefix, i, _element_to_string(element)])
 
 func debug_print_state():
-	"""現在の状態をデバッグ出力"""
+	# 現在の状態をデバッグ出力# 
 	print("=== 実行状態 ===")
 	print("State: %s" % _state_to_string(current_state))
 	print("Progress: %d/%d (%.1f%%)" % [current_element_index, current_elements.size(), get_progress().progress_percent])
 	print("Scene State: %s" % get_current_scene_state())
 
 func _state_to_string(state: State) -> String:
-	"""状態を文字列に変換"""
+	# 状態を文字列に変換# 
 	match state:
 		State.IDLE:
 			return "IDLE"

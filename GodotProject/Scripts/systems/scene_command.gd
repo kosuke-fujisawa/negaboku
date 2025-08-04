@@ -28,7 +28,7 @@ signal wait_completed()
 # 実行状態管理
 var is_executing: bool = false
 var current_text_scene: Control = null
-var command_queue: Array[MarkdownParser.ParsedElement] = []
+var command_queue: Array = []
 var execution_delay: float = 0.1  # コマンド間の遅延
 
 # アニメーション設定
@@ -36,12 +36,12 @@ var background_transition_time: float = 0.5
 var character_transition_time: float = 0.3
 
 func initialize(text_scene: Control):
-	"""テキストシーンとの連携を初期化"""
+	# テキストシーンとの連携を初期化# 
 	current_text_scene = text_scene
 	print("SceneCommandExecutor初期化完了")
 
 func execute_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""単一コマンドを実行"""
+	# 単一コマンドを実行# 
 	if command.type != MarkdownParser.ParsedElement.Type.COMMAND:
 		return CommandResult.new(CommandResult.Status.SKIPPED, "コマンド要素ではありません")
 	
@@ -72,8 +72,8 @@ func execute_command(command: MarkdownParser.ParsedElement) -> CommandResult:
 	print("コマンド実行: %s -> %s (%s)" % [command.content, _status_to_string(result.status), result.message])
 	return result
 
-func execute_command_sequence(commands: Array[MarkdownParser.ParsedElement]) -> void:
-	"""コマンドシーケンスを順次実行"""
+func execute_command_sequence(commands: Array) -> void:
+	# コマンドシーケンスを順次実行# 
 	if is_executing:
 		print("警告: 既にコマンド実行中です")
 		return
@@ -85,7 +85,7 @@ func execute_command_sequence(commands: Array[MarkdownParser.ParsedElement]) -> 
 	_process_command_queue()
 
 func _process_command_queue():
-	"""コマンドキューを処理"""
+	# コマンドキューを処理# 
 	if command_queue.is_empty():
 		is_executing = false
 		print("コマンドシーケンス実行完了")
@@ -114,7 +114,7 @@ func _process_command_queue():
 	_process_command_queue()
 
 func _execute_bg_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""背景変更コマンド実行"""
+	# 背景変更コマンド実行# 
 	if not current_text_scene:
 		return CommandResult.new(CommandResult.Status.FAILED, "TextSceneが設定されていません")
 	
@@ -139,7 +139,7 @@ func _execute_bg_command(command: MarkdownParser.ParsedElement) -> CommandResult
 	return CommandResult.new(CommandResult.Status.SUCCESS, "背景変更: %s" % storage)
 
 func _execute_chara_show_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""立ち絵表示コマンド実行"""
+	# 立ち絵表示コマンド実行# 
 	if not current_text_scene:
 		return CommandResult.new(CommandResult.Status.FAILED, "TextSceneが設定されていません")
 	
@@ -168,7 +168,7 @@ func _execute_chara_show_command(command: MarkdownParser.ParsedElement) -> Comma
 	return CommandResult.new(CommandResult.Status.SUCCESS, "立ち絵表示: %s (%s, %s)" % [name, face, pos])
 
 func _execute_chara_hide_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""立ち絵非表示コマンド実行"""
+	# 立ち絵非表示コマンド実行# 
 	if not current_text_scene:
 		return CommandResult.new(CommandResult.Status.FAILED, "TextSceneが設定されていません")
 	
@@ -187,7 +187,7 @@ func _execute_chara_hide_command(command: MarkdownParser.ParsedElement) -> Comma
 	return CommandResult.new(CommandResult.Status.SUCCESS, "立ち絵非表示: %s" % name)
 
 func _execute_wait_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""待機コマンド実行"""
+	# 待機コマンド実行# 
 	var time_param = command.parameters.get("time", "")
 	if time_param.is_empty():
 		return CommandResult.new(CommandResult.Status.FAILED, "timeパラメータが必要です")
@@ -202,11 +202,11 @@ func _execute_wait_command(command: MarkdownParser.ParsedElement) -> CommandResu
 	return CommandResult.new(CommandResult.Status.PENDING, "待機中: %.2f秒" % wait_time)
 
 func _execute_choice_command(command: MarkdownParser.ParsedElement) -> CommandResult:
-	"""選択肢コマンド実行（将来実装）"""
+	# 選択肢コマンド実行（将来実装）# 
 	return CommandResult.new(CommandResult.Status.SKIPPED, "選択肢コマンドは未実装です")
 
 func _set_background_with_transition(texture_path: String, transition_time: float):
-	"""背景をトランジション付きで設定"""
+	# 背景をトランジション付きで設定# 
 	if not current_text_scene:
 		return
 	
@@ -231,7 +231,7 @@ func _set_background_with_transition(texture_path: String, transition_time: floa
 	background_changed.emit(texture_path)
 
 func _set_character_with_transition(position: String, character_path: String, transition_time: float):
-	"""立ち絵をトランジション付きで設定"""
+	# 立ち絵をトランジション付きで設定# 
 	if not current_text_scene:
 		return
 	
@@ -262,12 +262,12 @@ func _set_character_with_transition(position: String, character_path: String, tr
 		await get_tree().create_timer(transition_time).timeout
 
 func _execute_wait_async(wait_time: float):
-	"""非同期待機実行"""
+	# 非同期待機実行# 
 	await get_tree().create_timer(wait_time).timeout
 	wait_completed.emit()
 
 func _resolve_background_path(asset_name: String) -> String:
-	"""背景アセット名をフルパスに解決（AssetResourceManager使用）"""
+	# 背景アセット名をフルパスに解決（AssetResourceManager使用）# 
 	if asset_name.is_empty():
 		return ""
 	
@@ -288,7 +288,7 @@ func _resolve_background_path(asset_name: String) -> String:
 		return ""
 
 func _resolve_character_path(character_name: String, face_expression: String) -> String:
-	"""キャラクター名と表情からパスを解決（AssetResourceManager使用）"""
+	# キャラクター名と表情からパスを解決（AssetResourceManager使用）# 
 	if character_name.is_empty():
 		return ""
 	
@@ -312,13 +312,13 @@ func _resolve_character_path(character_name: String, face_expression: String) ->
 		return ""
 
 func _calculate_time_diff(start_time: Dictionary, end_time: Dictionary) -> float:
-	"""時間差を計算（秒）"""
+	# 時間差を計算（秒）# 
 	var start_total = start_time.hour * 3600 + start_time.minute * 60 + start_time.second
 	var end_total = end_time.hour * 3600 + end_time.minute * 60 + end_time.second
 	return float(end_total - start_total)
 
 func _status_to_string(status: CommandResult.Status) -> String:
-	"""ステータスを文字列に変換"""
+	# ステータスを文字列に変換# 
 	match status:
 		CommandResult.Status.SUCCESS:
 			return "成功"
@@ -333,27 +333,27 @@ func _status_to_string(status: CommandResult.Status) -> String:
 
 # 外部API
 func stop_execution():
-	"""コマンド実行を停止"""
+	# コマンド実行を停止# 
 	command_queue.clear()
 	is_executing = false
 	print("コマンド実行を停止")
 
 func is_command_executing() -> bool:
-	"""コマンド実行中かどうか"""
+	# コマンド実行中かどうか# 
 	return is_executing
 
 func set_execution_delay(delay: float):
-	"""コマンド間の実行遅延を設定"""
+	# コマンド間の実行遅延を設定# 
 	execution_delay = max(0.0, delay)
 
 func set_transition_times(bg_time: float, char_time: float):
-	"""トランジション時間を設定"""
+	# トランジション時間を設定# 
 	background_transition_time = max(0.0, bg_time)
 	character_transition_time = max(0.0, char_time)
 
 # デバッグ・テスト用
 func test_command_execution(command_text: String):
-	"""コマンド実行テスト"""
+	# コマンド実行テスト# 
 	print("=== コマンド実行テスト ===")
 	print("コマンド: %s" % command_text)
 	

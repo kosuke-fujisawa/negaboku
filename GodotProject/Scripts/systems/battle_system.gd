@@ -26,17 +26,17 @@ enum ActionType {
 }
 
 var current_state: BattleState = BattleState.IDLE
-var party_members: Array[Character] = []
-var enemies: Array[Character] = []
+var party_members: Array = []
+var enemies: Array = []
 var current_turn_character: Character
-var turn_queue: Array[Character] = []
+var turn_queue: Array = []
 var relationship_system: RelationshipSystem
 
 class BattleAction:
 	var type: ActionType
 	var skill_id: String = ""
 	var item_id: String = ""
-	var targets: Array[Character] = []
+	var targets: Array = []
 	
 	func _init(action_type: ActionType = ActionType.ATTACK):
 		type = action_type
@@ -50,7 +50,7 @@ class BattleResult:
 func _ready():
 	print("BattleSystem: 初期化完了")
 
-func initialize(party: Array[Character], rel_system: RelationshipSystem) -> bool:
+func initialize(party: Array, rel_system: RelationshipSystem) -> bool:
 	if party == null or party.is_empty():
 		push_error("BattleSystem: パーティが無効です")
 		return false
@@ -70,7 +70,7 @@ func initialize(party: Array[Character], rel_system: RelationshipSystem) -> bool
 	print("BattleSystem: パーティとシステム設定完了")
 	return true
 
-func start_battle(enemy_list: Array[Character]) -> bool:
+func start_battle(enemy_list: Array) -> bool:
 	if current_state != BattleState.IDLE:
 		push_warning("BattleSystem: 既にバトル中です")
 		return false
@@ -119,7 +119,7 @@ func setup_turn_queue() -> bool:
 		return false
 	
 	# パーティメンバーと敵を速度順でソート
-	var all_combatants: Array[Character] = []
+	var all_combatants: Array = []
 	
 	# nullチェックしながら追加
 	for member in party_members:
@@ -149,7 +149,7 @@ func setup_turn_queue() -> bool:
 	print("BattleSystem: ターン順序決定 - %d人" % turn_queue.size())
 	return true
 
-func start_next_turn():
+func start_next_turn() -> void:
 	if current_state != BattleState.IN_PROGRESS:
 		return
 	
@@ -192,7 +192,7 @@ func start_next_turn():
 		# プレイヤーの入力待ち（UIシステムから呼び出される）
 		pass
 
-func perform_action(actor: Character, action: BattleAction):
+func perform_action(actor: Character, action: BattleAction) -> void:
 	if current_state != BattleState.IN_PROGRESS or actor != current_turn_character:
 		print("BattleSystem: 無効なアクション")
 		return
@@ -215,7 +215,7 @@ func perform_action(actor: Character, action: BattleAction):
 	await get_tree().create_timer(1.0).timeout  # 演出待機
 	start_next_turn()
 
-func perform_attack(actor: Character, targets: Array[Character]) -> bool:
+func perform_attack(actor: Character, targets: Array) -> bool:
 	if actor == null:
 		push_error("BattleSystem: 攻撃者がnullです")
 		return false
@@ -238,26 +238,35 @@ func perform_attack(actor: Character, targets: Array[Character]) -> bool:
 	print("BattleSystem: %s が %s に %d ダメージ" % [actor.name, target.name, damage])
 	return true
 
-func perform_skill(actor: Character, skill_id: String, targets: Array[Character]):
+func perform_skill(actor: Character, skill_id: String, targets: Array) -> bool:
+	if actor == null:
+		push_error("BattleSystem: perform_skill - アクターがnullです")
+		return false
+	
+	if skill_id.is_empty():
+		push_error("BattleSystem: perform_skill - スキルIDが空です")
+		return false
+	
 	var skill = get_skill_data(skill_id)
-	if not skill:
-		print("BattleSystem: スキル %s が見つかりません" % skill_id)
-		return
+	if skill.is_empty():
+		push_error("BattleSystem: スキル %s が見つかりません" % skill_id)
+		return false
 	
 	# 関係値スキルの発動チェック
-	if skill.requires_relationship:
+	if skill.get("requires_relationship", false):
 		if not check_relationship_skill_condition(actor, skill):
-			print("BattleSystem: 関係値条件を満たしていません")
-			return
+			push_warning("BattleSystem: 関係値条件を満たしていません")
+			return false
 	
 	# スキル効果の適用
 	apply_skill_effects(actor, skill, targets)
 	
 	# 関係値変化の処理
-	if skill.affects_relationship:
+	if skill.get("affects_relationship", false):
 		process_skill_relationship_effects(actor, skill)
 	
 	skill_activated.emit(actor, skill, targets)
+	return true
 
 func check_relationship_skill_condition(actor: Character, skill: Dictionary) -> bool:
 	if not relationship_system:
@@ -277,9 +286,15 @@ func check_relationship_skill_condition(actor: Character, skill: Dictionary) -> 
 			return true
 
 func get_partner(character: Character) -> Character:
+	if character == null:
+		push_error("BattleSystem: get_partner - キャラクターがnullです")
+		return null
+	
 	for member in party_members:
-		if member != character:
+		if member != null and member != character:
 			return member
+	
+	push_warning("BattleSystem: get_partner - パートナーが見つかりません")
 	return null
 
 func calculate_attack_damage(attacker: Character, target: Character) -> int:
@@ -312,7 +327,7 @@ func get_relationship_damage_bonus(char1: Character, char2: Character) -> float:
 		_:
 			return 1.0
 
-func process_ai_turn(ai_character: Character):
+func process_ai_turn(ai_character: Character) -> void:
 	if ai_character == null:
 		push_error("BattleSystem: AIキャラクターがnullです")
 		start_next_turn()
@@ -431,7 +446,7 @@ func get_skill_data(skill_id: String) -> Dictionary:
 	
 	return skill_data
 
-func apply_skill_effects(actor: Character, skill: Dictionary, targets: Array[Character]):
+func apply_skill_effects(actor: Character, skill: Dictionary, targets: Array) -> void:
 	# スキル効果の適用（仮実装）
 	for target in targets:
 		var damage = skill.power
@@ -439,7 +454,7 @@ func apply_skill_effects(actor: Character, skill: Dictionary, targets: Array[Cha
 		target.current_hp = max(0, target.current_hp)
 		print("BattleSystem: %s のスキル %s で %s に %d ダメージ" % [actor.name, skill.name, target.name, damage])
 
-func process_skill_relationship_effects(actor: Character, skill: Dictionary):
+func process_skill_relationship_effects(actor: Character, skill: Dictionary) -> void:
 	var partner = get_partner(actor)
 	if not partner or not relationship_system:
 		return
@@ -450,10 +465,10 @@ func process_skill_relationship_effects(actor: Character, skill: Dictionary):
 		"conflict":
 			relationship_system.process_battle_event("conflict", actor.character_id, partner.character_id)
 
-func use_item(actor: Character, item_id: String, targets: Array[Character]):
+func use_item(actor: Character, item_id: String, targets: Array) -> void:
 	print("BattleSystem: %s がアイテム %s を使用" % [actor.name, item_id])
 	# TODO: アイテム効果の実装
 
-func perform_defend(actor: Character):
+func perform_defend(actor: Character) -> void:
 	print("BattleSystem: %s が防御" % actor.name)
 	# 防御効果（次のダメージ半減など）
