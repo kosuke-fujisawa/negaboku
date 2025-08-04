@@ -126,35 +126,9 @@ func start_new_game() -> void:
 	# パーティとシステムを再初期化
 	setup_initial_party()
 	
-	# Phase 3システムの初期化確認
-	if scene_transition_manager == null or text_scene_manager == null:
-		print("警告: Phase 3システムが未初期化です。初期化します...")
-		setup_scene_transition_system()
-	
-	# シナリオライブラリを読み込み
-	print("GameManager: シナリオライブラリ読み込み中...")
-	var library_loaded = await load_scenario_library()
-	
-	if library_loaded:
-		# 利用可能なシナリオから最初のシナリオを開始
-		var available_scenarios = get_available_scenarios()
-		if available_scenarios.size() > 0:
-			var first_scenario = available_scenarios[0]
-			print("GameManager: 最初のシナリオを開始 - %s" % first_scenario)
-			var success = await start_scenario(first_scenario)
-			if success:
-				print("GameManager: 新規ゲーム開始成功")
-				return
-			else:
-				print("エラー: シナリオ開始に失敗しました")
-		else:
-			print("警告: 利用可能なシナリオがありません")
-	else:
-		print("警告: シナリオライブラリの読み込みに失敗しました")
-	
-	# フォールバック: メインテキストシーンに遷移
-	print("GameManager: フォールバックシーンに遷移")
-	change_scene("res://Scenes/MainTextScene.tscn")
+	# シンプルなフォールバック: 直接WorkingTextSceneに遷移
+	print("GameManager: WorkingTextSceneに遷移します")
+	change_scene("res://Scenes/WorkingTextScene.tscn")
 
 func return_to_title() -> void:
 	print("GameManager: タイトル画面に戻る")
