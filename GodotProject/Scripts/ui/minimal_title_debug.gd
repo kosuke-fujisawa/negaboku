@@ -46,21 +46,22 @@ func _connect_buttons():
 func _on_new_game_pressed():
 	print("★★★ 新規ゲーム開始！ ★★★")
 	
-	# 直接WorkingTextSceneに遷移するテスト
-	print("直接WorkingTextSceneに遷移します...")
-	var target_scene = "res://Scenes/WorkingTextScene.tscn"
+	# 最もシンプルなテキスト表示シーンに遷移
+	print("SimpleWorkingTextに遷移します...")
+	var target_scene = "res://Scenes/SimpleWorkingText.tscn"
 	
 	if ResourceLoader.exists(target_scene):
-		print("WorkingTextScene.tscnが見つかりました")
+		print("SimpleWorkingText.tscnが見つかりました")
 		get_tree().change_scene_to_file(target_scene)
 	else:
-		print("エラー: WorkingTextScene.tscnが見つかりません")
-		# さらなるフォールバック
-		if ResourceLoader.exists("res://Scenes/Main.tscn"):
-			print("フォールバック: Main.tscnに遷移")
-			get_tree().change_scene_to_file("res://Scenes/Main.tscn")
+		print("エラー: SimpleWorkingText.tscnが見つかりません")
+		# フォールバック: WorkingTextScene
+		var fallback_scene = "res://Scenes/WorkingTextScene.tscn"
+		if ResourceLoader.exists(fallback_scene):
+			print("フォールバック: WorkingTextSceneに遷移")
+			get_tree().change_scene_to_file(fallback_scene)
 		else:
-			print("エラー: Main.tscnも見つかりません")
+			print("エラー: フォールバックシーンも見つかりません")
 
 func _on_load_game_pressed():
 	print("ゲームロード機能（未実装）")
@@ -80,9 +81,12 @@ func _input(event):
 				print("=== デバッグ: 新規ゲーム強制実行 ===")
 				_on_new_game_pressed()
 			KEY_2:
-				print("=== デバッグ: Main.tscnに直接遷移 ===")
-				get_tree().change_scene_to_file("res://Scenes/Main.tscn")
+				print("=== デバッグ: SimpleWorkingTextに直接遷移 ===")
+				get_tree().change_scene_to_file("res://Scenes/SimpleWorkingText.tscn")
 			KEY_3:
+				print("=== デバッグ: WorkingTextSceneに直接遷移 ===")
+				get_tree().change_scene_to_file("res://Scenes/WorkingTextScene.tscn")
+			KEY_4:
 				if GameManager and GameManager.has_method("print_system_diagnostics"):
 					GameManager.print_system_diagnostics()
 			KEY_ESCAPE:
