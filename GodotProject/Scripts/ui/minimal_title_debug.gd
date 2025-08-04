@@ -46,23 +46,21 @@ func _connect_buttons():
 func _on_new_game_pressed():
 	print("★★★ 新規ゲーム開始！ ★★★")
 	
-	# GameManagerの確認
-	if not GameManager:
-		print("エラー: GameManagerが見つかりません")
-		return
+	# 直接WorkingTextSceneに遷移するテスト
+	print("直接WorkingTextSceneに遷移します...")
+	var target_scene = "res://Scenes/WorkingTextScene.tscn"
 	
-	print("GameManager見つかりました")
-	
-	# GameManagerで新規ゲーム開始
-	if GameManager.has_method("start_new_game"):
-		print("GameManager.start_new_game()を呼び出します...")
-		await GameManager.start_new_game()
-		print("新規ゲーム開始処理完了")
+	if ResourceLoader.exists(target_scene):
+		print("WorkingTextScene.tscnが見つかりました")
+		get_tree().change_scene_to_file(target_scene)
 	else:
-		print("エラー: start_new_game()メソッドが見つかりません")
-		# フォールバック: 直接メインシーンに遷移
-		print("フォールバック: Main.tscnに直接遷移")
-		get_tree().change_scene_to_file("res://Scenes/Main.tscn")
+		print("エラー: WorkingTextScene.tscnが見つかりません")
+		# さらなるフォールバック
+		if ResourceLoader.exists("res://Scenes/Main.tscn"):
+			print("フォールバック: Main.tscnに遷移")
+			get_tree().change_scene_to_file("res://Scenes/Main.tscn")
+		else:
+			print("エラー: Main.tscnも見つかりません")
 
 func _on_load_game_pressed():
 	print("ゲームロード機能（未実装）")

@@ -35,15 +35,22 @@ var scene_index = 0
 
 func _ready():
 	print("=== WorkingTextScene: 開始 ===")
+	print("WorkingTextScene: ノード名 = %s" % name)
+	print("WorkingTextScene: シーンファイル = %s" % scene_file_path)
 
 	# フルスクリーンに設定
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	print("WorkingTextScene: フルスクリーン設定完了")
 
 	# UI作成
+	print("WorkingTextScene: UI作成開始")
 	_create_ui()
+	print("WorkingTextScene: UI作成完了")
 
 	# マークダウンシナリオを読み込み
+	print("WorkingTextScene: シナリオ読み込み開始")
 	_load_markdown_scenario()
+	print("WorkingTextScene: シナリオ読み込み完了")
 
 	print("=== WorkingTextScene: 初期化完了 ===")
 
@@ -117,24 +124,38 @@ func _load_markdown_scenario():
 	_show_current_scene()
 
 func _show_current_scene():
+	print("WorkingTextScene: _show_current_scene()開始 - current_index=%d, test_texts.size()=%d" % [current_index, test_texts.size()])
+	
+	# UIが正しく作成されているかチェック
+	if not name_label:
+		print("エラー: name_labelがnullです")
+		return
+	if not text_label:
+		print("エラー: text_labelがnullです")
+		return
+	
 	# デフォルトテキストを表示
 	if current_index < test_texts.size():
 		var full_text = test_texts[current_index]
+		print("WorkingTextScene: 表示テキスト = '%s'" % full_text)
+		
 		var parts = full_text.split(": ", false, 1)
 
 		if parts.size() == 2:
 			name_label.text = parts[0]
 			name_label.visible = true
 			text_label.text = parts[1]
+			print("WorkingTextScene: 名前='%s', テキスト='%s'" % [parts[0], parts[1]])
 			# ログに追加
 			_add_to_log(parts[0], parts[1])
 		else:
 			name_label.visible = false
 			text_label.text = full_text
+			print("WorkingTextScene: 名前なし, テキスト='%s'" % full_text)
 			# ログに追加
 			_add_to_log("", full_text)
 
-		print("WorkingTextScene: デフォルトテキスト表示 [%d]: %s" % [current_index, full_text])
+		print("WorkingTextScene: デフォルトテキスト表示完了 [%d]: %s" % [current_index, full_text])
 	else:
 		name_label.visible = false
 		text_label.text = "テスト終了: ESCキーでタイトルに戻ります"
