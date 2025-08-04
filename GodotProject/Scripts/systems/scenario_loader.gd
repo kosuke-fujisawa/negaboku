@@ -4,8 +4,8 @@ extends RefCounted
 # シナリオデータ構造（型安全版）
 class SceneBlock:
 	var block_id: String = ""
-	var commands: Array = []  # Array of MarkdownParser.ParsedElement
-	var text_elements: Array = []  # Array of MarkdownParser.ParsedElement
+	var commands: Array[MarkdownParser.ParsedElement] = []
+	var text_elements: Array[MarkdownParser.ParsedElement] = []
 	var metadata: Dictionary = {}
 	
 	func _init(p_block_id: String = ""):
@@ -31,7 +31,7 @@ class SceneBlock:
 class ScenarioData:
 	var file_path: String = ""
 	var title: String = ""
-	var scenes: Array = []  # Array[SceneBlock] は後で設定
+	var scenes: Array[SceneBlock] = []
 	var metadata: Dictionary = {}
 	
 	func _init(p_file_path: String = "", p_title: String = ""):
@@ -133,9 +133,9 @@ func load_multiple_scenarios(file_paths: Array) -> Dictionary:
 	print("複数シナリオ読み込み完了: %d/%d ファイル" % [loaded_scenarios_dict.size(), file_paths.size()])
 	return loaded_scenarios_dict
 
-func get_scenario_list(scenarios_directory: String = "res://Assets/scenarios/") -> Array:
+func get_scenario_list(scenarios_directory: String = "res://Assets/scenarios/") -> Array[String]:
 	# シナリオディレクトリからファイルリストを取得# 
-	var scenario_files: Array = []
+	var scenario_files: Array[String] = []
 	
 	# ディレクトリ存在チェック
 	if not DirAccess.dir_exists_absolute(scenarios_directory):

@@ -20,7 +20,7 @@ enum State {
 }
 
 var current_state: State = State.IDLE
-var current_elements: Array = []
+var current_elements: Array[MarkdownParser.ParsedElement] = []
 var current_element_index: int = 0
 var is_auto_advance: bool = false
 

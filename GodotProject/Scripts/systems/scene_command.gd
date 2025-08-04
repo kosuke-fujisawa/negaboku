@@ -28,7 +28,7 @@ signal wait_completed()
 # 実行状態管理
 var is_executing: bool = false
 var current_text_scene: Control = null
-var command_queue: Array = []
+var command_queue: Array[MarkdownParser.ParsedElement] = []
 var execution_delay: float = 0.1  # コマンド間の遅延
 
 # アニメーション設定

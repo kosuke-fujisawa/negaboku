@@ -122,7 +122,10 @@ func _load_texture_safely(file_path: String) -> Texture2D:
 		return null
 	
 	var resource = ResourceLoader.load(file_path)
-	if resource is Texture2D:
+	if resource == null:
+		print("エラー: リソースの読み込みに失敗: %s" % file_path)
+		return null
+	elif resource is Texture2D:
 		return resource as Texture2D
 	else:
 		print("警告: %s はTexture2Dではありません" % file_path)

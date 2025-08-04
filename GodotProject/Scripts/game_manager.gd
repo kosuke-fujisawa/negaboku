@@ -290,20 +290,36 @@ func load_game() -> bool:
 # ===========================================
 
 func setup_scene_transition_system() -> void:
-	# 
+	# シーン遷移システム初期化
 	print("GameManager: シーン遷移システム初期化開始")
 	
 	# SceneTransitionManagerの初期化
 	if scene_transition_manager == null:
 		var transition_script = load("res://Scripts/systems/scene_transition_manager.gd")
+		if transition_script == null:
+			push_error("GameManager: SceneTransitionManagerスクリプトの読み込みに失敗しました")
+			return
+		
 		scene_transition_manager = transition_script.new()
+		if scene_transition_manager == null:
+			push_error("GameManager: SceneTransitionManagerの生成に失敗しました")
+			return
+			
 		add_child(scene_transition_manager)
 		print("GameManager: SceneTransitionManager初期化完了")
 	
 	# TextSceneManagerの初期化
 	if text_scene_manager == null:
 		var text_scene_script = load("res://Scripts/systems/text_scene_manager.gd")
+		if text_scene_script == null:
+			push_error("GameManager: TextSceneManagerスクリプトの読み込みに失敗しました")
+			return
+		
 		text_scene_manager = text_scene_script.new()
+		if text_scene_manager == null:
+			push_error("GameManager: TextSceneManagerの生成に失敗しました")
+			return
+			
 		add_child(text_scene_manager)
 		print("GameManager: TextSceneManager初期化完了")
 	
