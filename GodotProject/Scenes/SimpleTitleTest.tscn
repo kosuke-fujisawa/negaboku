@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4n5h7a3d8r2x"]
+
+[ext_resource type="Script" path="res://Scripts/ui/simple_title_test.gd" id="1_simple"]
+
+[node name="SimpleTitleTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_simple")

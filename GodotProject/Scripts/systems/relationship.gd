@@ -152,7 +152,15 @@ func can_use_conflict_skill(char1_id: String, char2_id: String) -> bool:
 	return level == RelationshipLevel.HOSTILE  # 敵対レベル（HOSTILE_MAX以下）で使用可能
 
 # バトルイベントによる関係値変化を処理
-func process_battle_event(event_type: String, char1_id: String, char2_id: String):
+func process_battle_event(event_type: String, char1_id: String, char2_id: String) -> void:
+	if event_type.is_empty():
+		push_error("RelationshipSystem: イベントタイプが空です")
+		return
+	
+	if char1_id.is_empty() or char2_id.is_empty():
+		push_error("RelationshipSystem: キャラクターIDが空です")
+		return
+	
 	match event_type:
 		"cooperation":
 			modify_relationship(char1_id, char2_id, SMALL_COOPERATION, "戦闘での協力")
@@ -166,10 +174,12 @@ func process_battle_event(event_type: String, char1_id: String, char2_id: String
 			modify_relationship(char1_id, char2_id, LARGE_CONFLICT, "深刻な対立")
 		"abandonment":
 			modify_relationship(char1_id, char2_id, ABANDONMENT_PENALTY, "仲間を見捨てた")
+		_:
+			push_warning("RelationshipSystem: 不明なイベントタイプ - %s" % event_type)
 
 # 関係値のキーを生成（双方向対応）
 func get_relationship_key(char1_id: String, char2_id: String) -> String:
-	var ids: Array[String] = [char1_id, char2_id]
+	var ids: Array = [char1_id, char2_id]
 	ids.sort()
 	return ids[0] + "_" + ids[1]
 
@@ -207,7 +217,7 @@ func load_relationships(data: Dictionary) -> bool:
 	return true
 
 # デバッグ用：全関係値の表示
-func debug_print_all_relationships():
+func debug_print_all_relationships() -> void:
 	print("=== 関係値一覧 ===")
 	for key in relationships.keys():
 		var value = relationships[key]

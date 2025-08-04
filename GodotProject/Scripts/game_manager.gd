@@ -11,16 +11,21 @@ var battle_system
 var current_scene_name: String = ""
 var is_initialized: bool = false
 
+# Phase 3: シーン遷移システム
+var scene_transition_manager
+var text_scene_manager
+
 # ゲーム状態
 var party_members: Array = []
 var current_dungeon: String = ""
 var game_progress: Dictionary = {}
 
 func _ready():
+	print("GameManager: _ready()が呼び出されました")
 	# シングルトンとして初期化
 	initialize_game()
 
-func initialize_game():
+func initialize_game() -> void:
 	print("GameManager: ゲーム初期化開始...")
 	
 	# 各システムの初期化
@@ -30,8 +35,12 @@ func initialize_game():
 	is_initialized = true
 	game_initialized.emit()
 	print("GameManager: ゲーム初期化完了")
+	
+	# デバッグビルドでは診断情報を出力
+	if OS.is_debug_build():
+		print_system_diagnostics()
 
-func setup_systems():
+func setup_systems() -> void:
 	# 関係值システムの初期化
 	if relationship_system == null:
 		var relationship_script = load("res://Scripts/systems/relationship.gd")
@@ -59,8 +68,11 @@ func setup_systems():
 			return
 		add_child(battle_system)
 		print("GameManager: BattleSystem初期化完了")
+	
+	# Phase 3: シーン遷移システムの初期化
+	setup_scene_transition_system()
 
-func setup_initial_party():
+func setup_initial_party() -> void:
 	if relationship_system == null:
 		push_error("GameManager: RelationshipSystemが初期化されていません")
 		return
@@ -93,14 +105,20 @@ func setup_initial_party():
 	
 	print("GameManager: 初期パーティ設定完了")
 
-func change_scene(scene_path: String):
+func change_scene(scene_path: String) -> void:
 	print("GameManager: シーン変更 -> ", scene_path)
 	current_scene_name = scene_path.get_file().get_basename()
 	get_tree().change_scene_to_file(scene_path)
 	scene_changed.emit(current_scene_name)
 
-func start_new_game():
+func start_new_game() -> void:
 	print("GameManager: 新規ゲーム開始")
+	
+	# 初期化確認
+	if not is_initialized:
+		print("警告: GameManagerが初期化されていません。再初期化します...")
+		initialize_game()
+	
 	# ゲーム状態をリセット
 	game_progress.clear()
 	current_dungeon = ""
@@ -108,14 +126,15 @@ func start_new_game():
 	# パーティとシステムを再初期化
 	setup_initial_party()
 	
-	# メインゲームシーンに遷移
-	change_scene("res://Scenes/Main.tscn")
+	# シンプルなフォールバック: 直接WorkingTextSceneに遷移
+	print("GameManager: WorkingTextSceneに遷移します")
+	change_scene("res://Scenes/WorkingTextScene.tscn")
 
-func return_to_title():
+func return_to_title() -> void:
 	print("GameManager: タイトル画面に戻る")
 	change_scene("res://Scenes/MainMenu.tscn")
 
-func get_party_member(character_id: String):
+func get_party_member(character_id: String) -> Character:
 	if character_id.is_empty():
 		push_error("GameManager: キャラクターIDが空です")
 		return null
@@ -265,3 +284,204 @@ func load_game() -> bool:
 	
 	print("GameManager: ゲームデータ読み込み完了")
 	return true
+
+# ===========================================
+# Phase 3: シーン遷移システム統合機能
+# ===========================================
+
+func setup_scene_transition_system() -> void:
+	# シーン遷移システム初期化
+	print("GameManager: シーン遷移システム初期化開始")
+	
+	# SceneTransitionManagerの初期化
+	if scene_transition_manager == null:
+		var transition_script = load("res://Scripts/systems/scene_transition_manager.gd")
+		if transition_script == null:
+			push_error("GameManager: SceneTransitionManagerスクリプトの読み込みに失敗しました")
+			return
+		
+		scene_transition_manager = transition_script.new()
+		if scene_transition_manager == null:
+			push_error("GameManager: SceneTransitionManagerの生成に失敗しました")
+			return
+			
+		add_child(scene_transition_manager)
+		print("GameManager: SceneTransitionManager初期化完了")
+	
+	# TextSceneManagerの初期化
+	if text_scene_manager == null:
+		var text_scene_script = load("res://Scripts/systems/text_scene_manager.gd")
+		if text_scene_script == null:
+			push_error("GameManager: TextSceneManagerスクリプトの読み込みに失敗しました")
+			return
+		
+		text_scene_manager = text_scene_script.new()
+		if text_scene_manager == null:
+			push_error("GameManager: TextSceneManagerの生成に失敗しました")
+			return
+			
+		add_child(text_scene_manager)
+		print("GameManager: TextSceneManager初期化完了")
+	
+	# 相互連携の設定
+	scene_transition_manager.initialize_with_managers(text_scene_manager, self)
+	text_scene_manager.set_scene_transition_manager(scene_transition_manager)
+	
+	# シグナル接続
+	scene_transition_manager.scenario_completed.connect(_on_scenario_completed)
+	scene_transition_manager.transition_completed.connect(_on_scene_transition_completed)
+	
+	print("GameManager: シーン遷移システム統合完了")
+
+func load_scenario_library() -> bool:
+	# 
+	if scene_transition_manager == null:
+		print("エラー: SceneTransitionManagerが初期化されていません")
+		return false
+	
+	# デフォルトライブラリを読み込み
+	var scenario_loader_script = load("res://Scripts/systems/scenario_loader.gd")
+	var scenario_loader = scenario_loader_script.new()
+	var success = scenario_loader.load_default_scenario_library()
+	
+	if success:
+		# シナリオライブラリからTransitionManagerにシナリオを転送
+		var available_scenarios = scenario_loader.get_available_scenarios_from_library()
+		for scenario_id in available_scenarios:
+			var scenario_data = scenario_loader.get_scenario_from_library(scenario_id)
+			if scenario_data != null:
+				var file_path = scenario_data.file_path
+				scene_transition_manager.load_scenario_file(scenario_id, file_path)
+	
+	return success
+
+func start_scenario(scenario_id: String, scene_id: String = "") -> bool:
+	# 
+	if scene_transition_manager == null:
+		print("エラー: SceneTransitionManagerが初期化されていません")
+		return false
+	
+	print("GameManager: シナリオ開始 - %s" % scenario_id)
+	return await scene_transition_manager.jump_to_scenario(scenario_id, scene_id)
+
+func transition_to_scene(scene_id: String) -> bool:
+	if scene_transition_manager == null:
+		push_error("GameManager: SceneTransitionManagerが初期化されていません")
+		return false
+	
+	if scene_id.is_empty():
+		push_error("GameManager: シーンIDが空です")
+		return false
+	
+	return await scene_transition_manager.transition_to_scene(scene_id)
+
+func go_back_scene() -> bool:
+	if scene_transition_manager == null:
+		push_error("GameManager: SceneTransitionManagerが初期化されていません")
+		return false
+	
+	return await scene_transition_manager.go_back()
+
+func get_current_scene_info() -> Dictionary:
+	# 
+	var info = {
+		"current_scene_name": current_scene_name,
+		"is_transitioning": false,
+		"text_scene_info": {}
+	}
+	
+	if scene_transition_manager != null:
+		var status = scene_transition_manager.get_transition_status()
+		info["current_scenario"] = status.get("current_scenario", "")
+		info["current_scene"] = status.get("current_scene", "")
+		info["is_transitioning"] = status.get("is_transitioning", false)
+	
+	if text_scene_manager != null:
+		info["text_scene_info"] = text_scene_manager.get_scene_info()
+	
+	return info
+
+func get_available_scenarios() -> Array:
+	# 
+	if scene_transition_manager == null:
+		return []
+	
+	return scene_transition_manager.get_loaded_scenarios()
+
+# シーン遷移システムのイベントハンドラ
+func _on_scenario_completed(scenario_id: String) -> void:
+	# 
+	print("GameManager: シナリオ完了 - %s" % scenario_id)
+	
+	# ゲーム進行状況を更新
+	if not game_progress.has("completed_scenarios"):
+		game_progress["completed_scenarios"] = []
+	
+	var completed_scenarios = game_progress["completed_scenarios"]
+	if not scenario_id in completed_scenarios:
+		completed_scenarios.append(scenario_id)
+	
+	# セーブデータを自動更新
+	save_game()
+
+func _on_scene_transition_completed(scene_id: String) -> void:
+	# 
+	print("GameManager: シーン遷移完了 - %s" % scene_id)
+	current_scene_name = scene_id
+
+# デバッグ・テスト機能
+func test_phase3_systems() -> void:
+	# 
+	print("=== Phase 3 システムテスト開始 ===")
+	
+	# シナリオライブラリ読み込みテスト
+	var library_loaded = load_scenario_library()
+	print("シナリオライブラリ読み込み: %s" % ("成功" if library_loaded else "失敗"))
+	
+	# 利用可能シナリオ確認
+	var scenarios = get_available_scenarios()
+	print("利用可能シナリオ: %s" % scenarios)
+	
+	# シーン遷移テスト
+	if scenarios.size() > 0:
+		var test_scenario = scenarios[0]
+		print("テストシナリオ開始: %s" % test_scenario)
+		start_scenario(test_scenario)
+	
+	print("=== Phase 3 システムテスト完了 ===")
+
+func get_phase3_status() -> Dictionary:
+	# 
+	var status = {
+		"scene_transition_manager_ready": scene_transition_manager != null,
+		"text_scene_manager_ready": text_scene_manager != null,
+		"scenario_library_loaded": false,
+		"available_scenarios": [],
+		"current_scene_info": get_current_scene_info()
+	}
+	
+	if scene_transition_manager != null:
+		var loaded_scenarios = scene_transition_manager.get_loaded_scenarios()
+		status["scenario_library_loaded"] = loaded_scenarios.size() > 0
+		status["available_scenarios"] = loaded_scenarios
+	
+	return status
+
+# デバッグ・診断機能
+func print_system_diagnostics() -> void:
+	# 
+	print("=== GameManager システム診断 ===")
+	print("初期化状態: %s" % ("完了" if is_initialized else "未完了"))
+	print("RelationshipSystem: %s" % ("準備済み" if relationship_system != null else "未準備"))
+	print("BattleSystem: %s" % ("準備済み" if battle_system != null else "未準備"))
+	print("SceneTransitionManager: %s" % ("準備済み" if scene_transition_manager != null else "未準備"))
+	print("TextSceneManager: %s" % ("準備済み" if text_scene_manager != null else "未準備"))
+	print("パーティメンバー数: %d" % party_members.size())
+	print("現在のシーン: %s" % current_scene_name)
+	
+	var phase3_status = get_phase3_status()
+	print("Phase 3システム状態:")
+	for key in phase3_status.keys():
+		print("  %s: %s" % [key, phase3_status[key]])
+	
+	print("=== 診断完了 ===")

@@ -20,16 +20,19 @@ var save_button: Button
 var load_button: Button
 var settings_button: Button
 var return_to_title_button: Button
+var test_markdown_button: Button
+var test_text_scene_button: Button
+var test_phase3_button: Button
 
 # テスト用データ
-var test_dialogue_lines: Array[String] = [
+var test_dialogue_lines: Array = [
 	"こんにちは、テストダイアログです。",
 	"これは関係値重視型RPGのプロトタイプです。",
 	"選択肢によって関係値が変化し、スキル発動条件が変わります。",
 	"Godot 4.xで実装されています。"
 ]
 
-var test_choices: Array[String] = [
+var test_choices: Array = [
 	"協力的な選択肢（関係値+25）",
 	"普通の選択肢（変化なし）",
 	"対立的な選択肢（関係値-25）",
@@ -62,6 +65,9 @@ func setup_references():
 		load_button = $UI/DebugInterface/DebugPanel/VBoxContainer/LoadButton
 		settings_button = $UI/DebugInterface/DebugPanel/VBoxContainer/SettingsButton
 		return_to_title_button = $UI/DebugInterface/DebugPanel/VBoxContainer/ReturnToTitleButton
+		test_markdown_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestMarkdownButton
+		test_text_scene_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestTextSceneButton
+		test_phase3_button = $UI/DebugInterface/DebugPanel/VBoxContainer/TestPhase3Button
 	else:
 		# 本番ビルドではデバッグUIを無効化
 		var debug_interface = $UI/DebugInterface
@@ -90,6 +96,9 @@ func setup_signals():
 		load_button.pressed.connect(_on_load_pressed)
 		settings_button.pressed.connect(_on_settings_pressed)
 		return_to_title_button.pressed.connect(_on_return_to_title_pressed)
+		test_markdown_button.pressed.connect(_on_test_markdown_pressed)
+		test_text_scene_button.pressed.connect(_on_test_text_scene_pressed)
+		test_phase3_button.pressed.connect(_on_test_phase3_pressed)
 
 func setup_game_manager():
 	# GameManagerは既にAutoLoadとして利用可能
@@ -168,8 +177,9 @@ func _on_choice_selected(choice_index: int, choice_text: String):
 func _on_test_battle_pressed():
 	print("MainScene: バトルシステムテスト開始")
 	
-	# テスト用の敵を作成（class_nameを使用し、直接インスタンス化）
-	var enemy = Character.new()
+	# テスト用の敵を作成（動的ロードで作成）
+	var character_script = load("res://Scripts/character.gd")
+	var enemy = character_script.new()
 	
 	enemy.character_id = "test_enemy"
 	enemy.name = "テスト敵"
@@ -230,6 +240,37 @@ func _on_return_to_title_pressed():
 	print("MainScene: タイトル画面に戻ります")
 	GameManager.return_to_title()
 
+# マークダウンシナリオテスト
+func _on_test_markdown_pressed():
+	print("MainScene: マークダウンシナリオテスト開始")
+	
+	# MarkdownParserのテスト
+	var parser_script = load("res://Scripts/systems/markdown_parser.gd")
+	var parser = parser_script.new()
+	var elements = parser.parse_markdown_file("res://Assets/scenarios/scene01.md")
+	
+	if elements.is_empty():
+		print("エラー: シナリオファイルの解析に失敗")
+		return
+	
+	print("解析成功: %d 要素" % elements.size())
+	parser.print_parsed_elements(elements)
+	
+	# 構文検証
+	var validation = parser.validate_syntax(elements)
+	if validation.is_valid:
+		print("構文検証: 成功")
+	else:
+		print("構文検証: 失敗")
+		for error in validation.errors:
+			print("  エラー: %s" % error)
+
+func _on_test_text_scene_pressed():
+	print("MainScene: テキストシーン読み込みテスト開始")
+	
+	# WorkingTextSceneに切り替えてマークダウンシナリオをテスト
+	get_tree().change_scene_to_file("res://Scenes/WorkingTextScene.tscn")
+
 # 関係値変更の通知
 func _on_relationship_changed(char1_id: String, char2_id: String, old_value: int, new_value: int):
 	print("MainScene: 関係値変更 %s↔%s: %d → %d" % [char1_id, char2_id, old_value, new_value])
@@ -289,6 +330,11 @@ func start_demo_cycle():
 		"選択の結果が関係値に反映されました。",
 		"デモンストレーション完了です。"
 	], "システム")
+
+# Phase 3テスト機能
+func _on_test_phase3_pressed():
+	print("MainScene: Phase 3テストシーン開始")
+	get_tree().change_scene_to_file("res://Scenes/Phase3TestScene.tscn")
 
 # キーボードショートカット
 func _input(event: InputEvent):

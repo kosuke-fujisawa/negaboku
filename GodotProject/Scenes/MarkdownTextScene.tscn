@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4m6l8n2vxd9q"]
+
+[ext_resource type="Script" path="res://Scripts/ui/markdown_text_scene.gd" id="1_h2k3d"]
+
+[node name="MarkdownTextScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_h2k3d")

@@ -20,7 +20,7 @@ extends Resource
 @export var luck: int = 10
 
 # 状態
-@export var status_effects: Array[String] = []
+@export var status_effects: Array = []
 @export var is_party_member: bool = true
 
 # 成長率
@@ -34,7 +34,7 @@ func _init():
 	resource_name = "Character"
 
 # レベルアップ処理
-func level_up():
+func level_up() -> void:
 	level += 1
 	
 	var old_max_hp = max_hp
@@ -54,7 +54,7 @@ func level_up():
 	print("%s がレベルアップ！Lv.%d" % [name, level])
 
 # 経験値獲得
-func gain_experience(exp: int):
+func gain_experience(exp: int) -> void:
 	experience += exp
 	
 	# レベルアップ判定
@@ -69,7 +69,7 @@ func get_required_experience() -> int:
 	return level * 100
 
 # ダメージ処理
-func take_damage(damage: int):
+func take_damage(damage: int) -> void:
 	current_hp -= damage
 	current_hp = max(0, current_hp)
 	
@@ -77,7 +77,7 @@ func take_damage(damage: int):
 		print("%s は戦闘不能になった" % name)
 
 # 回復処理
-func heal(amount: int):
+func heal(amount: int) -> void:
 	current_hp += amount
 	current_hp = min(current_hp, max_hp)
 
@@ -89,13 +89,13 @@ func consume_mp(amount: int) -> bool:
 	return false
 
 # ステータス効果の追加
-func add_status_effect(effect: String):
+func add_status_effect(effect: String) -> void:
 	if effect not in status_effects:
 		status_effects.append(effect)
 		print("%s に %s の効果" % [name, effect])
 
 # ステータス効果の除去
-func remove_status_effect(effect: String):
+func remove_status_effect(effect: String) -> void:
 	if effect in status_effects:
 		status_effects.erase(effect)
 		print("%s の %s が解除された" % [name, effect])
@@ -105,7 +105,7 @@ func is_defeated() -> bool:
 	return current_hp <= 0
 
 # 完全回復
-func full_heal():
+func full_heal() -> void:
 	current_hp = max_hp
 	current_mp = max_mp
 	status_effects.clear()
@@ -136,7 +136,7 @@ func to_dict() -> Dictionary:
 	}
 
 # Dictionary形式からデータを読み込み（ロード用）
-func from_dict(data: Dictionary):
+func from_dict(data: Dictionary) -> void:
 	character_id = data.get("character_id", "")
 	name = data.get("name", "")
 	level = data.get("level", 1)
@@ -158,7 +158,7 @@ func from_dict(data: Dictionary):
 	speed_growth = data.get("speed_growth", 1.05)
 
 # デバッグ用：ステータス表示
-func debug_print_status():
+func debug_print_status() -> void:
 	print("=== %s (Lv.%d) ===" % [name, level])
 	print("HP: %d/%d" % [current_hp, max_hp])
 	print("MP: %d/%d" % [current_mp, max_mp])

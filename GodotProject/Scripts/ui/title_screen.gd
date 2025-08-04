@@ -6,30 +6,86 @@ signal load_game_requested
 signal settings_requested
 signal quit_requested
 
-@onready var new_game_button: Button = $UILayer/MainContainer/MenuContainer/NewGameButton
-@onready var load_game_button: Button = $UILayer/MainContainer/MenuContainer/LoadGameButton
-@onready var settings_button: Button = $UILayer/MainContainer/MenuContainer/SettingsButton
-@onready var quit_button: Button = $UILayer/MainContainer/MenuContainer/QuitButton
-@onready var title_logo: Label = $UILayer/MainContainer/TitleLogo
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
+
+# 動的にノードを取得する方式に変更（@onreadyの問題を回避）
+var new_game_button: Button
+var load_game_button: Button
+var settings_button: Button
+var quit_button: Button
+var title_logo: Label
+var animation_player: AnimationPlayer
 
 var tween: Tween
 
 func _ready():
+	print("TitleScreen: 初期化開始")
+	
+	# デバッグビルドでのみ詳細ログ
+	if OS.is_debug_build():
+		print("TitleScreen: デバッグモード - 詳細ログ有効")
+		print("TitleScreen: スクリプトパス = %s" % get_script().resource_path)
+		print("TitleScreen: ノード名 = %s" % name)
+	
+	_setup_node_references()
 	_connect_signals()
 	_setup_initial_state()
 	_play_intro_animation()
+	
+	print("TitleScreen: 初期化完了")
+
+func _setup_node_references():
+	# ノード参照の設定# 
+	# 動的にノードを取得（@onreadyの代替）
+	new_game_button = get_node_or_null("UILayer/MainContainer/MenuContainer/NewGameButton")
+	load_game_button = get_node_or_null("UILayer/MainContainer/MenuContainer/LoadGameButton")
+	settings_button = get_node_or_null("UILayer/MainContainer/MenuContainer/SettingsButton")
+	quit_button = get_node_or_null("UILayer/MainContainer/MenuContainer/QuitButton")
+	title_logo = get_node_or_null("UILayer/MainContainer/TitleLogo")
+	animation_player = get_node_or_null("AnimationPlayer")
+	
+	# デバッグビルドでノード確認
+	if OS.is_debug_build():
+		var nodes = [
+			["new_game_button", new_game_button],
+			["load_game_button", load_game_button],
+			["settings_button", settings_button],
+			["quit_button", quit_button],
+			["title_logo", title_logo],
+			["animation_player", animation_player]
+		]
+		
+		for node_info in nodes:
+			var node_name = node_info[0]
+			var node_ref = node_info[1]
+			if node_ref == null:
+				print("警告: %s が見つかりません" % node_name)
+
 
 func _connect_signals():
-	new_game_button.pressed.connect(_on_new_game_pressed)
-	load_game_button.pressed.connect(_on_load_game_pressed)
-	settings_button.pressed.connect(_on_settings_pressed)
-	quit_button.pressed.connect(_on_quit_pressed)
+	# ボタンシグナルの接続# 
+	var button_connections = [
+		[new_game_button, _on_new_game_pressed],
+		[load_game_button, _on_load_game_pressed],
+		[settings_button, _on_settings_pressed],
+		[quit_button, _on_quit_pressed]
+	]
 	
-	# ボタンホバーエフェクト
-	for button in [new_game_button, load_game_button, settings_button, quit_button]:
-		button.mouse_entered.connect(_on_button_hover.bind(button))
-		button.mouse_exited.connect(_on_button_unhover.bind(button))
+	var connected_count = 0
+	for connection in button_connections:
+		var button = connection[0]
+		var callback = connection[1]
+		
+		if button != null:
+			button.pressed.connect(callback)
+			# ホバーエフェクト
+			button.mouse_entered.connect(_on_button_hover.bind(button))
+			button.mouse_exited.connect(_on_button_unhover.bind(button))
+			connected_count += 1
+		elif OS.is_debug_build():
+			print("警告: ボタンがnullのため接続をスキップ")
+	
+	if OS.is_debug_build():
+		print("TitleScreen: %d個のボタンシグナルを接続" % connected_count)
 
 func _setup_initial_state():
 	# 初期状態でUI要素を非表示にする
@@ -80,10 +136,29 @@ func _cleanup_tween():
 	tween = null
 
 func _on_new_game_pressed():
+	print("TitleScreen: 新規ゲーム開始")
+	
 	_play_button_press_effect(new_game_button)
 	new_game_requested.emit()
+	
+	# ボタンを一時的に無効化して重複クリックを防止
+	if new_game_button:
+		new_game_button.disabled = true
+	
+	# GameManagerの存在確認
+	if GameManager == null:
+		print("エラー: GameManagerが見つかりません")
+		if new_game_button:
+			new_game_button.disabled = false
+		return
+	
 	# GameManagerを通して新規ゲーム開始
-	GameManager.start_new_game()
+	await GameManager.start_new_game()
+	
+	# 失敗した場合のみボタンを再有効化
+	if get_tree().current_scene == self and new_game_button:  # まだタイトル画面にいる場合
+		new_game_button.disabled = false
+		print("TitleScreen: 新規ゲーム開始が失敗しました")
 
 func _on_load_game_pressed():
 	if load_game_button.disabled:
@@ -144,7 +219,20 @@ func _transition_to_game():
 	tween.tween_callback(_change_to_game_scene).set_delay(0.5)
 
 func _change_to_game_scene():
-	get_tree().change_scene_to_file("res://Scenes/TextScene.tscn")
+	# より安全なシーン遷移
+	var target_scene = "res://Scenes/Main.tscn"
+	if ResourceLoader.exists(target_scene):
+		print("TitleScreen: %s に遷移します" % target_scene)
+		get_tree().change_scene_to_file(target_scene)
+	else:
+		print("エラー: ターゲットシーンが見つかりません: %s" % target_scene)
+		# フォールバック先を試行
+		target_scene = "res://Scenes/WorkingTextScene.tscn"
+		if ResourceLoader.exists(target_scene):
+			print("TitleScreen: フォールバック先に遷移: %s" % target_scene)
+			get_tree().change_scene_to_file(target_scene)
+		else:
+			print("エラー: フォールバック先も見つかりません")
 
 func _quit_game():
 	# 終了アニメーション
@@ -163,15 +251,18 @@ func _unhandled_input(event):
 		_on_quit_pressed()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_accept"):
-		if new_game_button.has_focus():
+		if new_game_button and new_game_button.has_focus():
 			_on_new_game_pressed()
 			get_viewport().set_input_as_handled()
-		elif load_game_button.has_focus() and not load_game_button.disabled:
+		elif load_game_button and load_game_button.has_focus() and not load_game_button.disabled:
 			_on_load_game_pressed()
 			get_viewport().set_input_as_handled()
-		elif settings_button.has_focus():
+		elif settings_button and settings_button.has_focus():
 			_on_settings_pressed()
 			get_viewport().set_input_as_handled()
-		elif quit_button.has_focus():
+		elif quit_button and quit_button.has_focus():
 			_on_quit_pressed()
 			get_viewport().set_input_as_handled()
+	# デバッグビルドでのみSpaceキーショートカット
+	elif OS.is_debug_build() and event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
+		_on_new_game_pressed()
