@@ -205,7 +205,7 @@ func _safe_substr(source: String, start: int, length: int) -> String:
 	return source.substr(start, end_pos - start)
 
 func complete_current_line() -> void:
-	if typing_tween:
+	if typing_tween and typing_tween.is_valid():
 		typing_tween.kill()
 	
 	is_typing = false

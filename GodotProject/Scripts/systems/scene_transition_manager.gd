@@ -25,7 +25,7 @@ class TransitionConfig:
 	var type: TransitionType = TransitionType.FADE
 	var duration: float = 0.5
 	var ease_type: Tween.EaseType = Tween.EASE_IN_OUT
-	var transition_type: Tween.TransitionType = Tween.TRANS_CUBIC
+	var trans_type: Tween.TransitionType = Tween.TRANS_CUBIC
 	
 	func _init(p_type: TransitionType = TransitionType.FADE, p_duration: float = 0.5):
 		type = p_type
@@ -44,7 +44,6 @@ var scene_transition_map: Dictionary = {}  # scene_id -> 次のシーンリス�
 
 # 遷移エフェクト用ノード
 var transition_overlay: ColorRect
-var tween: Tween
 var is_transitioning: bool = false
 
 # リファレンス
@@ -55,33 +54,61 @@ func _ready():
 	_initialize_transition_system()
 
 func _initialize_transition_system():
-	# 遷移システムの初期化# 
-	scenario_loader = ScenarioLoader.new()
-	add_child(scenario_loader)
+	# 遷移システムの初期化 - エラーハンドリング付き
+	if not _create_scenario_loader():
+		return
 	
-	# 遷移オーバーレイの作成
+	if not _create_transition_overlay():
+		return
+	
+	print("SceneTransitionManager 初期化完了")
+
+func _create_scenario_loader() -> bool:
+	scenario_loader = ScenarioLoader.new()
+	if scenario_loader == null:
+		push_error("ScenarioLoaderの作成に失敗しました")
+		return false
+	add_child(scenario_loader)
+	return true
+
+func _create_transition_overlay() -> bool:
 	transition_overlay = ColorRect.new()
+	if transition_overlay == null:
+		push_error("遷移オーバーレイの作成に失敗しました")
+		return false
+	
 	transition_overlay.color = Color.BLACK
 	transition_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	transition_overlay.visible = false
 	transition_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(transition_overlay)
-	
-	# Tweenの作成
-	tween = Tween.new()
-	add_child(tween)
-	
-	print("SceneTransitionManager 初期化完了")
+	return true
 
 func initialize_with_managers(p_text_scene_manager: TextSceneManager, p_game_manager: GameManager):
-	# 他のマネージャーとの連携を初期化# 
+	# 他のマネージャーとの連携を初期化 - エラーハンドリング付き
+	if p_text_scene_manager == null:
+		push_error("TextSceneManagerがnullです")
+		return
+	
+	if p_game_manager == null:
+		push_error("GameManagerがnullです")
+		return
+	
 	text_scene_manager = p_text_scene_manager
 	game_manager = p_game_manager
 	
 	# TextSceneManagerのシグナル接続
-	if text_scene_manager:
+	if text_scene_manager.has_signal("scene_finished"):
 		text_scene_manager.scene_finished.connect(_on_scene_finished)
+	else:
+		push_warning("TextSceneManagerにscene_finishedシグナルがありません")
+	
+	if text_scene_manager.has_signal("choice_made"):
 		text_scene_manager.choice_made.connect(_on_choice_made)
+	else:
+		push_warning("TextSceneManagerにchoice_madeシグナルがありません")
+	
+	print("マネージャー連携初期化完了")
 
 # ===========================================
 # シナリオファイルベース管理
@@ -216,12 +243,13 @@ func _execute_transition_effect(config: TransitionConfig, is_fade_out: bool):
 		transition_overlay.visible = false
 
 func _fade_transition(config: TransitionConfig, is_fade_out: bool):
-	# フェード遷移# 
+	# フェード遷移 - Godot 4.x対応
 	var start_alpha = 0.0 if is_fade_out else 1.0
 	var end_alpha = 1.0 if is_fade_out else 0.0
 	
 	transition_overlay.color.a = start_alpha
 	
+	var tween = create_tween()
 	tween.tween_method(
 		func(alpha): transition_overlay.color.a = alpha,
 		start_alpha,
@@ -233,16 +261,17 @@ func _fade_transition(config: TransitionConfig, is_fade_out: bool):
 	await tween.finished
 
 func _slide_transition(config: TransitionConfig, direction: Vector2, is_fade_out: bool):
-	# スライド遷移# 
+	# スライド遷移 - Godot 4.x対応
 	var screen_size = get_viewport().get_visible_rect().size
 	var start_pos = Vector2.ZERO if is_fade_out else direction * screen_size
 	var end_pos = direction * screen_size if is_fade_out else Vector2.ZERO
 	
 	transition_overlay.position = start_pos
 	
+	var tween = create_tween()
 	tween.tween_property(transition_overlay, "position", end_pos, config.duration)
-	tween.tween_set_ease(config.ease_type)
-	tween.tween_set_trans(config.transition_type)
+	tween.set_ease(config.ease_type)
+	tween.set_trans(config.trans_type)
 	
 	await tween.finished
 
