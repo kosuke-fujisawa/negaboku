@@ -49,12 +49,15 @@ func _init():
 
 func load_scenario_file(file_path: String) -> ScenarioData:
 	# マークダウンシナリオファイルを読み込み# 
+	print("ScenarioLoader: load_scenario_file()開始: %s" % file_path)
+	
 	# キャッシュチェック
+	print("ScenarioLoader: キャッシュチェック中...")
 	if loaded_scenarios.has(file_path):
-		print("キャッシュからシナリオを取得: %s" % file_path)
+		print("⚠️ ScenarioLoader: キャッシュからシナリオを取得: %s" % file_path)
 		return loaded_scenarios[file_path]
 	
-	print("シナリオファイル読み込み開始: %s" % file_path)
+	print("✅ ScenarioLoader: キャッシュなし、新規読み込み開始: %s" % file_path)
 	
 	# マークダウン解析
 	var parsed_elements = markdown_parser.parse_markdown_file(file_path)
@@ -283,13 +286,26 @@ func clear_cache():
 
 func force_reload_scenario_file(file_path: String) -> ScenarioData:
 	# ファイルを強制的に再読み込み（キャッシュ無視）# 
-	print("シナリオファイル強制再読み込み: %s" % file_path)
+	print("★★★ ScenarioLoader: 強制再読み込み開始: %s" % file_path)
+	
+	# キャッシュ状況確認
+	print("ScenarioLoader: キャッシュ削除前の状況:")
+	print("  全キャッシュ数: %d" % loaded_scenarios.size())
+	print("  対象ファイルがキャッシュ済み: %s" % loaded_scenarios.has(file_path))
 	
 	# キャッシュから削除
 	if loaded_scenarios.has(file_path):
 		loaded_scenarios.erase(file_path)
+		print("✅ ScenarioLoader: キャッシュから削除完了: %s" % file_path)
+	else:
+		print("ScenarioLoader: キャッシュに存在しませんでした: %s" % file_path)
+	
+	print("ScenarioLoader: キャッシュ削除後の状況:")
+	print("  全キャッシュ数: %d" % loaded_scenarios.size())
+	print("  対象ファイルがキャッシュ済み: %s" % loaded_scenarios.has(file_path))
 	
 	# 通常の読み込み処理を実行
+	print("ScenarioLoader: load_scenario_file()を呼び出し")
 	return load_scenario_file(file_path)
 
 func get_scenario_metadata(file_path: String) -> Dictionary:

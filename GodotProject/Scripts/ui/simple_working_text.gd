@@ -98,51 +98,67 @@ func show_current_message():
 
 func _try_load_markdown_scenario():
 	# scene01.mdからシナリオを読み込み、成功時のみtest_messagesを置き換える
-	print("SimpleWorkingText: マークダウンシナリオ読み込み試行")
+	print("★★★ SimpleWorkingText: マークダウンシナリオ読み込み試行開始 ★★★")
 	
 	# ScenarioLoaderクラスが利用可能かチェック
+	print("SimpleWorkingText: ScenarioLoaderスクリプトを読み込み中...")
 	var scenario_loader_script = load("res://Scripts/systems/scenario_loader.gd")
 	if scenario_loader_script == null:
-		print("SimpleWorkingText: ScenarioLoaderが見つかりません。デフォルトメッセージを使用します。")
+		print("❌ SimpleWorkingText: ScenarioLoaderが見つかりません。デフォルトメッセージを使用します。")
 		return
+	print("✅ SimpleWorkingText: ScenarioLoaderスクリプト読み込み成功")
 	
+	print("SimpleWorkingText: ScenarioLoaderインスタンス化中...")
 	var scenario_loader = scenario_loader_script.new()
 	if scenario_loader == null:
-		print("SimpleWorkingText: ScenarioLoaderのインスタンス化に失敗。デフォルトメッセージを使用します。")
+		print("❌ SimpleWorkingText: ScenarioLoaderのインスタンス化に失敗。デフォルトメッセージを使用します。")
 		return
+	print("✅ SimpleWorkingText: ScenarioLoaderインスタンス化成功")
 	
 	# force_reload_scenario_file が利用可能かチェック
+	print("SimpleWorkingText: force_reload_scenario_fileメソッドの存在確認中...")
 	if not scenario_loader.has_method("force_reload_scenario_file"):
-		print("SimpleWorkingText: force_reload_scenario_fileメソッドが見つかりません。デフォルトメッセージを使用します。")
+		print("❌ SimpleWorkingText: force_reload_scenario_fileメソッドが見つかりません。デフォルトメッセージを使用します。")
 		return
+	print("✅ SimpleWorkingText: force_reload_scenario_fileメソッド存在確認")
 	
 	# シナリオファイルを読み込み
 	var scenario_path = "res://Assets/scenarios/scene01.md"
+	print("SimpleWorkingText: シナリオファイル読み込み中: %s" % scenario_path)
 	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
 	
 	if loaded_scenario_data == null:
-		print("SimpleWorkingText: マークダウン読み込み失敗。デフォルトメッセージを使用します。")
+		print("❌ SimpleWorkingText: マークダウン読み込み失敗。デフォルトメッセージを使用します。")
 		return
+	print("✅ SimpleWorkingText: シナリオデータ読み込み成功")
 	
 	# シーンデータに変換
+	print("SimpleWorkingText: シーンデータ変換中...")
 	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
 	if converted_scenes == null or converted_scenes.is_empty():
-		print("SimpleWorkingText: シーンデータ変換失敗。デフォルトメッセージを使用します。")
+		print("❌ SimpleWorkingText: シーンデータ変換失敗。デフォルトメッセージを使用します。")
 		return
+	print("✅ SimpleWorkingText: シーンデータ変換成功: %d シーン" % converted_scenes.size())
 	
 	# 成功時のみtest_messagesを置き換え
+	print("SimpleWorkingText: メッセージ配列変換中...")
 	var new_messages = []
-	for scene_data in converted_scenes:
+	for i in range(converted_scenes.size()):
+		var scene_data = converted_scenes[i]
 		var message = ""
 		if scene_data.speaker_name.is_empty():
 			message = scene_data.text
 		else:
 			message = "%s: %s" % [scene_data.speaker_name, scene_data.text]
 		new_messages.append(message)
+		print("  [%d] %s" % [i, message])
 	
 	# test_messagesを置き換え
+	print("SimpleWorkingText: test_messages置き換え実行...")
+	var old_count = test_messages.size()
 	test_messages = new_messages
-	print("SimpleWorkingText: マークダウンシナリオ読み込み成功: %d メッセージ" % test_messages.size())
+	print("✅ SimpleWorkingText: マークダウンシナリオ読み込み成功完了!")
+	print("  置き換え前: %d メッセージ → 置き換え後: %d メッセージ" % [old_count, test_messages.size()])
 
 func _input(event):
 	if event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.pressed):
