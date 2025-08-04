@@ -104,22 +104,50 @@ func load_markdown_scenario():
 	# scene01.mdからシナリオを読み込み# 
 	print("SimpleWorkingText: マークダウンシナリオ読み込み開始")
 	
-	var scenario_loader = ScenarioLoader.new()
+	# まずフォールバックメッセージを設定（安全措置）
+	current_messages = fallback_messages.duplicate()
+	
+	# ScenarioLoaderのインスタンス化を試行
+	var scenario_loader = null
 	var scenario_path = "res://Assets/scenarios/scene01.md"
 	
+	# ScenarioLoaderが利用可能かチェック
+	if not ResourceLoader.exists("res://Scripts/systems/scenario_loader.gd"):
+		print("SimpleWorkingText: ScenarioLoaderが見つかりません、フォールバックメッセージを使用")
+		return
+	
+	try:
+		scenario_loader = ScenarioLoader.new()
+	except:
+		print("SimpleWorkingText: ScenarioLoaderのインスタンス化に失敗、フォールバックメッセージを使用")
+		return
+	
+	if scenario_loader == null:
+		print("SimpleWorkingText: ScenarioLoaderがnull、フォールバックメッセージを使用")
+		return
+	
 	# 強制再読み込みで最新のファイル内容を確実に読み込む
-	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
+	var loaded_scenario_data = null
+	try:
+		loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
+	except:
+		print("SimpleWorkingText: マークダウン読み込み中にエラー、フォールバックメッセージを使用")
+		return
 	
 	if loaded_scenario_data == null:
 		print("SimpleWorkingText: マークダウン読み込み失敗、フォールバックメッセージを使用")
-		current_messages = fallback_messages.duplicate()
 		return
 	
 	# ScenarioDataをメッセージ配列に変換
-	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
-	if converted_scenes.is_empty():
+	var converted_scenes = null
+	try:
+		converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
+	except:
+		print("SimpleWorkingText: シーンデータ変換中にエラー、フォールバックメッセージを使用")
+		return
+	
+	if converted_scenes == null or converted_scenes.is_empty():
 		print("SimpleWorkingText: シーンデータ変換失敗、フォールバックメッセージを使用")
-		current_messages = fallback_messages.duplicate()
 		return
 	
 	# シーンデータをシンプルなメッセージ形式に変換
