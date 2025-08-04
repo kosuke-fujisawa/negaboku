@@ -67,6 +67,9 @@ func _ready():
 	text_panel.add_child(continue_indicator)
 	print("SimpleWorkingText: 進行インジケーター作成完了")
 	
+	# マークダウンシナリオの読み込みを試行（失敗時はtest_messagesをそのまま使用）
+	_try_load_markdown_scenario()
+	
 	# 最初のメッセージを表示
 	show_current_message()
 	print("=== SimpleWorkingText: 初期化完了 ===")
@@ -92,6 +95,54 @@ func show_current_message():
 		text_label.text = "テキストダイアログシステム動作確認完了\n\nESCキーでタイトルに戻る"
 		continue_indicator.visible = false
 		print("SimpleWorkingText: テスト完了")
+
+func _try_load_markdown_scenario():
+	# scene01.mdからシナリオを読み込み、成功時のみtest_messagesを置き換える
+	print("SimpleWorkingText: マークダウンシナリオ読み込み試行")
+	
+	# ScenarioLoaderクラスが利用可能かチェック
+	var scenario_loader_script = load("res://Scripts/systems/scenario_loader.gd")
+	if scenario_loader_script == null:
+		print("SimpleWorkingText: ScenarioLoaderが見つかりません。デフォルトメッセージを使用します。")
+		return
+	
+	var scenario_loader = scenario_loader_script.new()
+	if scenario_loader == null:
+		print("SimpleWorkingText: ScenarioLoaderのインスタンス化に失敗。デフォルトメッセージを使用します。")
+		return
+	
+	# force_reload_scenario_file が利用可能かチェック
+	if not scenario_loader.has_method("force_reload_scenario_file"):
+		print("SimpleWorkingText: force_reload_scenario_fileメソッドが見つかりません。デフォルトメッセージを使用します。")
+		return
+	
+	# シナリオファイルを読み込み
+	var scenario_path = "res://Assets/scenarios/scene01.md"
+	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
+	
+	if loaded_scenario_data == null:
+		print("SimpleWorkingText: マークダウン読み込み失敗。デフォルトメッセージを使用します。")
+		return
+	
+	# シーンデータに変換
+	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
+	if converted_scenes == null or converted_scenes.is_empty():
+		print("SimpleWorkingText: シーンデータ変換失敗。デフォルトメッセージを使用します。")
+		return
+	
+	# 成功時のみtest_messagesを置き換え
+	var new_messages = []
+	for scene_data in converted_scenes:
+		var message = ""
+		if scene_data.speaker_name.is_empty():
+			message = scene_data.text
+		else:
+			message = "%s: %s" % [scene_data.speaker_name, scene_data.text]
+		new_messages.append(message)
+	
+	# test_messagesを置き換え
+	test_messages = new_messages
+	print("SimpleWorkingText: マークダウンシナリオ読み込み成功: %d メッセージ" % test_messages.size())
 
 func _input(event):
 	if event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.pressed):
