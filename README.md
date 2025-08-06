@@ -107,7 +107,7 @@ Unity版のソースコードは `Unity/` フォルダに保存されていま�
 ```
 GodotProject/Assets/
 ├── images/          # 🚫 .gitignoreで除外 - バイナリファイル
-├── sounds/          # 🚫 .gitignoreで除外 - バイナリファイル  
+├── sounds/          # 🚫 .gitignoreで除外 - バイナリファイル
 ├── scenarios/       # ✅ git管理対象 - テキストファイル
 └── effects/         # ✅ git管理対象 - 軽量ファイル
 ```

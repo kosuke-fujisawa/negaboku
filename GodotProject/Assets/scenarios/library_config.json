@@ -16,7 +16,7 @@
     },
     {
       "id": "chapter1",
-      "file": "scene02.md", 
+      "file": "scene02.md",
       "title": "遺跡の謎",
       "description": "遺跡の中で願い石を発見し、試練が始まる",
       "dependencies": ["prologue"],
@@ -45,7 +45,7 @@
       "description": "メインストーリーの基本的な流れ"
     },
     {
-      "id": "debug_sequence", 
+      "id": "debug_sequence",
       "name": "デバッグシーケンス",
       "scenarios": ["test_scenario"],
       "description": "開発・テスト用のシーケンス"
@@ -61,7 +61,7 @@
     },
     {
       "id": "debug_collection",
-      "name": "デバッグコレクション", 
+      "name": "デバッグコレクション",
       "scenarios": ["test_scenario"],
       "unlock_requirements": ["debug_mode"],
       "description": "開発者向けテスト機能"
@@ -86,7 +86,7 @@
     "total_scenarios": 3,
     "supported_features": [
       "scene_transitions",
-      "scenario_dependencies", 
+      "scenario_dependencies",
       "multiple_file_management",
       "scene_jumping",
       "debug_integration"

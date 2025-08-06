@@ -20,24 +20,25 @@ var continue_indicator: Label
 var background: ColorRect
 var text_panel: Panel
 
+
 func _ready():
 	print("🚀🚀🚀 SimpleWorkingText: _ready()開始 🚀🚀🚀")
 	print("SimpleWorkingText: このスクリプトが実行されています！")
-	
+
 	# 背景を作成
 	background = ColorRect.new()
 	background.color = Color.DARK_BLUE
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(background)
 	print("SimpleWorkingText: 背景作成完了")
-	
+
 	# テキストパネルを作成（ダイアログボックス風）
 	text_panel = Panel.new()
 	text_panel.position = Vector2(50, 400)
 	text_panel.size = Vector2(900, 180)
 	add_child(text_panel)
 	print("SimpleWorkingText: テキストパネル作成完了")
-	
+
 	# 話者名ラベルを作成
 	name_label = Label.new()
 	name_label.position = Vector2(20, 10)
@@ -46,7 +47,7 @@ func _ready():
 	name_label.add_theme_color_override("font_color", Color.YELLOW)
 	text_panel.add_child(name_label)
 	print("SimpleWorkingText: 話者名ラベル作成完了")
-	
+
 	# テキストラベルを作成
 	text_label = Label.new()
 	text_label.position = Vector2(20, 45)
@@ -56,7 +57,7 @@ func _ready():
 	text_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	text_panel.add_child(text_label)
 	print("SimpleWorkingText: テキストラベル作成完了")
-	
+
 	# 進行インジケーターを作成
 	continue_indicator = Label.new()
 	continue_indicator.text = "▼"
@@ -67,22 +68,23 @@ func _ready():
 	continue_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	text_panel.add_child(continue_indicator)
 	print("SimpleWorkingText: 進行インジケーター作成完了")
-	
+
 	# マークダウンシナリオの読み込みを試行（失敗時はtest_messagesをそのまま使用）
 	print("🎯 SimpleWorkingText: _try_load_markdown_scenario()を呼び出します")
 	_try_load_markdown_scenario()
 	print("🎯 SimpleWorkingText: _try_load_markdown_scenario()から戻りました")
-	
+
 	# 最初のメッセージを表示
 	print("🎯 SimpleWorkingText: show_current_message()を呼び出します")
 	show_current_message()
 	print("🚀🚀🚀 SimpleWorkingText: 初期化完了 🚀🚀🚀")
 
+
 func show_current_message():
 	if current_index < test_messages.size():
 		var message = test_messages[current_index]
 		var parts = message.split(": ", false, 1)
-		
+
 		if parts.size() == 2:
 			# 話者名がある場合
 			name_label.text = parts[0]
@@ -100,10 +102,11 @@ func show_current_message():
 		continue_indicator.visible = false
 		print("SimpleWorkingText: テスト完了")
 
+
 func _try_load_markdown_scenario():
 	# scene01.mdからシナリオを読み込み、成功時のみtest_messagesを置き換える
 	print("★★★ SimpleWorkingText: マークダウンシナリオ読み込み試行開始 ★★★")
-	
+
 	# まず、scene01.mdファイルの存在確認
 	var scenario_path = "res://Assets/scenarios/scene01.md"
 	print("SimpleWorkingText: ファイル存在確認: %s" % scenario_path)
@@ -111,7 +114,7 @@ func _try_load_markdown_scenario():
 		print("❌ SimpleWorkingText: scene01.mdファイルが存在しません: %s" % scenario_path)
 		return
 	print("✅ SimpleWorkingText: scene01.mdファイル存在確認")
-	
+
 	# ファイル内容の直接読み込みテスト
 	print("SimpleWorkingText: ファイル内容の直接読み込みテスト...")
 	var file = FileAccess.open(scenario_path, FileAccess.READ)
@@ -123,7 +126,7 @@ func _try_load_markdown_scenario():
 	print("✅ SimpleWorkingText: ファイル読み込み成功 - %d文字" % content.length())
 	print("SimpleWorkingText: ファイル内容の最初の100文字:")
 	print(content.left(100))
-	
+
 	# ScenarioLoaderクラスが利用可能かチェック
 	print("SimpleWorkingText: ScenarioLoaderスクリプトを読み込み中...")
 	var scenario_loader_script = load("res://Scripts/systems/scenario_loader.gd")
@@ -131,25 +134,25 @@ func _try_load_markdown_scenario():
 		print("❌ SimpleWorkingText: ScenarioLoaderが見つかりません。デフォルトメッセージを使用します。")
 		return
 	print("✅ SimpleWorkingText: ScenarioLoaderスクリプト読み込み成功")
-	
+
 	print("SimpleWorkingText: ScenarioLoaderインスタンス化中...")
 	var scenario_loader = scenario_loader_script.new()
 	if scenario_loader == null:
 		print("❌ SimpleWorkingText: ScenarioLoaderのインスタンス化に失敗。デフォルトメッセージを使用します。")
 		return
 	print("✅ SimpleWorkingText: ScenarioLoaderインスタンス化成功")
-	
+
 	# force_reload_scenario_file が利用可能かチェック
 	print("SimpleWorkingText: force_reload_scenario_fileメソッドの存在確認中...")
 	if not scenario_loader.has_method("force_reload_scenario_file"):
 		print("❌ SimpleWorkingText: force_reload_scenario_fileメソッドが見つかりません。デフォルトメッセージを使用します。")
 		return
 	print("✅ SimpleWorkingText: force_reload_scenario_fileメソッド存在確認")
-	
+
 	# シナリオファイルを読み込み
 	print("SimpleWorkingText: シナリオファイル読み込み中: %s" % scenario_path)
 	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
-	
+
 	if loaded_scenario_data == null:
 		print("❌ SimpleWorkingText: マークダウン読み込み失敗。デフォルトメッセージを使用します。")
 		# 詳細なエラー診断を実行
@@ -159,7 +162,7 @@ func _try_load_markdown_scenario():
 		print("SimpleWorkingText: MarkdownParser結果: %d要素" % parsed_elements.size())
 		return
 	print("✅ SimpleWorkingText: シナリオデータ読み込み成功")
-	
+
 	# シーンデータに変換
 	print("SimpleWorkingText: シーンデータ変換中...")
 	var converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
@@ -167,7 +170,7 @@ func _try_load_markdown_scenario():
 		print("❌ SimpleWorkingText: シーンデータ変換失敗。デフォルトメッセージを使用します。")
 		return
 	print("✅ SimpleWorkingText: シーンデータ変換成功: %d シーン" % converted_scenes.size())
-	
+
 	# 成功時のみtest_messagesを置き換え
 	print("SimpleWorkingText: メッセージ配列変換中...")
 	var new_messages = []
@@ -180,7 +183,7 @@ func _try_load_markdown_scenario():
 			message = "%s: %s" % [scene_data.speaker_name, scene_data.text]
 		new_messages.append(message)
 		print("  [%d] %s" % [i, message])
-	
+
 	# test_messagesを置き換え
 	print("SimpleWorkingText: test_messages置き換え実行...")
 	var old_count = test_messages.size()
@@ -188,15 +191,18 @@ func _try_load_markdown_scenario():
 	print("✅ SimpleWorkingText: マークダウンシナリオ読み込み成功完了!")
 	print("  置き換え前: %d メッセージ → 置き換え後: %d メッセージ" % [old_count, test_messages.size()])
 
+
 func _input(event):
 	if event.is_action_pressed("ui_accept") or (event is InputEventMouseButton and event.pressed):
 		advance_message()
 	elif event.is_action_pressed("ui_cancel"):
 		return_to_title()
 
+
 func advance_message():
 	current_index += 1
 	show_current_message()
+
 
 func return_to_title():
 	print("SimpleWorkingText: タイトルに戻る")

@@ -33,6 +33,7 @@ var scenario_loader: ScenarioLoader
 var converted_scenes: Array = []
 var scene_index = 0
 
+
 func _ready():
 	print("=== WorkingTextScene: 開始 ===")
 	print("WorkingTextScene: ノード名 = %s" % name)
@@ -53,6 +54,7 @@ func _ready():
 	print("WorkingTextScene: シナリオ読み込み完了")
 
 	print("=== WorkingTextScene: 初期化完了 ===")
+
 
 func _create_ui():
 	# 背景作成
@@ -112,15 +114,16 @@ func _create_ui():
 	_create_log_overlay()
 	print("WorkingTextScene: ログオーバーレイ作成完了")
 
+
 func _load_markdown_scenario():
 	print("WorkingTextScene: マークダウンシナリオ読み込み開始")
-	
+
 	# ScenarioLoaderを使用してマークダウンファイルを読み込み
 	scenario_loader = ScenarioLoader.new()
 	var scenario_path = "res://Assets/scenarios/scene01.md"
 	# 強制再読み込みで最新のファイル内容を確実に読み込む
 	var loaded_scenario_data = scenario_loader.force_reload_scenario_file(scenario_path)
-	
+
 	if loaded_scenario_data == null:
 		print("WorkingTextScene: マークダウン読み込み失敗、デフォルトテキストを使用")
 		converted_scenes.clear()
@@ -128,7 +131,7 @@ func _load_markdown_scenario():
 		current_index = 0
 		_show_current_scene()
 		return
-	
+
 	# ScenarioDataをTextSceneManager.SceneDataに変換
 	converted_scenes = scenario_loader.convert_to_text_scene_data(loaded_scenario_data)
 	if converted_scenes.is_empty():
@@ -137,17 +140,23 @@ func _load_markdown_scenario():
 		current_index = 0
 		_show_current_scene()
 		return
-	
+
 	print("WorkingTextScene: マークダウンシナリオ読み込み成功: %d シーン" % converted_scenes.size())
 	scene_index = 0
 	current_index = 0
-	
+
 	# マークダウンシナリオから最初のシーンを表示
 	_show_markdown_scene_with_commands()
 
+
 func _show_current_scene():
-	print("WorkingTextScene: _show_current_scene()開始 - current_index=%d, test_texts.size()=%d" % [current_index, test_texts.size()])
-	
+	print(
+		(
+			"WorkingTextScene: _show_current_scene()開始 - current_index=%d, test_texts.size()=%d"
+			% [current_index, test_texts.size()]
+		)
+	)
+
 	# UIが正しく作成されているかチェック
 	if not name_label:
 		print("エラー: name_labelがnullです")
@@ -155,12 +164,12 @@ func _show_current_scene():
 	if not text_label:
 		print("エラー: text_labelがnullです")
 		return
-	
+
 	# デフォルトテキストを表示
 	if current_index < test_texts.size():
 		var full_text = test_texts[current_index]
 		print("WorkingTextScene: 表示テキスト = '%s'" % full_text)
-		
+
 		var parts = full_text.split(": ", false, 1)
 
 		if parts.size() == 2:
@@ -184,6 +193,7 @@ func _show_current_scene():
 		continue_indicator.visible = false
 		print("WorkingTextScene: デフォルトテスト終了")
 
+
 func _show_markdown_scene():
 	# マークダウンシーンを表示（従来版）
 	if scene_index < converted_scenes.size():
@@ -202,12 +212,18 @@ func _show_markdown_scene():
 		# ログに追加
 		_add_to_log(scene_data.speaker_name, scene_data.text)
 
-		print("WorkingTextScene: マークダウンシーン表示 [%d]: %s「%s」" % [scene_index, scene_data.speaker_name, scene_data.text])
+		print(
+			(
+				"WorkingTextScene: マークダウンシーン表示 [%d]: %s「%s」"
+				% [scene_index, scene_data.speaker_name, scene_data.text]
+			)
+		)
 	else:
 		name_label.visible = false
 		text_label.text = "シナリオ終了: ESCキーでタイトルに戻ります"
 		continue_indicator.visible = false
 		print("WorkingTextScene: マークダウンシナリオ終了")
+
 
 func _show_markdown_scene_with_commands():
 	# マークダウンシーンをコマンド実行付きで表示（Phase2版）
@@ -234,13 +250,28 @@ func _show_markdown_scene_with_commands():
 		# ログに追加
 		_add_to_log(scene_data.speaker_name, scene_data.text)
 
-		print("WorkingTextScene: Phase2シーン表示 [%d]: %s「%s」" % [scene_index, scene_data.speaker_name, scene_data.text])
-		print("  背景: %s, 左: %s, 右: %s" % [scene_data.background_path, scene_data.character_left_path, scene_data.character_right_path])
+		print(
+			(
+				"WorkingTextScene: Phase2シーン表示 [%d]: %s「%s」"
+				% [scene_index, scene_data.speaker_name, scene_data.text]
+			)
+		)
+		print(
+			(
+				"  背景: %s, 左: %s, 右: %s"
+				% [
+					scene_data.background_path,
+					scene_data.character_left_path,
+					scene_data.character_right_path
+				]
+			)
+		)
 	else:
 		name_label.visible = false
 		text_label.text = "Phase2テスト終了: ESCキーでタイトルに戻ります"
 		continue_indicator.visible = false
 		print("WorkingTextScene: Phase2マークダウンシナリオ終了")
+
 
 func _execute_background_command(background_path: String):
 	# 背景コマンドを実行
@@ -261,6 +292,7 @@ func _execute_background_command(background_path: String):
 	background_rect.color = bg_color
 	print("WorkingTextScene: 背景色変更完了 - %s" % bg_color)
 
+
 func _execute_character_commands(scene_data):
 	# キャラクター表示コマンドを実行
 	# 左キャラクター
@@ -275,6 +307,7 @@ func _execute_character_commands(scene_data):
 		print("WorkingTextScene: 右キャラクター表示 - %s" % char_name)
 		name_label.add_theme_color_override("font_color", Color.LIGHT_PINK)
 
+
 func _extract_character_name(path: String) -> String:
 	# パスからキャラクター名を抽出
 	if path.is_empty():
@@ -283,6 +316,7 @@ func _extract_character_name(path: String) -> String:
 	var file_name = path.get_file().get_basename()
 	var parts = file_name.split("_")
 	return parts[0] if parts.size() > 0 else "unknown"
+
 
 func _unhandled_input(event):
 	if event.is_action_pressed("ui_accept"):
@@ -294,11 +328,13 @@ func _unhandled_input(event):
 		GameManager.return_to_title()
 		get_viewport().set_input_as_handled()
 
+
 func _input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		print("WorkingTextScene: マウスクリック検出")
 		_advance_text()
 		get_viewport().set_input_as_handled()
+
 
 func _advance_text():
 	if converted_scenes.size() > 0:
@@ -309,6 +345,7 @@ func _advance_text():
 		# デフォルトテキストを使用
 		current_index += 1
 		_show_current_scene()
+
 
 # TextSceneManagerとの互換性のため
 func show_text(speaker_name: String, text: String):
@@ -326,6 +363,7 @@ func show_text(speaker_name: String, text: String):
 	# ログに追加
 	_add_to_log(speaker_name, text)
 
+
 func set_background(texture_path: String):
 	# 背景設定（互換性のため）
 	print("WorkingTextScene: 背景設定要求 - %s" % texture_path)
@@ -334,15 +372,19 @@ func set_background(texture_path: String):
 	else:
 		background_rect.color = Color.DARK_BLUE
 
+
 func set_character_portrait(position: String, texture_path: String):
 	# 立ち絵設定（互換性のため）
 	print("WorkingTextScene: 立ち絵設定要求 - %s: %s" % [position, texture_path])
+
 
 func get_log_history() -> Array:
 	# ログ履歴取得（互換性のため）
 	return dialogue_log
 
+
 # ログ機能実装
+
 
 func _create_log_overlay():
 	# ログオーバーレイの作成
@@ -395,11 +437,13 @@ func _create_log_overlay():
 
 	add_child(log_overlay)
 
+
 func _on_log_button_pressed():
 	# ログボタンが押された時の処理
 	print("WorkingTextScene: ログボタンが押されました")
 	print("WorkingTextScene: ログエントリ数: %d" % dialogue_log.size())
 	_toggle_log_window()
+
 
 func _toggle_log_window():
 	# ログウィンドウの表示切り替え
@@ -407,6 +451,7 @@ func _toggle_log_window():
 		_hide_log_window()
 	else:
 		_show_log_window()
+
 
 func _show_log_window():
 	# ログウィンドウを表示
@@ -419,6 +464,7 @@ func _show_log_window():
 	_refresh_log_display()
 	log_overlay.visible = true
 
+
 func _hide_log_window():
 	# ログウィンドウを非表示
 	if not log_overlay:
@@ -429,18 +475,18 @@ func _hide_log_window():
 	is_log_visible = false
 	log_overlay.visible = false
 
+
 func _on_log_close_button_pressed():
 	# ログ閉じるボタンが押された時の処理
 	_hide_log_window()
 
+
 func _add_to_log(speaker_name: String, text: String):
 	# ログに追加
-	var log_entry = {
-		"speaker": speaker_name,
-		"text": text
-	}
+	var log_entry = {"speaker": speaker_name, "text": text}
 	dialogue_log.append(log_entry)
 	print("WorkingTextScene: ログに追加 - %s: %s" % [speaker_name, text])
+
 
 func _refresh_log_display():
 	# ログ表示の更新

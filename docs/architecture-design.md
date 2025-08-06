@@ -63,7 +63,7 @@ public interface IPlatformService
 
 #if UNITY_STANDALONE_WIN
 public class WindowsPlatformService : IPlatformService { }
-#elif UNITY_STANDALONE_OSX  
+#elif UNITY_STANDALONE_OSX
 public class MacPlatformService : IPlatformService { }
 #endif
 ```
@@ -144,11 +144,11 @@ const REQUIRED_FRAGMENTS = 5
 
 func check_fragments_before_battle() -> bool:
     fragment_count = inventory_system.count_lira_fragments()
-    
+
     if fragment_count < REQUIRED_FRAGMENTS:
         show_forced_defeat_cutscene()  # 強制敗北演出
         return false  # 戦闘不可
-    
+
     apply_fragment_debuffs()  # 断片数に応じたデバフ
     return true  # 戦闘開始可能
 

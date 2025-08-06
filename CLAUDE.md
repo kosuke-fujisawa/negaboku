@@ -32,7 +32,7 @@
 - **編成制限**: 必ず2人での編成が必要
 
 ### 関係値システム（3段階）✅
-- **関係レベル**: 
+- **関係レベル**:
   - **親密**: 共闘技が解放、高威力＋追加効果
   - **通常**: 標準的な相互作用、基本スキルのみ使用可能
   - **対立**: 対立技が解放、ハイリスクハイリターン（主にソウマ限定）
@@ -128,7 +128,7 @@ git push origin main
 
 #### 参照タイミング
 1. **機能開発前**: development-scope.md で実装状況・計画確認
-2. **設計時**: architecture-design.md でGodotアーキテクチャ確認  
+2. **設計時**: architecture-design.md でGodotアーキテクチャ確認
 3. **実装時**: implementation-guidelines.md でGDScript規約確認
 
 #### ドキュメント更新ルール
@@ -241,7 +241,7 @@ func modify_relationship(char1_id: String, char2_id: String, delta: int, reason:
     var current_value = get_relationship(char1_id, char2_id)
     var new_value = current_value + delta
     set_relationship(char1_id, char2_id, new_value)
-    
+
     if reason != "":
         print("関係値変更: %s ↔ %s, %+d (%s)" % [char1_id, char2_id, delta, reason])
 ```
@@ -334,12 +334,12 @@ func get_save_path() -> String:
 func _on_test_button_pressed():
     # 関係値テスト
     game_manager.relationship_system.modify_relationship("player", "partner", 25, "デバッグテスト")
-    
+
     # バトルテスト
     var enemy = Character.new()
     enemy.character_id = "test_enemy"
     game_manager.battle_system.start_battle([enemy])
-    
+
     # エフェクトテスト
     effect_layer.play_effect("explosion", get_viewport_rect().size / 2)
 ```
@@ -359,14 +359,14 @@ func _on_test_button_pressed():
 
 ### 推奨ペアの特別要素
 - **ソウマ × ユズキ**: 幼馴染の絆、特別イベント・エンディングCG
-- **ソウマ × レツジ**: 親友の信頼、特別イベント・エンディングCG  
+- **ソウマ × レツジ**: 親友の信頼、特別イベント・エンディングCG
 - **ソウマ × カイ**: 対立から親密への変化（初期-25）、特別イベント・エンディングCG
 - **カイ × セリーヌ**: 身分差を超えた関係、特別イベント・エンディングCG
 - **リゼル × レツジ**: 戦士と術師の協力、特別イベント・エンディングCG
 
 ### 難易度設計思想
 - **共闘技なし**: やや困難な難易度設定
-- **共闘技あり**: イージー寄りの難易度設定  
+- **共闘技あり**: イージー寄りの難易度設定
 - **対立技**: 一部高火力だが運用困難、主にソウマ限定の特殊戦術
 
 
@@ -411,7 +411,7 @@ func _on_test_button_pressed():
 
 ### プラットフォーム対応✅
 - **Windows**: x64標準対応
-- **Mac**: Intel/Apple Silicon標準対応  
+- **Mac**: Intel/Apple Silicon標準対応
 - **Linux**: x64標準対応
 - **将来対応**: モバイル・Web・コンソール
 
@@ -617,7 +617,7 @@ var special_conflict_pairs = ["souma_kai", "yuzuki_serene", "retsuji_kengo"]
 # スキル分類と発動条件の管理
 enum SkillType {
     NORMAL,     # 白：常時使用可能
-    MAGIC,      # 青：MP消費、常時使用可能  
+    MAGIC,      # 青：MP消費、常時使用可能
     COOPERATION, # 緑：関係値+50以上で解放
     CONFLICT    # 赤：関係値-50以下、特定ペアのみ
 }
@@ -625,7 +625,7 @@ enum SkillType {
 # スキル発動条件の動的チェック
 func can_use_skill(character1_id: String, character2_id: String, skill_type: SkillType) -> bool:
     var relationship_value = relationship_system.get_relationship(character1_id, character2_id)
-    
+
     match skill_type:
         SkillType.COOPERATION:
             return relationship_value >= 50  # 親密状態
@@ -645,7 +645,7 @@ func start_battle():
     # パーティメンバーのSPを戦闘開始時に初期化
     for character_id in party_members:
         sp_values[character_id] = INITIAL_SP
-        
+
 func use_special_skill(character_id: String, sp_cost: int) -> bool:
     if sp_values[character_id] >= sp_cost:
         sp_values[character_id] -= sp_cost
@@ -715,7 +715,7 @@ func update_skill_list():
         # 色分けと使用可否状態の視覚化
         skill_button.modulate = skill_colors[skill.type]
         skill_button.disabled = not can_use_skill(skill)
-        
+
         # 関係値表示のリアルタイム更新
         update_relationship_display()
 ```
@@ -745,10 +745,10 @@ var character_preferences = {
 func give_present(giver_id: String, receiver_id: String, item_type: String):
     var reaction = get_reaction(receiver_id, item_type)
     var relationship_delta = reaction as int
-    
+
     # 関係値システムへの連携
     relationship_system.modify_relationship(giver_id, receiver_id, relationship_delta, "present_" + item_type)
-    
+
     # 初回プレゼント時の情報開示
     if not has_given_before(giver_id, receiver_id, item_type):
         reveal_preference(receiver_id, item_type, reaction)
@@ -770,12 +770,12 @@ const REQUIRED_FRAGMENTS = 5
 func start_boss_battle():
     # 断片アイテムチェック
     fragment_count = inventory_system.count_fragments()
-    
+
     if fragment_count < REQUIRED_FRAGMENTS:
         # 強制敗北演出（ゲームオーバーなし）
         show_forced_defeat_scene()
         return false
-    
+
     # 正常なボス戦開始
     apply_fragment_debuffs()
     return true
@@ -784,7 +784,7 @@ func on_hp_half():
     # HP半減時のフルパワーモード移行
     is_full_power_mode = true
     apply_full_power_buffs()
-    
+
 func apply_fragment_debuffs():
     # 断片数に応じたデバフ効果
     var debuff_strength = fragment_count * 0.2

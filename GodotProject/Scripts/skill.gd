@@ -25,62 +25,62 @@ extends Resource
 @export var effect_name: String = ""
 @export var status_effects = []
 
+
 func _init():
 	resource_name = "Skill"
 
+
 # スキルの効果を適用
 func apply_effect(caster, targets: Array) -> Dictionary:
-	var result = {
-		"success": false,
-		"damage_dealt": 0,
-		"healing_done": 0,
-		"status_applied": []
-	}
-	
+	var result = {"success": false, "damage_dealt": 0, "healing_done": 0, "status_applied": []}
+
 	if targets.is_empty():
 		return result
-	
+
 	for target in targets:
 		if target == null:
 			continue
-			
+
 		var damage = calculate_damage(caster, target)
 		target.take_damage(damage)
 		result.damage_dealt += damage
-		
+
 		# ステータス効果の適用
 		for status in status_effects:
 			target.add_status_effect(status)
 			result.status_applied.append(status)
-	
+
 	result.success = true
 	return result
+
 
 # ダメージ計算
 func calculate_damage(caster, target) -> int:
 	if caster == null or target == null:
 		return 0
-	
+
 	var base_damage = power + caster.attack - target.defense
 	base_damage = max(1, base_damage)  # 最低1ダメージ
-	
+
 	# クリティカル判定
 	if randf() < critical_rate:
 		base_damage = int(base_damage * 1.5)
 		print("クリティカルヒット！")
-	
+
 	return base_damage
+
 
 # スキルが使用可能かチェック
 func can_use(caster) -> bool:
 	if caster == null:
 		return false
-	
+
 	# MP消費チェック
 	if caster.current_mp < mp_cost:
 		return false
-	
+
 	return true
+
 
 # Dictionary形式でデータを出力
 func to_dict() -> Dictionary:
@@ -100,6 +100,7 @@ func to_dict() -> Dictionary:
 		"effect_name": effect_name,
 		"status_effects": status_effects
 	}
+
 
 # Dictionary形式からデータを読み込み
 func from_dict(data: Dictionary):
