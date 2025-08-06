@@ -325,7 +325,7 @@ func _unhandled_input(event):
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_cancel"):
 		print("WorkingTextScene: ui_cancel入力検出 - タイトルに戻る")
-		GameManager.return_to_title()
+		get_tree().change_scene_to_file("res://Scenes/MainMenu.tscn")
 		get_viewport().set_input_as_handled()
 
 

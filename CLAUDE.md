@@ -165,15 +165,96 @@ git push origin main
 - **TDD**：Godot Unit Test（GUT）を用いたドメイン層テストを徹底
 - **Tidy First**：新機能追加前に既存コードを整理・リファクタしてから進める
 
-### 🔧 不具合修正方針
+### 🔧 デグレード防止方針
+
+#### 防御的開発手法の導入
+- **プレコミット検証の徹底**：
+  ```bash
+  # 必須チェック項目
+  1. 構文チェック: godot --headless --check-only
+  2. 型チェック: 静的解析の実行
+  3. ユニットテスト: 主要機能の動作確認
+  ```
+- **段階的開発とロールバック戦略**：
+  - feature/new-feature: 新機能開発
+  - develop: 統合テスト環境
+  - main: 安定版（常に動作保証）
+- **型安全性の強化**：明示的な型チェックと変換の実装
+
+#### システム設計の改善
+- **疎結合アーキテクチャ**：インターフェース分離による依存関係の明確化
+- **エラー処理の標準化**：Result型パターンの導入
+- **依存関係の可視化**：システム間の依存関係を明確に文書化
+
+#### 開発プロセスの改善
+- **継続的検証の自動化**：CI/CDパイプラインによる自動チェック
+- **変更影響範囲の事前分析**：既存APIへの影響、依存システム、エラーハンドリングの確認
+- **テスト駆動開発の適用**：機能追加前のテスト作成
+
+#### 不具合修正方針
 - **横断的調査の徹底**：不具合の原因調査を行うときは、同様の問題がないか他のファイルを横断的に調査する
 - **根本原因の特定**：表面的な症状だけでなく、複数の関連ファイル間の相互作用を含めて根本原因を特定する
 - **包括的修正**：同じパターンの問題が複数箇所にある場合は、全てを一括で修正して再発を防ぐ
 - **修正効果の検証**：関連する全てのフローパターンで修正が正しく動作することを確認する
 
+#### 推奨開発フロー
+1. **変更前**: 現状の動作確認・テスト実行
+2. **開発中**: 小さな単位での段階的実装
+3. **変更後**: 構文チェック・型チェック・動作確認
+4. **コミット前**: 全体テストの実行
+5. **定期的**: システム全体の健全性チェック
+
 ---
 
 ## 実装指針
+
+### 🎯 コード生成ルール（必須遵守）
+
+#### ロジック層中心設計
+- **ロジック層中心で実装**：UI参照はしない、ビジネスロジックをDomain層に集約
+- **Node参照の安全化**：`@onready var node_ref` + `get_node_or_null()`で記述
+- **Signal接続はコード実装**：シーンファイルではなくGDScriptで接続を管理
+- **段階的実装の徹底**：1つのタスクに1つの機能のみ実装（例：Markdownパーサーのみ）
+- **ファイル配置の明示**：出力ファイル名と配置場所を必ず明記（例：`Scripts/systems/markdown_parser.gd`）
+
+#### 実装パターン
+```gdscript
+# 推奨パターン：ロジック層中心
+class_name MarkdownParser
+extends RefCounted  # Nodeに依存しない
+
+# UI参照禁止：Nodeを直接参照しない
+# ❌ var label: Label = get_node("UI/Label")
+# ✅ Signal経由でUI更新を通知
+
+signal parsing_completed(result: Dictionary)
+signal parsing_error(message: String)
+
+func parse_markdown_file(file_path: String) -> Dictionary:
+    # ロジックのみ実装、UI更新はSignalで通知
+    var result = _internal_parse_logic(file_path)
+    parsing_completed.emit(result)
+    return result
+```
+
+#### Node参照の安全パターン
+```gdscript
+# 推奨：安全なNode参照
+class_name UIController
+extends Control
+
+@onready var dialog_box = get_node_or_null("DialogBox")
+@onready var choice_panel = get_node_or_null("ChoicePanel")
+
+func _ready():
+    # Signal接続はコードで実行
+    if dialog_box:
+        dialog_box.text_finished.connect(_on_text_finished)
+    if choice_panel:
+        choice_panel.choice_selected.connect(_on_choice_selected)
+```
+
+### 従来の実装指針
 - GDScriptを使用し、型ヒントを積極活用
 - Domain層のスクリプトは Node と切り離し `res://Scripts/systems/` 以下に配置
 - UI層（DialogueBox, ChoicePanel, EffectLayer）は Control ノードを基本とする
@@ -184,10 +265,31 @@ git push origin main
 ---
 
 ## Claudeに求める行動
+
+### 🚨 **最優先遵守項目**
+1. **ロジック層中心設計**：全てのコード生成でUI参照を禁止し、ビジネスロジックをDomain層に集約
+2. **安全なNode参照**：`@onready` + `get_node_or_null()`パターンを必須使用
+3. **コード内Signal接続**：シーンファイルではなくGDScriptでSignal接続を管理
+4. **単一機能実装**：1つのタスクで1つの機能のみ実装（段階的開発）
+5. **ファイル配置明示**：出力ファイル名と配置場所を必ず明記
+
+### 従来の行動指針
 - すべてのコード生成・レビューにおいてこの方針を反映する
 - Node文化を尊重しつつ、DDD/クリーンアーキテクチャの依存方向を維持する
 - コード例はUI層・Application層・Domain層を分離したファイル構成で提示する
 - テストコード生成時はGUT形式で提示する
+
+### コード生成時の必須フォーマット
+```text
+## 実装ファイル: Scripts/systems/[機能名].gd
+
+[コード内容]
+
+## 配置場所
+- ファイルパス: res://Scripts/systems/[機能名].gd
+- 機能範囲: [具体的な実装範囲]
+- 依存関係: [必要な他システム]
+```
 
 ### 🧪 Godot開発手法（実装済み）
 
