@@ -110,3 +110,6 @@ GodotProject/Assets/sounds/
 
 # Godot generated files
 GodotProject/.godot/
+
+# Reverse engineering documents (auto-generated)
+docs/reverse/
