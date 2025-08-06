@@ -9,7 +9,6 @@ extends Resource
 @export var description: String = ""
 @export var mp_cost: int = 0
 @export var power: int = 50
-@export var accuracy: float = 1.0
 @export var critical_rate: float = 0.1
 
 # 関係値スキルの設定
@@ -90,7 +89,6 @@ func to_dict() -> Dictionary:
 		"description": description,
 		"mp_cost": mp_cost,
 		"power": power,
-		"accuracy": accuracy,
 		"critical_rate": critical_rate,
 		"requires_relationship": requires_relationship,
 		"affects_relationship": affects_relationship,
@@ -109,7 +107,6 @@ func from_dict(data: Dictionary):
 	description = data.get("description", "")
 	mp_cost = data.get("mp_cost", 0)
 	power = data.get("power", 50)
-	accuracy = data.get("accuracy", 1.0)
 	critical_rate = data.get("critical_rate", 0.1)
 	requires_relationship = data.get("requires_relationship", false)
 	affects_relationship = data.get("affects_relationship", false)

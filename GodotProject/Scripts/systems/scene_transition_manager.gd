@@ -12,6 +12,9 @@ signal scenario_completed(scenario_id: String)
 # 遷移効果の種類
 enum TransitionType { FADE, SLIDE_LEFT, SLIDE_RIGHT, SLIDE_UP, SLIDE_DOWN, DISSOLVE, INSTANT }  # フェードイン/アウト  # 左にスライド  # 右にスライド  # 上にスライド  # 下にスライド  # ディゾルブ効果  # 即座に切り替え
 
+# 定数定義
+const Z_INDEX_OVERLAY: int = 100
+
 
 # シーン遷移の設定
 class TransitionConfig:
@@ -231,7 +234,7 @@ func _execute_transition_effect(config: TransitionConfig, is_fade_out: bool):
 	# 遷移エフェクトを実行#
 	is_transitioning = true
 	transition_overlay.visible = true
-	transition_overlay.z_index = 100  # 最前面に表示
+	transition_overlay.z_index = Z_INDEX_OVERLAY  # 最前面に表示
 
 	match config.type:
 		TransitionType.FADE:

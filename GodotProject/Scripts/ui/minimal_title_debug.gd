@@ -82,7 +82,7 @@ func _connect_buttons():
 	else:
 		print("❌ エラー: 新規ゲームボタンが見つかりません")
 		print("手動検索を試行...")
-		var manual_button = get_node_or_null("UILayer/MainContainer/MenuContainer/NewGameButton")
+		var manual_button: Button = get_node_or_null("UILayer/MainContainer/MenuContainer/NewGameButton")
 		if manual_button:
 			print("✅ 手動検索で新規ゲームボタンが見つかりました")
 			new_game_button = manual_button

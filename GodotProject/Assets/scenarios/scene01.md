@@ -1,5 +1,6 @@
 # シーン1：冒険の始まり
 
+[bgm play=01_lyrical_stadelate.mp3 volume=0.8 loop=true]
 [bg storage=forest_day.jpg time=500]
 [chara_show name=souma face=normal pos=left]
 [chara_show name=yuzuki face=smile pos=right]
@@ -22,6 +23,12 @@
 
 そう、信じられていた。
 
+---
+
+[bg storage=ruins_entrance.jpg time=800]
+[chara_show name=souma face=determined pos=left]
+[chara_show name=yuzuki face=determined pos=right]
+
 **ソウマ**「……ここが噂の遺跡、か。」
 
 **ユズキ**「うん。……緊張してる？」
@@ -36,6 +43,8 @@
 [chara_show name=souma face=determined pos=left]
 
 **ソウマ**「さあ、行こうか。遺跡の入り口が見えてきた。」
+
+[se play=footstep.ogg volume=0.6]
 
 **ユズキ**「この先に、本当に願い石があるのかな？」
 

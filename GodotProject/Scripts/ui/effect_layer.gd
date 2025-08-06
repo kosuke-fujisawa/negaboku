@@ -281,11 +281,11 @@ func finish_effect(effect_name: String):
 	active_effects.erase(effect_name)
 
 	# パーティクルやスプライトのクリーンアップ
-	var particle_node = particle_container.get_node_or_null(effect_name + "_particles")
+	var particle_node: Node2D = particle_container.get_node_or_null(effect_name + "_particles")
 	if particle_node:
 		particle_node.queue_free()
 
-	var sprite_node = particle_container.get_node_or_null(effect_name + "_sprite")
+	var sprite_node: Sprite2D = particle_container.get_node_or_null(effect_name + "_sprite")
 	if sprite_node:
 		sprite_node.queue_free()
 

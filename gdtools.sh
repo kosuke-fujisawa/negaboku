@@ -4,7 +4,7 @@
 # GDScript code quality management tools
 
 # Set PATH to include pipx installed tools
-export PATH="$PATH:/Users/fujisawakousuke/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
 
 # Colors for output
 RED='\033[0;31m'

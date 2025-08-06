@@ -51,7 +51,13 @@ func play_bgm(file_path: String, volume: float = 0.8, loop: bool = true, fade_in
 		stop_bgm()
 
 	bgm_player.stream = audio_stream
-	bgm_player.stream.loop = loop
+	
+	# ループ設定の安全な処理
+	if audio_stream and audio_stream.has_method("set_loop"):
+		audio_stream.set_loop(loop)
+	elif audio_stream and "loop" in audio_stream:
+		audio_stream.loop = loop
+	
 	bgm_player.volume_db = linear_to_db(volume) if not fade_in else linear_to_db(0.0)
 	bgm_player.play()
 
@@ -172,26 +178,23 @@ func get_current_bgm() -> String:
 	return current_bgm_path
 
 
-func _resolve_bgm_path(file_path: String) -> String:
+# 統一されたパス解決関数
+func _resolve_audio_path(file_path: String, sound_type: String) -> String:
 	if file_path.begins_with("res://"):
 		return file_path
-	return "res://Assets/sounds/bgm/" + file_path
+	return "res://Assets/sounds/" + sound_type + "/" + file_path
+
+
+func _resolve_bgm_path(file_path: String) -> String:
+	return _resolve_audio_path(file_path, "bgm")
 
 
 func _resolve_se_path(file_path: String) -> String:
-	if file_path.begins_with("res://"):
-		return file_path
-	return "res://Assets/sounds/se/" + file_path
+	return _resolve_audio_path(file_path, "se")
 
 
 func _resolve_voice_path(file_path: String) -> String:
-	if file_path.begins_with("res://"):
-		return file_path
-
-	if "/" in file_path:
-		return "res://Assets/sounds/voice/" + file_path
-	else:
-		return "res://Assets/sounds/voice/" + file_path
+	return _resolve_audio_path(file_path, "voice")
 
 
 func _fade_bgm_to(target_volume: float, duration: float):
