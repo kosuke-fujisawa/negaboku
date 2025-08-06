@@ -30,33 +30,36 @@ extends Resource
 @export var defense_growth: float = 1.1
 @export var speed_growth: float = 1.05
 
+
 func _init():
 	resource_name = "Character"
+
 
 # レベルアップ処理
 func level_up() -> void:
 	level += 1
-	
+
 	var old_max_hp = max_hp
 	var old_max_mp = max_mp
-	
+
 	# ステータス成長
 	max_hp = int(max_hp * hp_growth)
 	max_mp = int(max_mp * mp_growth)
 	attack = int(attack * attack_growth)
 	defense = int(defense * defense_growth)
 	speed = int(speed * speed_growth)
-	
+
 	# HPとMPを回復
 	current_hp += (max_hp - old_max_hp)
 	current_mp += (max_mp - old_max_mp)
-	
+
 	print("%s がレベルアップ！Lv.%d" % [name, level])
+
 
 # 経験値獲得
 func gain_experience(exp: int) -> void:
 	experience += exp
-	
+
 	# レベルアップ判定
 	var required_exp = get_required_experience()
 	while experience >= required_exp:
@@ -64,22 +67,26 @@ func gain_experience(exp: int) -> void:
 		level_up()
 		required_exp = get_required_experience()
 
+
 # 次のレベルまでの必要経験値
 func get_required_experience() -> int:
 	return level * 100
+
 
 # ダメージ処理
 func take_damage(damage: int) -> void:
 	current_hp -= damage
 	current_hp = max(0, current_hp)
-	
+
 	if current_hp == 0:
 		print("%s は戦闘不能になった" % name)
+
 
 # 回復処理
 func heal(amount: int) -> void:
 	current_hp += amount
 	current_hp = min(current_hp, max_hp)
+
 
 # MP消費
 func consume_mp(amount: int) -> bool:
@@ -88,11 +95,13 @@ func consume_mp(amount: int) -> bool:
 		return true
 	return false
 
+
 # ステータス効果の追加
 func add_status_effect(effect: String) -> void:
 	if effect not in status_effects:
 		status_effects.append(effect)
 		print("%s に %s の効果" % [name, effect])
+
 
 # ステータス効果の除去
 func remove_status_effect(effect: String) -> void:
@@ -100,9 +109,11 @@ func remove_status_effect(effect: String) -> void:
 		status_effects.erase(effect)
 		print("%s の %s が解除された" % [name, effect])
 
+
 # 戦闘不能かチェック
 func is_defeated() -> bool:
 	return current_hp <= 0
+
 
 # 完全回復
 func full_heal() -> void:
@@ -110,6 +121,7 @@ func full_heal() -> void:
 	current_mp = max_mp
 	status_effects.clear()
 	print("%s が完全回復した" % name)
+
 
 # Dictionary形式でデータを出力（セーブ用）
 func to_dict() -> Dictionary:
@@ -135,6 +147,7 @@ func to_dict() -> Dictionary:
 		"speed_growth": speed_growth
 	}
 
+
 # Dictionary形式からデータを読み込み（ロード用）
 func from_dict(data: Dictionary) -> void:
 	character_id = data.get("character_id", "")
@@ -156,6 +169,7 @@ func from_dict(data: Dictionary) -> void:
 	attack_growth = data.get("attack_growth", 1.15)
 	defense_growth = data.get("defense_growth", 1.1)
 	speed_growth = data.get("speed_growth", 1.05)
+
 
 # デバッグ用：ステータス表示
 func debug_print_status() -> void:
