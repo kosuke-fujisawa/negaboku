@@ -1,0 +1,25 @@
+repos:
+  - repo: local
+    hooks:
+      - id: gdformat
+        name: GDScript formatter
+        entry: gdformat
+        language: python
+        files: \.gd$
+        additional_dependencies: [gdtoolkit]
+
+      - id: gdparse
+        name: GDScript parser
+        entry: gdparse
+        language: python
+        files: \.gd$
+        additional_dependencies: [gdtoolkit]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
