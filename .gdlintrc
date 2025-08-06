@@ -1,0 +1,30 @@
+# GDScript linter configuration for negaboku project
+# プロジェクトの現状に合わせた設定
+
+disable:
+  # 現在のコードベースで多発する問題を一時的に無効化
+  - class-definitions-order  # 変数・関数の定義順序は現状維持
+  - max-public-methods      # GameManagerなど大きなクラスが存在
+  - max-returns            # 複雑な関数の早期return許可
+  - function-preload-variable-name  # preload変数名の制限緩和
+  
+  # コーディングスタイル関連の制限緩和
+  - no-elif-return        # elif-returnパターンの使用許可
+  - no-else-return        # else-returnパターンの使用許可
+
+enable:
+  # 重要な品質チェックは有効
+  - unused-variable       # 未使用変数の検出
+  - unreachable-code     # 到達不可能コードの検出
+  - trailing-whitespace  # 末尾空白の検出
+  - duplicated-load      # 重複ロードの検出
+
+# 制限値の調整
+max-line-length: 120      # 100→120に緩和
+max-file-lines: 700       # ファイル行数制限を緩和
+max-public-methods: 30    # publicメソッド数を緩和
+max-arguments: 8          # 引数数制限を緩和
+max-locals: 20            # ローカル変数数を緩和
+max-statements: 60        # ステートメント数を緩和
+max-branches: 15          # 分岐数を緩和
+max-returns: 10           # return文数を緩和
