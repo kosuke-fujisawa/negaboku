@@ -35,7 +35,7 @@ enum RelationshipLevel {
 | レベル | 数値範囲 | 境界値定数 | 説明 |
 |--------|----------|------------|------|
 | HOSTILE | -25〜0 | HOSTILE_MAX = 0 | 敵対関係、対立技解放 |
-| COLD | 1〜25 | COLD_MAX = 25 | 冷淡、基本スキルのみ |  
+| COLD | 1〜25 | COLD_MAX = 25 | 冷淡、基本スキルのみ |
 | NORMAL | 26〜50 | NORMAL_MAX = 50 | 普通、デフォルト状態 |
 | FRIENDLY | 51〜75 | FRIENDLY_MAX = 75 | 友好、協力スキル一部解放 |
 | INTIMATE | 76〜100 | INTIMATE_MIN = 76 | 親密、共闘技フル解放 |
