@@ -66,7 +66,6 @@ fn main() {
             presentation::systems::menu_input_system,
             presentation::systems::mouse_input_system,
             presentation::text_systems::story_mouse_input_system,
-            presentation::text_systems::text_typing_system,
             presentation::text_systems::vn_typing_system,
             presentation::systems::background_system,
             presentation::systems::button_visual_system,

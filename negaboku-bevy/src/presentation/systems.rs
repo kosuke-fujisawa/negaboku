@@ -4,8 +4,12 @@
 
 use bevy::prelude::*;
 use crate::application::scenario_system::MarkdownScenarioState;
-use crate::application::command_executor::BackgroundImage;
 use crate::presentation::ui_components::*;
+use crate::presentation::ui_utils::{
+    next_background, get_current_background,
+    get_menu_button_hover_color, get_menu_button_normal_color,
+    get_menu_button_text, get_button_text_by_index
+};
 
 /// メニュー入力システム
 pub fn menu_input_system(
@@ -32,7 +36,7 @@ pub fn menu_input_system(
         if keyboard_input.just_pressed(KeyCode::ArrowUp) {
             if menu_cursor.current_index > 0 {
                 menu_cursor.current_index -= 1;
-                let button_name = get_button_name(menu_cursor.current_index);
+                let button_name = get_button_text_by_index(menu_cursor.current_index);
                 println!(
                     "↑キー: メニューカーソル位置 {} ({})",
                     menu_cursor.current_index, button_name
@@ -43,7 +47,7 @@ pub fn menu_input_system(
         if keyboard_input.just_pressed(KeyCode::ArrowDown) {
             if menu_cursor.current_index < menu_cursor.max_buttons - 1 {
                 menu_cursor.current_index += 1;
-                let button_name = get_button_name(menu_cursor.current_index);
+                let button_name = get_button_text_by_index(menu_cursor.current_index);
                 println!(
                     "↓キー: メニューカーソル位置 {} ({})",
                     menu_cursor.current_index, button_name
@@ -142,7 +146,7 @@ pub fn menu_input_system(
     if keyboard_input.just_pressed(KeyCode::KeyB) {
         // 背景切替（Bキー）
         for mut bg_controller in background_query.iter_mut() {
-            let _new_color = bg_controller.next_background();
+            let _new_color = next_background(&mut bg_controller);
             println!(
                 "背景を切り替えました: インデックス {}",
                 bg_controller.current_index
@@ -225,16 +229,6 @@ pub fn mouse_input_system(
 }
 
 /// ボタン名取得ヘルパー関数
-pub fn get_button_name(index: usize) -> &'static str {
-    match index {
-        0 => "はじめから",
-        1 => "つづきから",
-        2 => "設定",
-        3 => "ギャラリー",
-        4 => "ゲーム終了",
-        _ => "不明",
-    }
-}
 
 /// メニュー選択処理
 pub fn handle_menu_selection(
@@ -309,9 +303,9 @@ pub fn button_visual_system(
 
         // カーソル位置に基づいて色を変更
         if button_index == menu_cursor.current_index {
-            sprite.color = MenuButton::get_hover_color();
+            sprite.color = get_menu_button_hover_color();
         } else {
-            sprite.color = MenuButton::get_normal_color();
+            sprite.color = get_menu_button_normal_color();
         }
     }
 }
@@ -324,7 +318,7 @@ pub fn background_system(
     >,
 ) {
     for (mut sprite, bg_controller) in background_query.iter_mut() {
-        sprite.color = bg_controller.current_background();
+        sprite.color = get_current_background(&bg_controller);
     }
 }
 
@@ -538,7 +532,7 @@ pub fn setup_ui_with_assets(commands: &mut Commands, assets: &Res<GameAssets>) {
         let button_entity = commands
             .spawn((
                 Sprite::from_color(
-                    MenuButton::get_normal_color(),
+                    get_menu_button_normal_color(),
                     Vec2::new(button_width, button_height),
                 ),
                 Transform::from_xyz(0.0, y_pos, 1.0),
@@ -548,8 +542,7 @@ pub fn setup_ui_with_assets(commands: &mut Commands, assets: &Res<GameAssets>) {
             .id();
 
         // ボタンテキストを子エンティティとして作成（親子関係で正しく配置）
-        let button_text =
-            MenuButton::new(button_type, 0.0, y_pos, button_width, button_height).get_text();
+        let button_text = get_menu_button_text(&button_type);
         println!(
             "Creating button text: '{}' at position y={}",
             button_text, y_pos

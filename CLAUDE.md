@@ -2,11 +2,11 @@
 
 このファイルは、このリポジトリでClaude Code (claude.ai/code) が作業する際のガイダンスを提供します。
 
-> **🔄 Godot移行完了**: Unity版からGodot 4.x版への完全移行が完了し、98%の軽量化と90%の高速化を実現しました。
+> **🔄 Bevy移行完了**: Godot版からRust + Bevy 0.15版への完全移行が完了し、エディタ依存を排除した完全コードベース開発に移行しました。
 
 ## プロジェクト概要
 
-**願い石と僕たちの絆** は Godot 4.xエンジンと GDScript で開発された「僕たちの絆」を紡ぐ関係値RPGです。Windows・Mac・Linux環境でのマルチプラットフォーム対応を実現。2人パーティによる選択肢ベースの探索システムと、3段階関係値システム（対立／通常／親密）による戦闘技・掛け合いの変化が特徴です。
+**願い石と僕たちの絆** は Rust + Bevy ECS で開発される、関係値システムを軸とした物語重視のRPGです。Windows・Mac・Linux環境でのマルチプラットフォーム対応を実現。**2人パーティ固定・3段階関係値（対立／通常／親密）**による戦闘技と掛け合いの変化を特徴とします。
 
 ### ゲームの特徴
 - **「僕たちの絆」を紡ぐ**: 関係性の変化そのものを物語体験の中心に据える
@@ -15,647 +15,597 @@
 - **3段階関係値システム**: 対立／通常／親密による明確な関係性管理
 - **関係値連動スキル**: 共闘技（親密時）と対立技（対立時、主にソウマ限定）
 - **ローグライク＋ストーリー重視**: プレゼント・イベントによる好感度変化
-- **Godot製**: 軽量・高速・クロスプラットフォーム対応
+- **Rust + Bevy製**: 型安全・高速・クロスプラットフォーム対応
 
-### 技術環境
+### 技術スタック
 - **プラットフォーム**: Windows・Mac・Linux（マルチプラットフォーム標準対応）
-- **ゲームエンジン**: Godot 4.3以上
-- **プログラミング言語**: GDScript
-- **開発手法**: 統合デバッグ機能による高速プロトタイピング
-- **アーキテクチャ**: Scene + Node + Signal-driven
-
-## 🎮 ゲームシステム仕様
-
-### パーティシステム
-- **固定2人編成**: 深い関係性の構築に特化
-- **初期設定**: 最初の2キャラクターで自動編成
-- **編成制限**: 必ず2人での編成が必要
-
-### 関係値システム（3段階）✅
-- **関係レベル**:
-  - **親密**: 共闘技が解放、高威力＋追加効果
-  - **通常**: 標準的な相互作用、基本スキルのみ使用可能
-  - **対立**: 対立技が解放、ハイリスクハイリターン（主にソウマ限定）
-- **数値管理**: 内部で数値管理、メニュー画面で静かに表示
-- **推奨ペア**: 専用イベント・エンディング・カットイン有り
-- **Godot実装**: `GodotProject/res/Scripts/systems/relationship.gd`
-
-### バトルシステム（完全実装済み）✅
-- **ターン制戦闘**: 明確な戦術選択と結果予測
-- **関係値連動**: ダメージ修正・スキル発動条件
-- **AI行動**: シンプルなAI敵行動パターン
-- **Godot実装**: `GodotProject/res/Scripts/systems/battle_system.gd`
-
-### UIシステム（統合実装済み）✅
-- **ダイアログボックス**: タイピング効果付き表示
-- **選択肢システム**: 条件判定付き動的選択肢
-- **エフェクトシステム**: パーティクル・フラッシュ・カメラ揺れ
-- **Godot実装**: `GodotProject/res/Scripts/ui/`
-
-## 🏗️ Godotプロジェクト構造（実装完了）
-
-### GDScriptファイル構成✅
-```text
-GodotProject/res/Scripts/
-├── game_manager.gd              # ゲーム全体管理（AutoLoad）
-├── character.gd                 # キャラクターリソース（extends Resource）
-├── main_scene.gd               # メインシーン制御
-├── battle_scene.gd             # バトルシーン制御
-├── systems/                    # ゲームシステム
-│   ├── relationship.gd         # 関係値システム（3段階管理）
-│   └── battle_system.gd        # バトルシステム（ターン制・AI）
-└── ui/                         # UIシステム
-    ├── dialogue_box.gd         # ダイアログボックス（タイピング効果）
-    ├── choice_panel.gd         # 選択肢パネル（条件判定）
-    └── effect_layer.gd         # エフェクト管理（パーティクル・揺れ）
-```
-
-### Godotシーン構成✅
-```text
-GodotProject/res/Scenes/
-├── Main.tscn                   # 統合メインシーン（デバッグ機能付き）
-└── Battle.tscn                 # バトル専用シーン（UI連携済み）
-```
-
-### Unity版アーカイブ
-Unity版のソースコードは `Unity/` フォルダに保存されていますが、開発の主軸はGodotProject/に移行済みです。
-
-## 🛠️ Godot開発環境（実装完了）
-
-### 即座に実行可能✅
-```bash
-# Godot Editorでプロジェクトを開く
-1. Godot 4.3以上をダウンロード・インストール
-2. Godot Editorで GodotProject/project.godot を開く
-3. Main.tscn を実行（F5キー）
-
-# すべての動作確認が完了済み
-- ダイアログ表示・タイピング効果 ✅
-- 選択肢システム・条件判定 ✅
-- 関係値変更・レベル変化通知 ✅
-- エフェクト再生（爆発・斬撃・光・揺れ）✅
-- バトルシステム（ターン制・関係値連動）✅
-- セーブ・ロード機能 ✅
-```
-
-### マルチプラットフォームビルド✅
-```bash
-# Godot Editor: Project > Export
-- Windows Desktop (.exe)
-- macOS (.app)
-- Linux (.x86_64)
-# 1つのプロジェクトから全プラットフォーム対応
-```
-
-### Git管理
-```bash
-git add .
-git commit -m "[Godot] 機能追加"
-git push origin main
-```
-
-## 📋 開発ガイドライン
-
-### 📚 設計ドキュメント参照ルール
-
-開発時は以下のドキュメントを必ず参照してください：
-
-#### docsフォルダ内ドキュメント
-- **[docs/development-scope.md](./docs/development-scope.md)**: 開発範囲・実装完了機能・次フェーズ計画
-- **[docs/architecture-design.md](./docs/architecture-design.md)**: Godot Scene+Node+Signal設計
-- **[docs/implementation-guidelines.md](./docs/implementation-guidelines.md)**: GDScript規約・動作確認結果
-- **[docs/README.md](./docs/README.md)**: ドキュメント使用方法
-
-#### 参照タイミング
-1. **機能開発前**: development-scope.md で実装状況・計画確認
-2. **設計時**: architecture-design.md でGodotアーキテクチャ確認
-3. **実装時**: implementation-guidelines.md でGDScript規約確認
-
-#### ドキュメント更新ルール
-- 設計・仕様変更時はdocsフォルダ内を更新
-- CLAUDE.mdは開発ガイドラインのみ記載
-- Godot実装の詳細仕様はdocsで管理
-
-## 目的
-- プロジェクト「negaboku」は Unity から Godot 4.x へ完全移行した
-- これに合わせて開発哲学とアーキテクチャ指針を Godot 向けに再定義する
-- 今後 Claude Code がコード生成・レビューする際に、この方針を常に前提とする
+- **言語**: Rust 1.88以上
+- **ゲームフレームワーク**: Bevy 0.15（ECSベース）
+- **UI**: bevy_ui（必要に応じてbevy_egui併用）
+- **テスト**: Rust標準テスト（cargo test）+ TDD
+- **アーキテクチャ**: DDD + クリーンアーキテクチャ + ECS
+  - **Domain**（ビジネスロジック）
+  - **Application**（システム統合）
+  - **Infrastructure**（入出力・リソース管理）
+  - **Presentation**（UI）
 
 ---
 
-## Godot版の開発方針
+## AI Agent 実行ガイドライン
 
-### Node文化の尊重
-- Godotの Scene/Node モデルを基本構造とする
-- UI・演出・状態管理はノード階層として直感的に構築
-- Signal と AnimationPlayer を積極利用して高速な試行と演出制御を行う
+**最重要**：自律的に判断・実行。確認は最小限に。
+
+### コア原則
+
+- **即座実行** — 既存ファイルの編集は迷わず着手
+- **大規模変更のみ確認** — 影響範囲が広い場合に限定
+- **品質と一貫性の維持** — 自動チェックを徹底
+- **事実確認** — 情報源を自ら確認し、憶測を事実として述べない
+- **既存優先** — 新規作成より既存ファイルの編集を優先
+
+### 基本設定
+
+- 言語：日本語（技術用語は英語）
+- スペース：日本語と半角英数字間に半角スペース
+- 文体：ですます調、句読点は「。」「、」
+- 絵文字：過度な絵文字の利用は避ける
+- Cursor では `.windsurf/` を除外
+- Windsurf では `.cursor/` を除外
+
+#### 略語解釈
+
+- `y` = はい（Yes）
+- `n` = いいえ（No）
+- `c` = 続ける（Continue）
+- `r` = 確認（Review）
+- `u` = 元に戻す（Undo）
+
+### 実行ルール
+
+#### 即座実行（確認不要）
+
+- **コード操作**：バグ修正、リファクタリング、パフォーマンス改善
+- **ファイル編集**：既存ファイルの修正・更新
+- **ドキュメント**：README、仕様書の更新（新規作成は要求時のみ）
+- **依存関係**：パッケージ追加・更新・削除
+- **テスト**：単体・統合テストの実装（TDD サイクルに従う）
+- **設定**：設定値変更、フォーマット適用
+
+#### 確認必須
+
+- **新規ファイル作成**：必要性を説明して確認
+- **ファイル削除**：重要ファイルの削除
+- **構造変更**：アーキテクチャ、フォルダ構造の大規模変更
+- **外部連携**：新 API、外部ライブラリ導入
+- **セキュリティ**：認証・認可機能の実装
+- **データベース**：スキーマ変更、マイグレーション
+- **本番環境**：デプロイ設定、環境変数変更
+
+### 実行フロー
+
+```text
+1. タスク受信
+   ↓
+2. 即座実行 or 確認要求を判定
+   ↓
+3. 実行（既存パターン準拠）
+   ↓
+4. 完了報告
+```
+
+### 作業完了報告のルール
+
+#### 1. 完全完了時の合い言葉
+
+作業が完全に完了し、これ以上継続するタスクがない場合は一語一句違えずに以下を報告する：
+
+```text
+May the Force be with you.
+```
+
+**使用条件（すべて満たす必要あり）**：
+
+- ✅ 全てのタスクが 100% 完了
+- ✅ TODO 項目が全て完了（TodoWrite ツールで管理している TODO リストが空であること）
+- ✅ エラーがゼロ
+- ✅ これ以上新しい指示がない限り続けられるタスクがない
+
+**禁止事項**：
+
+- ❌ TODO リストに未完了タスクがある場合
+- ❌ 「次のステップ」「残っているタスク」「現在残っている主なタスクは：」など継続予定の記述をした場合
+- ❌ Phase や Step など段階的な作業で未完了の段階が残っている場合
+- ❌ 自分の回答に具体的な残作業リストを明記した場合
+
+#### 2. 部分完了時の報告
+
+作業が部分的に完了し、続きのタスクがある場合は以下のテンプレートを使用：
+
+```markdown
+## 実行完了
+
+### 変更内容
+
+- [具体的な変更点]
+
+### 次のステップ
+
+- [推奨される次の作業]
+```
+
+#### 継続必要時の動作
+
+合い言葉の条件を満たさない場合：
+
+- 合い言葉は使用しない
+- 進捗状況と次のアクションを明示
+- 残タスクがある場合は明確に伝える
+
+---
+
+## 開発手法
+
+### TDD サイクル
+
+開発時は Test-Driven Development (TDD) のサイクルに従います：
+
+1. **Red（失敗）**
+   - 最もシンプルな失敗するテストを書く
+   - テスト名は動作を明確に記述
+   - 失敗メッセージが分かりやすいことを確認
+
+2. **Green（成功）**
+   - テストを通す最小限のコードを実装
+   - この段階では最適化や美しさは考慮しない
+   - とにかくテストを通すことに集中
+
+3. **Refactor（改善）**
+   - テストが通った後でのみリファクタリング
+   - 重複を排除し、意図を明確に
+   - 各リファクタリング後にテスト実行
+
+### 変更管理
+
+変更は以下の 2 種類に明確に分離します：
+
+- **構造変更（Structural Changes）**
+  - コードの配置・整理・フォーマット
+  - 動作は一切変更しない
+  - 例：メソッドの並び替え、インポート整理、変数名変更
+
+- **動作変更（Behavioral Changes）**
+  - 機能の追加・修正・削除
+  - テスト結果が変わる変更
+  - 例：新機能追加、バグ修正、ロジック変更
+
+**重要**：構造変更と動作変更を同一コミットに含めない
+
+### コミット規律
+
+コミットは以下の条件をすべて満たした時のみ実行：
+
+- ✅ すべてのテストがパス
+- ✅ コンパイラ/リンターの警告がゼロ
+- ✅ 単一の論理的作業単位を表現
+- ✅ コミットメッセージが変更内容を明確に説明
+
+**推奨事項**：
+
+- 小さく頻繁なコミット
+- 各コミットは独立して意味を持つ
+- 後から履歴を追いやすい粒度
+
+### リファクタリングルール
+
+リファクタリング時の厳格なルール：
+
+1. **前提条件**
+   - すべてのテストが通っている状態でのみ開始
+   - 動作変更とリファクタリングを混在させない
+
+2. **実行手順**
+   - 確立されたリファクタリングパターンを使用
+   - 一度に一つの変更のみ
+   - 各ステップ後に必ずテスト実行
+   - 失敗したら即座に元に戻す
+
+3. **よく使うパターン**
+   - Extract Method（メソッド抽出）
+   - Rename（名前変更）
+   - Move Method（メソッド移動）
+   - Extract Variable（変数抽出）
+
+### 実装アプローチ
+
+効率的な実装のための優先順位：
+
+1. **最初のステップ**
+   - 最もシンプルなケースから着手
+   - 「動くこと」を最優先
+   - 完璧さより進捗を重視
+
+2. **コード品質の原則**
+   - 重複を見つけたら即座に排除
+   - 意図が明確なコードを書く
+   - 依存関係を明示的に
+   - メソッドは小さく、単一責任に
+
+3. **段階的な改善**
+   - まず動くものを作る
+   - テストでカバー
+   - その後で最適化
+
+4. **エッジケースの扱い**
+   - 基本ケースが動いてから考慮
+   - 各エッジケースに対応するテスト追加
+   - 段階的に堅牢性を向上
+
+---
+
+## 品質保証
+
+### 設計原則
+
+- 単一責任の原則を遵守
+- インターフェースによる疎結合
+- 早期リターンで可読性向上
+- 過度な抽象化は避ける
+
+### 効率性最適化
+
+- 重複作業の自動排除
+- バッチ処理の積極活用
+- コンテキストスイッチ最小化
+
+### 一貫性維持
+
+- 既存コードスタイルの自動継承
+- プロジェクト規約の自動適用
+- 命名規則統一の自動実行
+
+### 自動品質管理
+
+- 変更前後の動作確認実行
+- エッジケース考慮の実装
+- ドキュメント同期更新
+
+### 冗長性の排除
+
+- 繰り返し処理は必ず関数化
+- 共通エラーハンドリングの統一
+- ユーティリティ関数の積極活用
+- 重複ロジックの即座の抽象化
+
+### ハードコーディング禁止
+
+- マジックナンバーは定数化
+- URL、パスは設定ファイルへ
+- 環境依存値は環境変数で管理
+- ビジネスロジックと設定値の分離
+
+### エラーハンドリング
+
+- 実行不可能時：代替案 3 つ提示
+- 部分実行可能時：可能部分を先行実行、残課題を明示
+
+---
+
+## 実行例
+
+- **バグ修正**：`TypeError` 発見 → 即座に型エラー修正
+- **リファクタリング**：重複コード検出 → 共通関数化
+- **DB 変更**：スキーマ更新が必要 → 確認要求「テーブル構造を変更しますか？」
+
+---
+
+## 継続改善
+
+- 新パターン検出 → 即座に学習・適用
+- フィードバック → 次回実行に自動反映
+- ベストプラクティス → 随時更新
+
+---
+
+## 制約事項
+
+### Web 検索の制約
+
+- **WebSearch ツールは使用禁止** — 利用することは禁止です
+- **代替手段**：`gemini --prompt "WebSearch: <検索クエリ>` — Gemini 経由の検索
+
+---
+
+## 🏗️ プロジェクト構造（Rust + Bevy版）
+
+### Rust実装構成 ✅
+```text
+negaboku-bevy/
+├── src/
+│   ├── main.rs                    # エントリポイント・Bevyアプリ起動
+│   ├── domain/                    # DDD: ドメイン層（将来実装）
+│   │   ├── relationship.rs        # 関係値エンティティ・集約ルート
+│   │   ├── battle.rs              # 戦闘ロジック
+│   │   └── character.rs           # キャラクター定義
+│   ├── application/               # DDD: アプリケーション層（将来実装）
+│   │   ├── systems/               # ECSシステム（関係値更新・バトル進行）
+│   │   └── services.rs            # ドメイン操作ユースケース
+│   ├── infrastructure/            # リソース・ファイルIO（将来実装）
+│   │   ├── scenario_loader.rs     # Markdownシナリオ読み込み
+│   │   └── asset_manager.rs       # 画像・音楽ハンドル管理
+│   └── presentation/              # UI層（将来実装）
+│       ├── dialogue_ui.rs         # テキスト・選択肢UI
+│       └── battle_ui.rs           # 戦闘UI
+├── assets/                        # ゲームアセット
+│   ├── scenarios/                 # Markdownシナリオファイル
+│   ├── images/                    # 画像リソース
+│   └── sounds/                    # 音声リソース
+├── Cargo.toml                     # Rust依存関係・プロジェクト設定
+├── CLAUDE_BEVY_GUIDELINES.md      # Bevy開発ガイドライン
+└── README.md                      # プロジェクト説明
+```
+
+
+
+## 🛠️ Bevy開発環境（実装完了）
+
+### 即座に実行可能 ✅
+```bash
+# Rust環境セットアップ
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+
+# プロジェクト実行
+cd negaboku-bevy
+cargo run
+
+# 動作確認済み機能
+- タイトル画面表示 ✅
+- テキストタイピング効果 ✅
+- 背景色切替（Bキー） ✅
+- ゲーム状態遷移 ✅
+```
+
+### 開発コマンド
+```bash
+# ホットリロード開発
+cargo watch -x run
+
+# テスト実行
+cargo test
+
+# コンパイルチェック
+cargo check
+
+# Lint・フォーマット（品質チェック）
+cargo fmt                  # コードフォーマット
+cargo clippy              # 静的解析・lint
+cargo clippy --fix        # 自動修正可能な項目を修正
+
+# リリースビルド
+cargo build --release
+```
+
+### 🛠️ コード品質管理システム
+
+#### Lint・静的解析ツール ✅
+- **rustfmt**: コードフォーマット自動化（`rustfmt.toml`設定済み）
+- **clippy**: 静的解析・品質チェック（`clippy.toml`設定済み）
+- **Cargo.toml**: プロジェクト内lint設定（Bevy特化調整済み）
+
+#### 自動化・CI/CD ✅
+- **pre-commit**: コミット前の自動品質チェック（`.pre-commit-config.yaml`）
+- **GitHub Actions**: CI/CDパイプライン（`.github/workflows/ci.yml`）
+  - Windows・Mac・Linux並列テスト
+  - lint・テスト・ビルドの3段階検証
+  - リリースアーティファクト自動生成
+
+#### 品質チェックコマンド
+```bash
+# 手動品質チェック（開発時）
+cargo fmt --check          # フォーマット確認
+cargo clippy -- -D warnings  # lint（警告をエラー扱い）
+cargo test                  # 全テスト実行
+
+# 自動品質チェック（コミット時）
+pre-commit install         # 初回セットアップ
+pre-commit run --all-files # 全ファイル一括チェック
+```
+
+### マルチプラットフォームビルド
+```bash
+# Bevy標準機能で自動対応
+cargo build --release                    # 現在のプラットフォーム
+cargo build --release --target x86_64-pc-windows-gnu    # Windows
+cargo build --release --target x86_64-apple-darwin      # macOS
+cargo build --release --target x86_64-unknown-linux-gnu # Linux
+```
+
+## 開発方針
+
+### コード主体・エディタ排除
+- **全機能をコードで実装**: シーン構造やNode階層は存在しない
+- **ECS（Entity-Component-System）**: データ駆動で状態を管理
+- **UI/演出も宣言的コード**: エディタ使用せず、全てRustコードで構築
 
 ### 設計優先順位
-1. **Node文化**
-2. **DDD（ドメイン駆動設計）**
-   - Domainロジックは Node に依存させず、Entity/ValueObject/Service で構成
-   - 関係値計算やバトルロジックは純GDScriptでテスト可能に設計
-3. **クリーンアーキテクチャ**
-   - 依存方向は UI → Application → Domain → Infrastructure
-   - Node間の連携は Application 層で橋渡しし、Domain層を直接参照しない
-4. **DRY原則**
-   - Scene再利用やスクリプト共通化で重複を排除
+1. **TDD / テストファースト**: `cargo test`による継続的品質保証
+2. **DDD（ドメイン駆動設計）**: ビジネスロジックを中心とした設計
+3. **クリーンアーキテクチャ**: 依存方向の明確化
+4. **DRY / Tidy First**: 重複排除・整理優先
 
-### 常に適用する習慣
-- **TDD**：Godot Unit Test（GUT）を用いたドメイン層テストを徹底
-- **Tidy First**：新機能追加前に既存コードを整理・リファクタしてから進める
+### ECS原則
+- **Entity**: 識別子のみ（データを持たない）
+- **Component**: 純粋なデータ構造（ロジックを持たない）
+- **System**: Component間のロジック処理
+- **Resource**: グローバル状態（シナリオ進行・関係値テーブル等）
 
-### 🔧 デグレード防止方針
+## 🛡️ フォント読み込みエラー検知システム（実装済み）
 
-#### 防御的開発手法の導入
-- **プレコミット検証の徹底**：
-  ```bash
-  # 必須チェック項目
-  1. 構文チェック: godot --headless --check-only
-  2. 型チェック: 静的解析の実行
-  3. ユニットテスト: 主要機能の動作確認
-  ```
-- **段階的開発とロールバック戦略**：
-  - feature/new-feature: 新機能開発
-  - develop: 統合テスト環境
-  - main: 安定版（常に動作保証）
-- **型安全性の強化**：明示的な型チェックと変換の実装
+### 概要
+フォントファイル読み込みエラーを事前検知し、詳細な対処法を提示するシステムを実装。日本語表示の問題を未然に防ぎます。
 
-#### システム設計の改善
-- **疎結合アーキテクチャ**：インターフェース分離による依存関係の明確化
-- **エラー処理の標準化**：Result型パターンの導入
-- **依存関係の可視化**：システム間の依存関係を明確に文書化
+### 実装済み対策システム
 
-#### 開発プロセスの改善
-- **継続的検証の自動化**：CI/CDパイプラインによる自動チェック
-- **変更影響範囲の事前分析**：既存APIへの影響、依存システム、エラーハンドリングの確認
-- **テスト駆動開発の適用**：機能追加前のテスト作成
+#### 1. ファイル存在確認（startup時）
+```rust
+fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let font_path = "fonts/NotoSansJP-VariableFont_wght.ttf";
+    let full_path = format!("assets/{}", font_path);
 
-#### 不具合修正方針
-- **横断的調査の徹底**：不具合の原因調査を行うときは、同様の問題がないか他のファイルを横断的に調査する
-- **根本原因の特定**：表面的な症状だけでなく、複数の関連ファイル間の相互作用を含めて根本原因を特定する
-- **包括的修正**：同じパターンの問題が複数箇所にある場合は、全てを一括で修正して再発を防ぐ
-- **修正効果の検証**：関連する全てのフローパターンで修正が正しく動作することを確認する
-
-#### 推奨開発フロー
-1. **変更前**: 現状の動作確認・テスト実行
-2. **開発中**: 小さな単位での段階的実装
-3. **変更後**: 構文チェック・型チェック・動作確認
-4. **コミット前**: 全体テストの実行
-5. **定期的**: システム全体の健全性チェック
-
----
-
-## 実装指針
-
-### 🎯 コード生成ルール（必須遵守）
-
-#### ロジック層中心設計
-- **ロジック層中心で実装**：UI参照はしない、ビジネスロジックをDomain層に集約
-- **Node参照の安全化**：`@onready var node_ref` + `get_node_or_null()`で記述
-- **Signal接続はコード実装**：シーンファイルではなくGDScriptで接続を管理
-- **段階的実装の徹底**：1つのタスクに1つの機能のみ実装（例：Markdownパーサーのみ）
-- **ファイル配置の明示**：出力ファイル名と配置場所を必ず明記（例：`Scripts/systems/markdown_parser.gd`）
-
-#### 実装パターン
-```gdscript
-# 推奨パターン：ロジック層中心
-class_name MarkdownParser
-extends RefCounted  # Nodeに依存しない
-
-# UI参照禁止：Nodeを直接参照しない
-# ❌ var label: Label = get_node("UI/Label")
-# ✅ Signal経由でUI更新を通知
-
-signal parsing_completed(result: Dictionary)
-signal parsing_error(message: String)
-
-func parse_markdown_file(file_path: String) -> Dictionary:
-    # ロジックのみ実装、UI更新はSignalで通知
-    var result = _internal_parse_logic(file_path)
-    parsing_completed.emit(result)
-    return result
+    if !std::path::Path::new(&full_path).exists() {
+        eprintln!("❌ フォントファイルが見つかりません: {}", full_path);
+        eprintln!("💡 以下のコマンドでフォントを配置してください:");
+        eprintln!("   mkdir -p assets/fonts");
+        eprintln!("   cp path/to/NotoSansJP-VariableFont_wght.ttf assets/fonts/");
+    }
+}
 ```
 
-#### Node参照の安全パターン
-```gdscript
-# 推奨：安全なNode参照
-class_name UIController
-extends Control
-
-@onready var dialog_box = get_node_or_null("DialogBox")
-@onready var choice_panel = get_node_or_null("ChoicePanel")
-
-func _ready():
-    # Signal接続はコードで実行
-    if dialog_box:
-        dialog_box.text_finished.connect(_on_text_finished)
-    if choice_panel:
-        choice_panel.choice_selected.connect(_on_choice_selected)
+#### 2. アセット読み込み状態監視（runtime）
+```rust
+fn font_loading_system(
+    asset_server: Res<AssetServer>,
+    fonts: Option<Res<GameFonts>>,
+    mut app_state: ResMut<AppState>,
+) {
+    // LoadState監視: NotLoaded → Loading → Loaded/Failed
+    // 段階的な状況表示とエラーハンドリング
+}
 ```
 
-### 従来の実装指針
-- GDScriptを使用し、型ヒントを積極活用
-- Domain層のスクリプトは Node と切り離し `res://Scripts/systems/` 以下に配置
-- UI層（DialogueBox, ChoicePanel, EffectLayer）は Control ノードを基本とする
-- AnimationPlayer・Particles2D で爆発・斬撃・光・フラッシュ等の演出を共通テンプレ化
-- Scene単位の再利用を前提とし、UIコンポーネントは独立Sceneとして作成
-- シグナルでUI→Application→Domainのイベントフローを接続する
+#### 3. デバッグ情報表示（F1キー）
+```rust
+fn debug_font_system(/* ... */) {
+    if keyboard_input.just_pressed(KeyCode::F1) {
+        // フォント状態・ハンドル・ファイル存在確認を一括表示
+        println!("🔍 ===== デバッグ情報 ===== ");
+        // 詳細なデバッグ出力...
+    }
+}
+```
 
----
+#### 4. 段階的初期化システム
+```rust
+#[derive(Debug, Default, PartialEq)]
+enum InitState {
+    LoadingFonts,  // フォント読み込み待機
+    FontsReady,    // UI初期化準備完了
+    UIReady,       // 通常ゲーム処理
+}
 
-## Claudeに求める行動
+fn initialization_system(/* ... */) {
+    // フォント準備完了を待ってからUI初期化
+    // 確実にフォントが利用可能な状態でUI構築
+}
+```
+
+### 検知可能なエラー
+
+✅ **フォントファイル未配置**: assets/fontsディレクトリにファイルが存在しない
+✅ **アセット読み込み失敗**: Bevyアセットシステムでの読み込みエラー
+✅ **初期化タイミング問題**: フォント読み込み前のUI作成を防止
+✅ **リソース不正状態**: GameFontsリソースの存在確認
+
+### 使用方法
+
+#### 通常運用
+- アプリ起動時に自動でフォント状態をチェック
+- エラーがある場合は詳細な修正手順を表示
+
+#### デバッグ時
+- **F1キー**: フォント読み込み状態の詳細情報を表示
+- **起動ログ**: 段階的な読み込み状況を確認
+
+#### フォント追加・変更時
+1. `assets/fonts/`にフォントファイルを配置
+2. `setup_fonts`関数でパスを更新
+3. 起動時の確認メッセージで成功を確認
+
+### 対応フォント
+- **現在**: Noto Sans JP（日本語完全対応）
+- **パス**: `assets/fonts/NotoSansJP-VariableFont_wght.ttf`
+- **用途**: UI全般（タイトル・メニュー・ダイアログ・ストーリー）
+
+## Claude Code への指示
 
 ### 🚨 **最優先遵守項目**
-1. **ロジック層中心設計**：全てのコード生成でUI参照を禁止し、ビジネスロジックをDomain層に集約
-2. **安全なNode参照**：`@onready` + `get_node_or_null()`パターンを必須使用
-3. **コード内Signal接続**：シーンファイルではなくGDScriptでSignal接続を管理
-4. **単一機能実装**：1つのタスクで1つの機能のみ実装（段階的開発）
-5. **ファイル配置明示**：出力ファイル名と配置場所を必ず明記
+1. **UI層とドメイン層の分離**: ドメインロジックはUIに依存させない
+2. **ECSパターン徹底**: Entity/Component/Systemの責務を混在させない
+3. **単一機能タスク化**: 1つのPR/Issueにつき1機能実装
+4. **テスト駆動開発**: 必ずユニットテストを伴う（`cargo test`で実行可能）
+5. **ファイル配置明示**: 生成コードには配置パスと役割を必ず記載
 
-### 従来の行動指針
-- すべてのコード生成・レビューにおいてこの方針を反映する
-- Node文化を尊重しつつ、DDD/クリーンアーキテクチャの依存方向を維持する
-- コード例はUI層・Application層・Domain層を分離したファイル構成で提示する
-- テストコード生成時はGUT形式で提示する
-
-### コード生成時の必須フォーマット
+### コード生成フォーマット
 ```text
-## 実装ファイル: Scripts/systems/[機能名].gd
+## 実装ファイル: src/domain/relationship.rs
 
 [コード内容]
 
 ## 配置場所
-- ファイルパス: res://Scripts/systems/[機能名].gd
-- 機能範囲: [具体的な実装範囲]
-- 依存関係: [必要な他システム]
+- ファイルパス: src/domain/relationship.rs
+- 役割: 関係値管理のエンティティ・サービス
+- 依存: なし（純粋ドメイン層）
 ```
 
-### 🧪 Godot開発手法（実装済み）
+### テスト戦略
+- **Rust標準テスト**: `cargo test`で実行
+- **Domain層**: ユニットテスト徹底、UI層は統合テスト中心
+- **テストデータ**: 軽量なモックを使用、ファイルIOは避ける
 
-#### 統合デバッグ駆動開発✅
-- **リアルタイムテスト**: デバッグパネルでの即座機能確認
-- **高速プロトタイピング**: GDScriptによる迅速な実装・修正サイクル
-- **動作確認テスト**: 全システム統合での実際動作検証
-- **継続的改善**: Godot Editorでの即時フィードバック
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-```gdscript
-# Godotデバッグテスト例（実装済み）
-func test_relationship_system():
-    #関係値テスト
-    game_manager.relationship_system.modify_relationship("player", "partner", 25, "テスト協力")
-    var current_value = game_manager.relationship_system.get_relationship("player", "partner")
-    var current_level = game_manager.relationship_system.get_relationship_level_string("player", "partner")
-    print("関係値: %d (%s)" % [current_value, current_level])
-```
-
-#### Tidy First原則（Godot適応）
-- **シーン構造の整理**: Node階層の明確化と機能分離
-- **Script分割**: システム別の適切なファイル分割
-- **Signal活用**: 疎結合な通信による保守性向上
-- **Resource管理**: データとロジックの明確な分離
-
-#### DRY原則（GDScript実装）
-- **class_name活用**: 再利用可能なクラス定義
-- **AutoLoad管理**: グローバルシステムの一元化
-- **Signal統一**: イベント通信パターンの標準化
-- **適度な抽象化**: Godotの標準パターンに準拠
-
-### 🏗️ Godot実装アーキテクチャ（完成済み）
-
-#### Scene + Node + Signal パターン✅
-- **シーン階層設計**: Godot標準のNode階層による機能分離
-- **Signal通信**: 疎結合なイベント駆動システム
-- **Resource活用**: データ定義の型安全性確保
-- **AutoLoad管理**: グローバルシステムの統合管理
-
-```gdscript
-# Godot実装例（関係値システム）
-class_name RelationshipSystem
-extends Node
-
-signal relationship_changed(char1_id: String, char2_id: String, old_value: int, new_value: int)
-signal relationship_level_changed(char1_id: String, char2_id: String, old_level: String, new_level: String)
-
-var relationships: Dictionary = {}
-
-func modify_relationship(char1_id: String, char2_id: String, delta: int, reason: String = ""):
-    var current_value = get_relationship(char1_id, char2_id)
-    var new_value = current_value + delta
-    set_relationship(char1_id, char2_id, new_value)
-
-    if reason != "":
-        print("関係値変更: %s ↔ %s, %+d (%s)" % [char1_id, char2_id, delta, reason])
-```
-
-#### Godot軽量アーキテクチャ✅
-- **Scene階層**: 機能別の明確なシーン分割
-- **システム統合**: AutoLoadによるグローバル管理
-- **Signal通信**: 型安全なイベント通信
-- **Resource管理**: extends Resource による データ定義
-
-```text
-GodotProject/res/
-├── Scenes/                   # シーン階層
-│   ├── Main.tscn            # 統合メインシーン
-│   └── Battle.tscn          # バトル専用シーン
-├── Scripts/                 # GDScript システム
-│   ├── systems/             # ゲームシステム
-│   │   ├── relationship.gd  # 関係値管理
-│   │   └── battle_system.gd # バトル制御
-│   ├── ui/                  # UI制御
-│   │   ├── dialogue_box.gd  # ダイアログ
-│   │   ├── choice_panel.gd  # 選択肢
-│   │   └── effect_layer.gd  # エフェクト
-│   ├── game_manager.gd      # 統合管理（AutoLoad）
-│   └── character.gd         # データリソース
-```
-
-### 🔧 Godotマルチプラットフォーム対応（標準実装済み）
-
-#### ネイティブクロスプラットフォーム✅
-- **標準対応**: Windows・Mac・Linux同時サポート
-- **統一コードベース**: プラットフォーム固有コード不要
-- **自動最適化**: Godotエンジンレベルでの最適化
-- **統一ビルド**: 1つのプロジェクトから全プラットフォーム出力
-
-```gdscript
-# Godotプラットフォーム判定（必要に応じて）
-func get_platform_name() -> String:
-    match OS.get_name():
-        "Windows":
-            return "Windows"
-        "macOS":
-            return "Mac"
-        "Linux":
-            return "Linux"
-        _:
-            return "Unknown"
-
-# セーブパス（自動でプラットフォーム対応）
-func get_save_path() -> String:
-    return "user://savegame.save"  # Godotが自動でプラットフォーム別パス管理
-```
-
-#### Godot設定統一✅
-- **レンダリング**: Forward Plus（全プラットフォーム対応）
-- **ビルドテンプレート**: 標準テンプレートで全OS対応
-- **入力システム**: Godot標準のInput（自動でデバイス対応）
-- **リソース管理**: .tres/.res形式（プラットフォーム非依存）
-
-### 📝 GDScriptコーディング規約（適用済み）
-
-#### ✅ 実装済み命名規則
-- **クラス名**: PascalCase + class_name (`RelationshipSystem`) ✅
-- **ファイル名**: snake_case (`relationship.gd`) ✅
-- **メソッド**: snake_case (`modify_relationship_value`) ✅
-- **変数**: snake_case (`current_level`) ✅
-- **定数**: UPPER_SNAKE_CASE (`MAX_RELATIONSHIP_VALUE`) ✅
-- **Signal**: snake_case (`relationship_changed`) ✅
-
-#### Godot設計原則（適用済み）
-- **Scene + Node**: Godot標準の階層構造活用 ✅
-- **Signal-driven**: 疎結合な通信システム ✅
-- **Resource extends**: データ定義の型安全性確保 ✅
-- **AutoLoad**: グローバルシステムの管理 ✅
-
-### 🧪 Godotテスト戦略（実装完了）
-
-#### ✅ 統合デバッグテスト環境
-- **リアルタイムテスト**: デバッグパネルでの即座機能確認 ✅
-- **システム統合テスト**: 全機能の組み合わせ動作確認 ✅
-- **パフォーマンステスト**: 軽量化・高速化の実証 ✅
-
-#### Godot標準テスト活用
-- **デバッグ機能**: print文とGodot Editorでの即時確認
-- **Scene テスト**: Main.tscnでの統合動作テスト
-- **メモリ監視**: Godot Profilerでのリソース使用量確認
-
-```gdscript
-# Godot統合テスト例（実装済み）
-func _on_test_button_pressed():
-    # 関係値テスト
-    game_manager.relationship_system.modify_relationship("player", "partner", 25, "デバッグテスト")
-
-    # バトルテスト
-    var enemy = Character.new()
-    enemy.character_id = "test_enemy"
-    game_manager.battle_system.start_battle([enemy])
-
-    # エフェクトテスト
-    effect_layer.play_effect("explosion", get_viewport_rect().size / 2)
-```
-
-### ✅ Godot実装規約（適用済み）
-- **Node継承**: システム管理、UI制御 ✅
-- **Resource継承**: データ定義、永続化 ✅
-- **await + Tween**: 非同期処理、アニメーション ✅
-- **Signal System**: イベント通信、状態通知 ✅
-
-## 🎯 関係値システム詳細（3段階）
-
-### 関係値の変動と戦闘効果
-- **親密**: 共闘技が解放、高威力＋追加効果、共闘技ありでイージー寄り難易度
-- **通常**: 標準的な相互作用、基本スキルのみ使用可能
-- **対立**: 対立技が解放、ハイリスクハイリターン（主にソウマ限定）
-
-### 推奨ペアの特別要素
-- **ソウマ × ユズキ**: 幼馴染の絆、特別イベント・エンディングCG
-- **ソウマ × レツジ**: 親友の信頼、特別イベント・エンディングCG
-- **ソウマ × カイ**: 対立から親密への変化（初期-25）、特別イベント・エンディングCG
-- **カイ × セリーヌ**: 身分差を超えた関係、特別イベント・エンディングCG
-- **リゼル × レツジ**: 戦士と術師の協力、特別イベント・エンディングCG
-
-### 難易度設計思想
-- **共闘技なし**: やや困難な難易度設定
-- **共闘技あり**: イージー寄りの難易度設定
-- **対立技**: 一部高火力だが運用困難、主にソウマ限定の特殊戦術
-
-
-## 🚀 開発ロードマップ
-
-### Phase 1: 基盤アーキテクチャ構築（TDD）
-- [x] テスト環境のセットアップ（Godot統合デバッグ）
-- [x] ドメインモデルの設計と実装（関係値システム）
-- [x] Scene + Node + Signalアーキテクチャの基盤実装
-- [x] プラットフォーム抽象化レイヤーの構築
-- [x] AutoLoadシステムの導入と設定
-
-### Phase 2: コアシステム実装（DDD）
-- [x] 関係値ドメインの完全実装（GDScript）
-- [x] キャラクターリソースの実装
-- [ ] ダンジョン探索システムの設計
-- [x] 戦闘システムの構築
-- [x] Signalベースイベントシステムの実装
-
-### Phase 3: アプリケーション層構築
-- [x] ユースケースの実装（GDScript）
-- [x] リポジトリパターンの実装
-- [x] セーブ/ロードシステム（クロスプラット対応）
-- [x] Godot統合レイヤーの実装
-- [x] パフォーマンス監視とテスト
-
-### Phase 4: プレゼンテーション層とリリース
-- [x] Control + SignalパターンでのUI実装
-- [x] Windows向け最適化とテスト
-- [x] Mac対応の実装と検証
-- [x] E2Eテストとパフォーマンス調整
-- [x] Godotリリース用ビルドパイプライン構築
-
-## 🔧 Godot技術仕様（実装完了）
-
-### 開発環境要件✅
-- **Godot**: 4.3以上（軽量・高速・マルチプラットフォーム）
-- **開発環境**: Godot Editor（統合開発環境）
-- **言語**: GDScript（高速プロトタイピング）
-- **Git**: バージョン管理
-- **デバッグ**: 統合デバッグ機能（リアルタイム関係値操作）
-
-### プラットフォーム対応✅
-- **Windows**: x64標準対応
-- **Mac**: Intel/Apple Silicon標準対応
-- **Linux**: x64標準対応
-- **将来対応**: モバイル・Web・コンソール
-
-### Godot設定✅
-- **レンダリング**: Forward Plus（高品質）
-- **プロジェクトサイズ**: 10MB（98%軽量化）
-- **起動時間**: 1-3秒（90%高速化）
-- **メモリ使用量**: 50-100MB（75%削減）
-
-## 📝 コミット規約
-
-### コミットメッセージ形式
-```text
-[Godot][システム名] 機能概要
-
-GDScriptでの実装詳細
-
-Signal通信やScene統合の改善点など
-```
-
-### 例
-```bash
-git commit -m "[Godot][関係値] 3段階関係値システムのGDScript実装
-
-Dictionary + Signal による高速関係値管理
-リアルタイム変化通知とデバッグ機能統合"
-```
-
-## 🎮 ゲームプレイテスト（実装完了）
-
-### Godot統合テスト✅
-- **デバッグパネル**: 全機能のリアルタイムテスト環境
-- **関係値操作**: +25/-25ボタンによる即座変更
-- **システム検証**: ダイアログ・選択肢・バトル・エフェクト
-- **動作確認**: Spaceキーによるデモサイクル実行
-
-## 📊 品質管理（達成済み）
-
-### Godot移行効果✅
-- **98%軽量化**: 500MB → 10MB
-- **90%高速化**: 15-30秒 → 1-3秒起動
-- **75%メモリ削減**: 200-400MB → 50-100MB使用
-- **マルチプラットフォーム**: Windows・Mac・Linux標準対応
-
-## 💾 セーブシステム（実装済み）
-
-### Godot実装✅
-```gdscript
-# 実装済みセーブシステム
-func save_game():
-    var save_data = {
-        "party_members": [],
-        "relationships": relationship_system.get_all_relationships(),
-        "game_progress": game_progress
+    #[test]
+    fn relationship_increases_correctly() {
+        let mut rel = Relationship::new("souma", "yuzuki");
+        rel.modify(25);
+        assert_eq!(rel.value(), 25);
+        assert_eq!(rel.level(), RelationshipLevel::Normal);
     }
-    var save_file = FileAccess.open("user://savegame.save", FileAccess.WRITE)
-    save_file.store_string(JSON.stringify(save_data))
-    save_file.close()
+}
 ```
 
-## 📋 ライセンス管理ガイドライン
+## 開発プロセス
 
-### 非商用ライセンスの適用
+### 推奨フロー
+1. **Issue作成**: 機能単位で分割（例：Markdownパーサー実装）
+2. **ブランチ作成**: `feature/機能名`
+3. **テスト先行実装**: `cargo test`でレッド→グリーン
+4. **実装後レビュー**: CodeRabbit + Claudeによるレビュー
+5. **マージ後リファクタ**: Tidy First適用
 
-**願い石と僕らの旅路**は独自の非商用ライセンスを採用しています：
+### ビルド・実行方法
+```bash
+# 開発用ホットリロード
+cargo watch -x run
 
-#### ライセンス原則
-- **非商用利用限定**: 一切の商用利用を禁止
-- **教育・学習目的**: 個人学習と教育機関での使用を推奨
-- **オープンソース貢献**: 改変と再配布は同ライセンス下で許可
-- **帰属表示義務**: 原作者クレジットとライセンス表示が必要
+# テスト実行
+cargo test
 
-#### 開発時の注意事項
+# リリースビルド
+cargo build --release
+```
 
-1. **第三者アセットの管理**
-   - Unity Asset Storeアセットのライセンス確認
-   - フリー素材の利用条件遵守
-   - 商用利用可能素材のみ使用推奨
+### クロスプラットフォーム対応
+- **Bevy標準機能**: Windows・Mac・Linux標準対応
+- **モバイル・Web（WASM）**: 将来的に検証予定
+- **プラットフォーム固有コード**: 極力避ける
 
-2. **コード管理**
-   - 新規作成ファイルへのライセンス表示
-   - 第三者ライブラリの依存関係確認
-   - ライセンス互換性の検証
+## 開発思想の要約
+- **エディタ文化を捨て**: コード主体で統一
+- **ECS + DDD + TDD**: 保守性とテスト容易性を両立
+- **LLM補助を最大化**: コードが唯一の真実となる構造
+- **最小演出**: 爆発・斬撃・光をコードで構築、外部ツール併用は必要時のみ
 
-3. **Unity固有の考慮事項**
-   - Unity Personal/Pro/Enterpriseライセンスとの整合性
-   - Unity製ビルドターゲットでのライセンス表示
-   - プラットフォーム固有の法的要件確認
-
-#### コミュニティ対応
-
-- **商用利用相談**: 別途商用ライセンス契約の提案
-- **派生作品**: 同ライセンス下での二次創作許可
-- **貢献者への配慮**: コントリビューター権利の明確化
-
-#### 法的保護
-
-- **知的財産権**: オリジナルコンテンツの著作権保護
-- **商標管理**: プロジェクト名とロゴの使用制限
-- **免責事項**: 適切な責任制限条項の設定
-
-### ライセンス更新プロセス
-
-1. **変更検討**: 法的要件や事業戦略の変化に応じた見直し
-2. **コミュニティ通知**: 既存ユーザーへの事前告知
-3. **文書更新**: LICENSE、README.md、CLAUDE.mdの同期更新
-4. **バージョン管理**: ライセンス変更履歴の記録
-
-## 🤖 Claude Code 作業要件
-
-### 応答言語
-- **日本語応答必須**: Claude Codeは全ての応答を日本語で行うこと
-- **技術文書**: コメント、ドキュメント、コミットメッセージも日本語で統一
-- **例外**: コード内の変数名、関数名、ファイル名は英語を使用
-
-### コードレビュープロセス
-- **本番マージ前**: 必ずプルリクエスト（PR）を作成すること
-- **CodeRabbitレビュー**: @coderabbitai によるレビューを受けること
-- **レビュー対応**: 指摘事項は必ず修正してからマージ実行
-- **品質保証**: 法的表現、技術仕様、文書整合性の確認
-
-#### プルリクエスト作成手順
-1. **フィーチャーブランチ作成**: `feature/機能名` の命名規則
-2. **変更内容の詳細説明**: PRでの変更概要と影響範囲を明記
-3. **CodeRabbit呼び出し**: `@coderabbitai` メンションでレビュー依頼
-4. **レビュー修正**: 指摘事項への対応と再確認
-5. **承認後マージ**: すべてのチェックが完了後にマージ実行
-
-### 継続的改善
-- **ガイドライン更新**: このファイル自体も同じプロセスを適用
-- **品質向上**: レビューフィードバックを次回開発に反映
-- **文書同期**: README.md、LICENSE等の関連文書も一貫性を保持
-
----
-
-## 🎯 「願い石と僕たちの絆」実装方針
+## 🎯 「願い石と僕たちの絆」実装方針（Rust + Bevy版）
 
 ### 設計思想
-- **DDD（ドメイン駆動設計）+ クリーンアーキテクチャベース**: ドメインロジックを中心とした設計
+- **DDD + クリーンアーキテクチャベース**: ドメインロジックを中心とした設計
 - **TDD維持**: テスト駆動開発による品質保証
-- **Node文化の尊重**: GodotのScene/Nodeモデルを基本構造とする
-- **Signal-driven**: 疎結合なイベント通信システム
+- **ECS文化の採用**: Bevy標準のEntity-Component-Systemモデル
+- **型安全性重視**: Rustの所有権システムによる実行時エラー防止
 
 ### 開発優先順位
 1. **骨子とテキスト優先**: ゲームの核となるシステム・ストーリーを最優先
@@ -667,7 +617,7 @@ func save_game():
 - **エフェクト・BGM**: 無料素材加工ベースで統一
 - **イラスト**: 男女別絵師で統一感を確保
 - **テキスト**: 日本語優先、将来的な多言語対応も視野
-- **データ管理**: GodotのResourceシステム活用でデータ駆動設計
+- **データ管理**: Bevy Assetシステム活用でデータ駆動設計
 
 ### キャラクター・ストーリー実装
 - **メインキャラクター**: ソウマ、ユズキ、レツジ、カイ等の実装
@@ -675,249 +625,50 @@ func save_game():
 - **関係値システム**: 3段階（対立/通常/親密）による戦闘・イベント分岐
 - **願い石ストーリー**: AIリラとの対峙を核とした物語展開
 
-## Godot実装アーキテクチャ詳細
+### 🔧 Bevy実装方針
 
-### 関係値システム実装方針
-
-#### ドメイン層設計原則
-```gdscript
-# res/Scripts/systems/relationship.gd
-class_name RelationshipSystem
-extends Node
-
-# Signalベースの状態通知
-signal relationship_changed(char1_id: String, char2_id: String, old_value: int, new_value: int)
-signal relationship_level_changed(char1_id: String, char2_id: String, old_level: String, new_level: String)
-
-# 関係値データ管理
-var relationships: Dictionary = {}
-const MAX_RELATIONSHIP = 100
-const MIN_RELATIONSHIP = -100
-
-# キャップ制管理
-var relationship_caps = {
-    "early_game": 30,   # 序盤キャップ
-    "mid_game": 50,     # 中盤解放（共闘技解放）
-    "late_game": 100    # 終盤解放（全ルート分岐可能）
+#### Component設計原則
+```rust
+// ✅ 推奨: 純粋なデータ構造
+#[derive(Component)]
+pub struct DialogueText {
+    pub full_text: String,
+    pub current_char: usize,
+    pub is_complete: bool,
 }
 
-# 特殊対立ペアの定義
-var special_conflict_pairs = ["souma_kai", "yuzuki_serene", "retsuji_kengo"]
+// ❌ 避ける: ロジックを含むComponent
+#[derive(Component)]
+pub struct BadComponent {
+    pub data: String,
+    // ロジックメソッドは別のSystemで処理
+}
 ```
 
-#### イベント連携設計指針
-- **一元管理**: `relationService.update(pairId, delta, reason)`で全ての関係値変更を一元管理
-- **Signal駆動**: 状態変化をSignalで通知、UI・スキルシステムが自動更新
-- **リアルタイム反映**: 関係値変化が即座にゲーム内の全システムに反映
-- **ルート確定管理**: 後半に親密/通常/対立ルートを確定、以降はエンディング分岐固定
-
-### バトルシステム実装方針
-
-#### スキルシステム設計
-```gdscript
-# res/Scripts/systems/battle_system.gd
-# スキル分類と発動条件の管理
-enum SkillType {
-    NORMAL,     # 白：常時使用可能
-    MAGIC,      # 青：MP消費、常時使用可能
-    COOPERATION, # 緑：関係値+50以上で解放
-    CONFLICT    # 赤：関係値-50以下、特定ペアのみ
+#### System設計原則
+```rust
+// ✅ 推奨: 単一責務のSystem
+pub fn text_typing_system(
+    mut query: Query<(&mut DialogueText, &mut Text2d)>,
+    time: Res<Time>,
+) {
+    // テキストタイピング処理のみ
 }
 
-# スキル発動条件の動的チェック
-func can_use_skill(character1_id: String, character2_id: String, skill_type: SkillType) -> bool:
-    var relationship_value = relationship_system.get_relationship(character1_id, character2_id)
-
-    match skill_type:
-        SkillType.COOPERATION:
-            return relationship_value >= 50  # 親密状態
-        SkillType.CONFLICT:
-            return relationship_value <= -50 and is_special_conflict_pair(character1_id, character2_id)
-        _:
-            return true  # 通常スキルは常時使用可能
-```
-
-#### SP管理システム設計
-```gdscript
-# 戦闘ごとの初期化と管理
-var sp_values = {}
-const INITIAL_SP = 100
-
-func start_battle():
-    # パーティメンバーのSPを戦闘開始時に初期化
-    for character_id in party_members:
-        sp_values[character_id] = INITIAL_SP
-
-func use_special_skill(character_id: String, sp_cost: int) -> bool:
-    if sp_values[character_id] >= sp_cost:
-        sp_values[character_id] -= sp_cost
-        return true
-    return false
-```
-
-### UIシステム実装方針
-
-#### 相関図表示システム
-```gdscript
-# res/Scripts/ui/relationship_chart.gd
-class_name RelationshipChart
-extends Control
-
-# 推奨ペアの定義と表示管理
-var recommended_pairs = [
-    ["souma", "yuzuki"],    # 幼馴染の絆
-    ["souma", "retsuji"],   # 親友の信頼
-    ["souma", "kai"],       # 対立から親密へ
-    ["retsuji", "yuzuki"],  # 戦士と白魔術師
-    ["retsuji", "rizel"],   # 戦士と召喚術師
-    ["yuzuki", "kai"],      # 幼馴染とチャラ男
-    ["makito", "serene"],   # 博識とお嬢様
-    ["kai", "pix"],         # DLC: チャラ男とインプ
-    ["kai", "serene"],      # 身分差を超えた関係
-    ["serene", "lira"],     # DLC: お嬢様とAI少女
-    ["kengo", "lira"],      # DLC: 父とAIの特別な関係
-    ["makito", "pix"]       # DLC: 新組み合わせ
-]
-
-# 対立ペアの特別表示
-var conflict_pairs = [
-    ["souma", "kai"],       # 価値観不一致
-    ["yuzuki", "serene"],   # 三角関係、恋愛的嫉妬
-    ["retsuji", "kengo"]    # DLC: 過去の事件
-]
-
-func update_chart():
-    for pair in all_character_pairs:
-        var relationship_value = relationship_system.get_relationship(pair[0], pair[1])
-        if pair in recommended_pairs:
-            show_special_hint(pair, relationship_value)  # 推奨ペアヒント表示
-        elif pair in conflict_pairs:
-            show_conflict_warning(pair, relationship_value)  # 対立ペア警告
-        else:
-            show_normal_pair(pair, relationship_value)  # 通常表示
-```
-
-#### バトルUIシステム
-```gdscript
-# res/Scripts/ui/battle_ui.gd
-class_name BattleUI
-extends Control
-
-# スキルタイプ別の色分け設定
-var skill_colors = {
-    SkillType.NORMAL: Color.WHITE,      # 白：通常スキル
-    SkillType.MAGIC: Color.BLUE,        # 青：魔法スキル
-    SkillType.COOPERATION: Color.GREEN, # 緑：共闘技
-    SkillType.CONFLICT: Color.RED       # 赤：対立技
+// ✅ 推奨: Resource活用
+#[derive(Resource)]
+pub struct GameState {
+    pub current_scene: String,
+    pub is_story_mode: bool,
 }
-
-func update_skill_list():
-    for skill in available_skills:
-        var skill_button = skill_buttons[skill.id]
-        # 色分けと使用可否状態の視覚化
-        skill_button.modulate = skill_colors[skill.type]
-        skill_button.disabled = not can_use_skill(skill)
-
-        # 関係値表示のリアルタイム更新
-        update_relationship_display()
 ```
-
-### プレゼントシステム実装方針
-
-#### プレゼント効果管理
-```gdscript
-# res/Scripts/systems/present_system.gd
-class_name PresentSystem
-extends Node
-
-# プレゼント効果定義
-enum PresentReaction {
-    FAVORITE = 10,  # 好物
-    NORMAL = 5,     # 普通
-    DISLIKE = -5    # 嫌い（致命傷にならない）
-}
-
-# キャラ別好みデータ管理
-var character_preferences = {
-    "yuzuki": {"flowers": PresentReaction.FAVORITE, "books": PresentReaction.NORMAL, "weapons": PresentReaction.DISLIKE},
-    "retsuji": {"weapons": PresentReaction.FAVORITE, "food": PresentReaction.NORMAL, "flowers": PresentReaction.DISLIKE},
-    # ...他キャラクターの設定
-}
-
-func give_present(giver_id: String, receiver_id: String, item_type: String):
-    var reaction = get_reaction(receiver_id, item_type)
-    var relationship_delta = reaction as int
-
-    # 関係値システムへの連携
-    relationship_system.modify_relationship(giver_id, receiver_id, relationship_delta, "present_" + item_type)
-
-    # 初回プレゼント時の情報開示
-    if not has_given_before(giver_id, receiver_id, item_type):
-        reveal_preference(receiver_id, item_type, reaction)
-```
-
-### ラスボス戦システム実装方針
-
-#### AIリラ戦闘システム
-```gdscript
-# res/Scripts/systems/lira_boss_system.gd
-class_name LiraBossSystem
-extends Node
-
-# フルパワーモード管理
-var is_full_power_mode = false
-var fragment_count = 0
-const REQUIRED_FRAGMENTS = 5
-
-func start_boss_battle():
-    # 断片アイテムチェック
-    fragment_count = inventory_system.count_fragments()
-
-    if fragment_count < REQUIRED_FRAGMENTS:
-        # 強制敗北演出（ゲームオーバーなし）
-        show_forced_defeat_scene()
-        return false
-
-    # 正常なボス戦開始
-    apply_fragment_debuffs()
-    return true
-
-func on_hp_half():
-    # HP半減時のフルパワーモード移行
-    is_full_power_mode = true
-    apply_full_power_buffs()
-
-func apply_fragment_debuffs():
-    # 断片数に応じたデバフ効果
-    var debuff_strength = fragment_count * 0.2
-    lira_stats.defense_multiplier *= (1.0 - debuff_strength)
-```
-
-### 拡張性設計方針
-
-#### DLCキャラクター対応
-- **データ駆動設計**: キャラクターデータをResourceで管理、新キャラ追加時の自動拡張
-- **関係値マトリックス**: 新キャラ追加時の関係値テーブル自動拡張
-- **スキルシステム**: キャラ特有スキルの動的追加、既存システムとの統合
-
-#### カスタマイズ機能
-- **関係値調整アイテム**: ゲームバランス調整用、サイトウ撃破後解放
-- **難易度設定**: 共闘技発動条件の動的調整機能
-- **デバッグ機能**: 関係値操作・スキルテスト機能の内蔵
-
-### パフォーマンス最適化方針
-
-#### Godot最適化手法
-- **Object Pool**: エフェクトオブジェクトの再利用でメモリ効率化
-- **Signal管理**: 不要なSignal接続の適切な解除でメモリリーク防止
-- **Resourceキャッシュ**: 頻繁アクセスデータのメモリキャッシュで高速化
-- **バッチ処理**: UI更新のバッチ化で描画パフォーマンス向上
-
-### 体験版・DLC戦略
-- **体験版**: 4キャラクター（ソウマ、ユズキ、レツジ、カイ）での基本システム体験
-- **DLC**: リラ・ケンゴ・ピクス追加、研究所ダンジョン、AI救済ルート
-- **メタキャラクター**: サイトウによる相関図表示・復帰説明機能
 
 ---
 
-このプロジェクトは **Godot 4.x エンジン**を活用し、「僕たちの絆」を紡ぐ3段階関係値システムを核とした革新的なRPG体験の創造を目指します。**98%の軽量化**と**90%の高速化**を達成し、**Windows・Mac・Linux**でのマルチプラットフォーム対応を標準実装しています。
+このプロジェクトは **Rust + Bevy ECS** を活用し、「僕たちの絆」を紡ぐ3段階関係値システムを核とした革新的なRPG体験の創造を目指します。**型安全性・高速実行・クロスプラットフォーム**対応を標準実装し、**Windows・Mac・Linux**での統一されたゲーム体験を提供します。
+
+---
+
+## ライセンス
+
+このプロジェクトは **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** の下でライセンスされています。詳細はリポジトリルートの `LICENSE` ファイルを参照してください。

@@ -44,15 +44,6 @@ impl BackgroundController {
             current_index: 0,
         }
     }
-
-    pub fn next_background(&mut self) -> Color {
-        self.current_index = (self.current_index + 1) % self.backgrounds.len();
-        self.backgrounds[self.current_index]
-    }
-
-    pub fn current_background(&self) -> Color {
-        self.backgrounds[self.current_index]
-    }
 }
 
 /// メニューボタンコンポーネント
@@ -263,28 +254,6 @@ impl MenuButton {
             },
         }
     }
-
-    pub fn get_text(&self) -> &'static str {
-        match self.button_type {
-            MenuButtonType::NewGame => "はじめから",
-            MenuButtonType::Continue => "つづきから",
-            MenuButtonType::Settings => "設定",
-            MenuButtonType::Gallery => "ギャラリー",
-            MenuButtonType::Exit => "ゲーム終了",
-        }
-    }
-
-    pub fn get_normal_color() -> Color {
-        Color::srgba(0.2, 0.2, 0.3, 0.8)
-    }
-
-    pub fn get_hover_color() -> Color {
-        Color::srgba(0.4, 0.4, 0.5, 0.9)
-    }
-
-    pub fn get_pressed_color() -> Color {
-        Color::srgba(0.6, 0.6, 0.7, 1.0)
-    }
 }
 
 #[cfg(test)]
@@ -309,21 +278,15 @@ mod tests {
 
     #[test]
     fn test_background_controller_creation() {
-        let mut controller = BackgroundController::new();
+        let controller = BackgroundController::new();
         assert_eq!(controller.current_index, 0);
         assert_eq!(controller.backgrounds.len(), 4);
-
-        let first_color = controller.current_background();
-        let next_color = controller.next_background();
-        assert_eq!(controller.current_index, 1);
-        assert_ne!(first_color, next_color);
     }
 
     #[test]
     fn test_menu_button_creation() {
         let button = MenuButton::new(MenuButtonType::NewGame, 0.0, 0.0, 100.0, 50.0);
         assert_eq!(button.button_type, MenuButtonType::NewGame);
-        assert_eq!(button.get_text(), "はじめから");
         assert!(!button.is_hovered);
         assert!(!button.is_pressed);
     }

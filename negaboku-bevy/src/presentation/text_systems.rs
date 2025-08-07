@@ -4,6 +4,7 @@
 
 use bevy::prelude::*;
 use crate::presentation::ui_components::*;
+use crate::presentation::ui_utils::{create_log_window, create_log_entries};
 
 /// VNDialogue用のタイピングシステム
 pub fn vn_typing_system(mut query: Query<(&mut VNDialogue, &mut Text2d)>, time: Res<Time>) {
@@ -25,40 +26,6 @@ pub fn vn_typing_system(mut query: Query<(&mut VNDialogue, &mut Text2d)>, time: 
     }
 }
 
-/// テキストタイピングシステム（旧システム互換用）
-pub fn text_typing_system(
-    mut query: Query<(&mut DialogueText, &mut Text2d)>,
-    time: Res<Time>,
-    game_mode: Res<GameMode>,
-) {
-    if !game_mode.is_story_mode {
-        return;
-    }
-
-    for (mut dialogue, mut text) in query.iter_mut() {
-        if !dialogue.is_complete {
-            dialogue.timer.tick(time.delta());
-
-            if dialogue.timer.just_finished() {
-                dialogue.current_char += 1;
-
-                if dialogue.current_char >= dialogue.full_text.len() {
-                    dialogue.current_char = dialogue.full_text.len();
-                    dialogue.is_complete = true;
-                }
-
-                // 現在の文字数まで表示
-                let displayed_text: String = dialogue
-                    .full_text
-                    .chars()
-                    .take(dialogue.current_char)
-                    .collect();
-
-                *text = Text2d::new(displayed_text);
-            }
-        }
-    }
-}
 
 /// ダイアログ完了時にログに追加するシステム
 pub fn dialogue_completion_system(
@@ -196,128 +163,6 @@ pub fn log_ui_system(
     }
 }
 
-/// ログウィンドウ作成関数
-pub fn create_log_window(commands: &mut Commands, assets: &GameAssets, log: &DialogueLog) {
-    // 半透明背景オーバーレイ
-    commands.spawn((
-        Sprite::from_color(
-            Color::srgba(0.0, 0.0, 0.0, 0.7),
-            Vec2::new(1920.0, 1080.0),
-        ),
-        Transform::from_xyz(0.0, 0.0, 50.0),
-        LogWindow,
-    ));
-
-    // ログパネル背景
-    commands.spawn((
-        Sprite::from_color(
-            Color::srgba(0.1, 0.1, 0.2, 0.95),
-            Vec2::new(1200.0, 800.0),
-        ),
-        Transform::from_xyz(0.0, 0.0, 51.0),
-        LogWindow,
-    ));
-
-    // タイトル
-    commands.spawn((
-        Text2d::new("会話ログ"),
-        TextFont {
-            font: assets.main_font.clone(),
-            font_size: 32.0,
-            ..default()
-        },
-        TextLayout::new_with_justify(JustifyText::Center),
-        TextColor(Color::srgb(1.0, 1.0, 1.0)),
-        Transform::from_xyz(0.0, 350.0, 52.0),
-        LogWindow,
-    ));
-
-    // 閉じるボタン
-    commands.spawn((
-        Sprite::from_color(
-            Color::srgba(0.8, 0.2, 0.2, 0.9),
-            Vec2::new(80.0, 40.0),
-        ),
-        Transform::from_xyz(520.0, 350.0, 52.0),
-        LogCloseButton,
-        LogWindow,
-    ));
-
-    commands.spawn((
-        Text2d::new("閉じる"),
-        TextFont {
-            font: assets.main_font.clone(),
-            font_size: 16.0,
-            ..default()
-        },
-        TextLayout::new_with_justify(JustifyText::Center),
-        TextColor(Color::srgb(1.0, 1.0, 1.0)),
-        Transform::from_xyz(520.0, 350.0, 53.0),
-        LogWindow,
-    ));
-
-    create_log_entries(commands, assets, log);
-}
-
-/// ログエントリ作成関数
-pub fn create_log_entries(commands: &mut Commands, assets: &GameAssets, log: &DialogueLog) {
-    let start_y = 280.0;
-    let entry_height = 80.0;
-    let max_entries = 8; // 最大表示数
-
-    let visible_entries = if log.entries.len() > max_entries {
-        &log.entries[log.entries.len() - max_entries..]
-    } else {
-        &log.entries
-    };
-
-    for (index, entry) in visible_entries.iter().enumerate() {
-        let y_pos = start_y - (index as f32 * entry_height);
-
-        // キャラクター名（太字）
-        if !entry.character_name.is_empty() {
-            commands.spawn((
-                Text2d::new(&entry.character_name),
-                TextFont {
-                    font: assets.main_font.clone(),
-                    font_size: 20.0,
-                    ..default()
-                },
-                TextLayout::new_with_justify(JustifyText::Left),
-                TextColor(Color::srgb(1.0, 0.8, 0.6)),
-                Transform::from_xyz(-550.0, y_pos, 52.0),
-                LogEntry,
-                LogWindow,
-            ));
-        }
-
-        // 会話テキスト
-        commands.spawn((
-            Text2d::new(&entry.text),
-            TextFont {
-                font: assets.main_font.clone(),
-                font_size: 18.0,
-                ..default()
-            },
-            TextLayout::new_with_justify(JustifyText::Left),
-            TextColor(Color::srgb(0.9, 0.9, 0.9)),
-            Transform::from_xyz(-550.0, y_pos - 30.0, 52.0),
-            LogEntry,
-            LogWindow,
-        ));
-
-        // 区切り線
-        commands.spawn((
-            Sprite::from_color(
-                Color::srgba(0.5, 0.5, 0.5, 0.3),
-                Vec2::new(1100.0, 1.0),
-            ),
-            Transform::from_xyz(0.0, y_pos - 50.0, 52.0),
-            LogEntry,
-            LogWindow,
-        ));
-    }
-}
 
 /// ストーリーモード専用マウス入力システム
 pub fn story_mouse_input_system(
