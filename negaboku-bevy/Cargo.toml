@@ -1,0 +1,65 @@
+[package]
+name = "negaboku-bevy"
+version = "0.1.0"
+edition = "2021"
+authors = ["negaboku-team"]
+description = "願い石と僕たちの絆 - Rust + Bevy implementation"
+license = "CC-BY-NC-4.0"
+
+[dependencies]
+bevy = { version = "0.15", default-features = false, features = [
+    "bevy_ui",
+    "bevy_text",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "png",
+    "vorbis",
+] }
+pulldown-cmark = "0.12"  # Markdownパーサー
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+bevy = { version = "0.15", features = ["dynamic_linking"] }
+
+# 最適化設定
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+
+# Clippy lint設定（開発初期段階用：基本的な品質チェックのみ）
+[lints.clippy]
+# 重要なエラーのみ
+correctness = "warn"
+
+# 開発中は無効化（将来的に有効にする）
+perf = "allow"
+complexity = "allow"
+suspicious = "allow"
+style = "allow"
+pedantic = "allow"
+nursery = "allow"
+
+# Bevy・開発中特有の無効化
+too_many_arguments = "allow"
+too_many_lines = "allow"
+type_complexity = "allow"
+needless_pass_by_value = "allow"
+cast_precision_loss = "allow"
+missing_docs_in_private_items = "allow"
+module_name_repetitions = "allow"
+similar_names = "allow"
+uninlined_format_args = "allow"
+explicit_iter_loop = "allow"
+useless_vec = "allow"
+unused_variables = "allow"
+unused_mut = "allow"
+dead_code = "allow"

@@ -1,0 +1,19 @@
+# Clippy静的解析設定
+avoid-breaking-exported-api = false
+msrv = "1.75"
+
+# 許可する複雑度・行数
+cognitive-complexity-threshold = 30
+type-complexity-threshold = 250
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 100
+
+# ドキュメント
+missing-docs-in-crate-items = true
+
+# セキュリティ・パフォーマンス
+allow-expect-in-tests = true
+allow-unwrap-in-tests = true
+
+# Bevy特有の設定
+allow-mixed-uninlined-format-args = true

@@ -1,0 +1,20 @@
+# Rust
+/target/
+Cargo.lock
+
+# Bevy
+*.log
+
+# Assets - Binary files
+assets/images/
+assets/sounds/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

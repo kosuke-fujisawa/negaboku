@@ -1,0 +1,11 @@
+# Rustコードフォーマット設定（安定版対応）
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+edition = "2021"
+
+# 安定版で利用可能な設定のみ
+use_field_init_shorthand = true
+use_try_shorthand = true
