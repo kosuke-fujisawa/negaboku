@@ -39,9 +39,6 @@
         "space": "always"
       }
     },
-    "max-ten": {
-      "max": 3
-    },
     "no-mix-dearu-desumasu": {
       "preferInHeader": "",
       "preferInBody": "である",
