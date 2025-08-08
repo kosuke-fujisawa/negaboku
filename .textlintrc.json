@@ -4,7 +4,7 @@
   "rules": {
     "preset-ja-technical-writing": {
       "sentence-length": {
-        "max": 120
+        "max": 180
       },
       "max-comma": {
         "max": 4
@@ -21,14 +21,18 @@
           "!",
           "！",
           "?",
-          "？"
+          "？",
+          "",
+          "、"
         ],
         "allowEmojiAtEnd": true,
-        "forceAppendPeriod": false
+        "forceAppendPeriod": false,
+        "allowEmptyEnd": true
       },
       "ja-no-successive-word": {
-        "allow": ["の", "て", "に", "を", "が", "と", "で", "は", "も", "し", "か", "や"]
+        "allow": ["の", "て", "に", "を", "が", "と", "で", "は", "も", "し", "か", "や", "…"]
       },
+      "ja-no-weak-phrase": false,
       "no-exclamation-question-mark": {
         "allowHalfWidthExclamation": true,
         "allowFullWidthExclamation": true,

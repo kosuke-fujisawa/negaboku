@@ -4,9 +4,10 @@
   "description": "願い石と僕たちの絆 - シナリオ品質管理システム",
   "private": true,
   "scripts": {
-    "textlint": "textlint negaboku-bevy/assets/scenarios/**/*.md",
-    "textlint:fix": "textlint --fix negaboku-bevy/assets/scenarios/**/*.md",
-    "textlint:check": "textlint negaboku-bevy/assets/scenarios/**/*.md",
+    "textlint": "textlint -c .textlintrc-scenario.json negaboku-bevy/assets/scenarios/**/*.md",
+    "textlint:fix": "textlint -c .textlintrc-scenario.json --fix negaboku-bevy/assets/scenarios/**/*.md",
+    "textlint:check": "textlint -c .textlintrc-scenario.json negaboku-bevy/assets/scenarios/**/*.md",
+    "textlint:docs": "textlint docs/**/*.md",
     "install:textlint": "npm install"
   },
   "devDependencies": {

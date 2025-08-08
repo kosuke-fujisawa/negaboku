@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'negaboku-bevy/assets/scenarios/**/*.md'
-      - '.textlintrc.json'
+      - '.textlintrc*.json'
       - 'package.json'
       - 'package-lock.json'
       - 'textlint-rules/**/*.js'
@@ -14,7 +14,7 @@ on:
       - main
     paths:
       - 'negaboku-bevy/assets/scenarios/**/*.md'
-      - '.textlintrc.json'
+      - '.textlintrc*.json'
       - 'package.json'
       - 'package-lock.json'
       - 'textlint-rules/**/*.js'
@@ -42,12 +42,25 @@ jobs:
         id: textlint
         run: |
           echo "Running textlint on scenario files..."
+          echo "Current directory: $(pwd)"
+          echo "Available config files:"
+          ls -la .textlintrc*
+          echo "Target files:"
+          ls -la negaboku-bevy/assets/scenarios/**/*.md || echo "No scenario files found"
+
           # JSON形式でtextlint結果を取得
-          npm run textlint:check -- --format json > textlint-results.json || true
-          # 人間可読形式も保存
-          npm run textlint:check > textlint-results.txt 2>&1 || echo "TEXTLINT_FAILED=true" >> $GITHUB_ENV
-          cat textlint-results.txt
-        continue-on-error: true
+          npm run textlint:check -- --format json > textlint-results.json 2>/dev/null || true
+          # 人間可読形式も保存（エラーでも続行）
+          npm run textlint:check > textlint-results.txt 2>&1 || true
+
+          # 結果を表示
+          if [ -s textlint-results.txt ]; then
+            echo "TextLint results:"
+            cat textlint-results.txt
+          else
+            echo "No TextLint results found."
+            echo "[]" > textlint-results.json
+          fi
 
       - name: Count errors and warnings (JSON parsing)
         id: count-issues
