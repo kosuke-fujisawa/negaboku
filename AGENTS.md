@@ -10,7 +10,7 @@
 - ギフトやイベントで親密度が変化するローグライク要素
 
 ### 技術スタック＆アーキテクチャ
-- **Rust** ≥1.88、**Bevy** 0.15 (ECS)
+- **Rust** ≥1.75、**Bevy** 0.15 (ECS)
 - **UI**: bevy_ui（必要に応じて bevy_egui）
 - **アーキテクチャ**: DDD＋クリーンアーキテクチャ＋ECS（Domain、Application、Infrastructure、Presentation）
 
@@ -51,7 +51,11 @@ cargo test
 # コード整形＆Lint
 cargo fmt                     # フォーマッタ
 cargo clippy                  # Linter（clippy.toml設定）
-pre-commit run --files "**/*.gd" # GDScript整形・構文チェック
+
+# Pre-commit フック
+pre-commit install            # 初回セットアップ（プロジェクトルートで実行）
+pre-commit run --all-files    # 全ファイル一括チェック
+git commit                    # コミット時に自動実行
 ```
 
 ## コーディングスタイル＆命名規則
