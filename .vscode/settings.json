@@ -1,0 +1,42 @@
+{
+  "textlint.enable": true,
+  "textlint.run": "onType",
+  "textlint.configPath": ".textlintrc.json",
+  "textlint.nodePath": "./node_modules",
+  "textlint.trace.server": "verbose",
+  "textlint.validateDefaultLanguage": false,
+
+  "files.associations": {
+    "*.md": "markdown"
+  },
+
+  "markdown.validate.enabled": true,
+  "markdown.validate.fileLinks.enabled": "warning",
+  "markdown.validate.fragmentLinks.enabled": "warning",
+  "markdown.validate.unusedLinkDefinitions.enabled": "warning",
+
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.textlint": true
+    },
+    "editor.quickSuggestions": {
+      "comments": "on",
+      "strings": "on",
+      "other": "on"
+    }
+  },
+
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/target/**": true,
+    "**/.textlintcache": true
+  },
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/target": true,
+    "**/.textlintcache": true
+  }
+}

@@ -1,25 +1,42 @@
 repos:
   - repo: local
     hooks:
-      - id: gdformat
-        name: GDScript formatter
-        entry: gdformat
-        language: python
-        files: \.gd$
-        additional_dependencies: [gdtoolkit]
+      - id: textlint-scenario-check
+        name: textlint scenario quality check
+        entry: npm run textlint:check
+        language: system
+        files: ^negaboku-bevy/assets/scenarios/.*\.md$
+        pass_filenames: false
+        stages: [commit]
 
-      - id: gdparse
-        name: GDScript parser
-        entry: gdparse
-        language: python
-        files: \.gd$
-        additional_dependencies: [gdtoolkit]
+      - id: rust-format-check
+        name: cargo fmt check
+        entry: bash -c 'cd negaboku-bevy && cargo fmt --check'
+        language: system
+        files: ^negaboku-bevy/.*\.rs$
+        pass_filenames: false
+        stages: [commit]
+
+      - id: rust-clippy-check
+        name: cargo clippy check
+        entry: bash -c 'cd negaboku-bevy && cargo clippy -- -D warnings'
+        language: system
+        files: ^negaboku-bevy/.*\.rs$
+        pass_filenames: false
+        stages: [commit]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^(negaboku-bevy/assets/scenarios/.*\.md|node_modules/.*)$
       - id: end-of-file-fixer
+        exclude: ^(negaboku-bevy/assets/scenarios/.*\.md|node_modules/.*)$
+      - id: mixed-line-ending
+        exclude: ^node_modules/.*$
       - id: check-yaml
       - id: check-json
+      - id: check-toml
       - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
