@@ -4,6 +4,32 @@
 
 > **🔄 Bevy移行完了**: Godot版からRust + Bevy 0.15版への完全移行が完了し、エディタ依存を排除した完全コードベース開発に移行しました。
 
+<language>Japanese</language>
+<character_code>UTF-8</character_code>
+<law>
+AI運用5原則
+
+第1原則： 抽象語や受け入れ条件を数値・観測可能な形で具体化し、スコープとルーブリック根拠を明示。条件が満たされなければ質問のみ返す。
+
+第2原則： エディタ排除・コード主体で、ECS・DDD・クリーンアーキテクチャ・TDDを徹底し、過度な抽象化は避ける。
+
+第3原則： 既存編集優先、構造変更と動作変更は別コミット、1PR=1機能、生成コードに役割とパスを記載。
+
+第4原則： 重複排除・関数化・命名統一、エラーハンドリングは代替案提示、動作確認とテストを必須。
+
+第5原則： 骨子とテキストを最優先、UIや演出は後回し、小さく実装しテストで保証しながら改善。
+
+第6原則：AIは全てのチャットの冒頭にこの6原則を逐語的に必ず画面出力してから対応する。
+</law>
+
+<every_chat>
+[AI運用5原則]
+
+[main_output]
+
+#[n] times. # n = increment each chat, end line, etc(#1, #2...)
+</every_chat>
+
 ## プロジェクト概要
 
 **願い石と僕たちの絆** は Rust + Bevy ECS で開発される、関係値システムを軸とした物語重視のRPGです。Windows・Mac・Linux環境でのマルチプラットフォーム対応を実現。**2人パーティ固定・3段階関係値（対立／通常／親密）**による戦闘技と掛け合いの変化を特徴とします。
@@ -37,9 +63,6 @@
 
 ### コア原則
 
-- **即座実行** — 既存ファイルの編集は迷わず着手
-- **大規模変更のみ確認** — 影響範囲が広い場合に限定
-- **品質と一貫性の維持** — 自動チェックを徹底
 - **事実確認** — 情報源を自ら確認し、憶測を事実として述べない
 - **既存優先** — 新規作成より既存ファイルの編集を優先
 
@@ -49,27 +72,8 @@
 - スペース：日本語と半角英数字間に半角スペース
 - 文体：ですます調、句読点は「。」「、」
 - 絵文字：過度な絵文字の利用は避ける
-- Cursor では `.windsurf/` を除外
-- Windsurf では `.cursor/` を除外
-
-#### 略語解釈
-
-- `y` = はい（Yes）
-- `n` = いいえ（No）
-- `c` = 続ける（Continue）
-- `r` = 確認（Review）
-- `u` = 元に戻す（Undo）
 
 ### 実行ルール
-
-#### 即座実行（確認不要）
-
-- **コード操作**：バグ修正、リファクタリング、パフォーマンス改善
-- **ファイル編集**：既存ファイルの修正・更新
-- **ドキュメント**：README、仕様書の更新（新規作成は要求時のみ）
-- **依存関係**：パッケージ追加・更新・削除
-- **テスト**：単体・統合テストの実装（TDD サイクルに従う）
-- **設定**：設定値変更、フォーマット適用
 
 #### 確認必須
 
@@ -80,18 +84,6 @@
 - **セキュリティ**：認証・認可機能の実装
 - **データベース**：スキーマ変更、マイグレーション
 - **本番環境**：デプロイ設定、環境変数変更
-
-### 実行フロー
-
-```text
-1. タスク受信
-   ↓
-2. 即座実行 or 確認要求を判定
-   ↓
-3. 実行（既存パターン準拠）
-   ↓
-4. 完了報告
-```
 
 ### 作業完了報告のルール
 
@@ -140,6 +132,76 @@ May the Force be with you.
 - 合い言葉は使用しない
 - 進捗状況と次のアクションを明示
 - 残タスクがある場合は明確に伝える
+
+---
+
+## Confirm-First Protocol (CFP)
+
+実装に着手する前に、必ず以下の確認プロトコルに従うこと。これにより、目的の明確化と手戻りの削減を図る。
+Claude Codeは、ユーザーからの要件が明確になるまで質問のみを返すモードで開始される。
+
+### プロセス段階
+作業は以下の5段階で進行する。実装は **Plan** が確定するまで開始しない。
+1.  **Intake**: 要求の受付
+2.  **Clarify**: 要求の明確化（質問と回答）
+3.  **Plan**: 実装計画の策定
+4.  **Implement**: コード実装
+5.  **Verify**: 検証
+
+### 実装前ガード（Clarify-or-Refuse）
+以下のいずれかの条件が満たされない場合、**実装せず**、`【Clarify Request】`フォーマットで質問のみを返すこと。コード生成は禁止する。
+
+1.  **目的の具体性**:
+    - 「拡張性」「柔軟性」「最適化」「スケーラビリティ」「クリーン化」などの抽象語が、観測可能な効果（例: 初期化時間-200ms, 依存削減3件, UI操作手数-1）に翻訳されていること。
+2.  **受け入れ条件の明確性（3点以上必須）**:
+    - 観測ログキー／メトリクス（キーと期待値）
+    - 可視確認の方法（どの画面をどう操作し、どうなればOKか。スクリーンショットでの確認を想定）
+    - 実行するテスト名と、その成功・失敗の判定基準
+3.  **変更スコープの定義**:
+    - 変更対象／非対象のファイルやモジュール
+    - 意図的に破壊してよい既存の挙動、および維持すべき挙動の一覧
+4.  **ルーブリック根拠の提示**:
+    - 変更の判断基準となる `claude.md` の該当セクション番号や、関連するADR（Architecture Decision Record）へのリンクが示されていること。
+
+#### 不明時の応答フォーマット（質問のみ）
+> 注意：下記が埋まるまでコードを断固として生成してはならない。質問以外は返さないこと。
+
+```text
+【Clarify Request】
+- 目的の数値/観測値: （例: 起動時間-200ms？依存削減N件？）
+- 受け入れ条件(3点以上): ①ログキー ②可視確認 ③テスト名
+- 変更スコープ: 対象/非対象/壊してよい既存挙動
+- ルーブリック根拠: （claude.md §X.Y / ADR-012への言及）
+```
+
+#### 実装開始の合図（Proceed OK ゲート）
+ユーザーからの回答によって上記すべてが明確化された後、必ず以下のフォーマットで確認を提示してから実装を開始すること。
+
+```text
+【Proceed OK – 要件充足】
+- 目的数値: (例: 起動時 missing-asset 検知率100%)
+- 受け入れ条件: (例: ログkey=asset.missing.font, スクショ=タイトル直後, テスト=asset_check::font_missing_warns)
+- スコープ: (例: assets/* と diagnostics.rs のみ。既存UIは非対象)
+- ルーブリック根拠: (例: claude.md §2.3 / ADR-014)
+→ 実装に進みます（次メッセージで差分とテスト提示）
+```
+
+### Issueテンプレート
+すべての実装タスクは、以下のテンプレートに基づいて定義される必要がある。このテンプレートが埋まらない限り、実装は開始されない。
+
+#### [目的] 観測可能な成果で書く
+- 例: 「フォント未読込検知で起動時に `asset.missing.font=true` を1回ログ出力」
+
+#### [範囲] 対象/非対象/壊してよい既存挙動
+
+#### [受け入れ条件] 少なくとも3点
+1.  **ログ or メトリクス**: key / 例値
+2.  **目視**: どの画面/どの操作でスクショ
+3.  **テスト**: `cargo test` 名・成功/失敗判定
+
+#### [ルーブリック根拠]
+- `claude.md` §X.Y（該当原則）
+- 参照ADR: `docs/adr/NNN-xxxx.md`
 
 ---
 
@@ -306,15 +368,6 @@ May the Force be with you.
 
 ---
 
-## 制約事項
-
-### Web 検索の制約
-
-- **WebSearch ツールは使用禁止** — 利用することは禁止です
-- **代替手段**：`gemini --prompt "WebSearch: <検索クエリ>` — Gemini 経由の検索
-
----
-
 ## 🏗️ プロジェクト構造（Rust + Bevy版）
 
 ### Rust実装構成 ✅
@@ -344,82 +397,6 @@ negaboku-bevy/
 └── README.md                      # プロジェクト説明
 ```
 
-
-
-## 🛠️ Bevy開発環境（実装完了）
-
-### 即座に実行可能 ✅
-```bash
-# Rust環境セットアップ
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
-
-# プロジェクト実行
-cd negaboku-bevy
-cargo run
-
-# 動作確認済み機能
-- タイトル画面表示 ✅
-- テキストタイピング効果 ✅
-- 背景色切替（Bキー） ✅
-- ゲーム状態遷移 ✅
-```
-
-### 開発コマンド
-```bash
-# ホットリロード開発
-cargo watch -x run
-
-# テスト実行
-cargo test
-
-# コンパイルチェック
-cargo check
-
-# Lint・フォーマット（品質チェック）
-cargo fmt                  # コードフォーマット
-cargo clippy              # 静的解析・lint
-cargo clippy --fix        # 自動修正可能な項目を修正
-
-# リリースビルド
-cargo build --release
-```
-
-### 🛠️ コード品質管理システム
-
-#### Lint・静的解析ツール ✅
-- **rustfmt**: コードフォーマット自動化（`rustfmt.toml`設定済み）
-- **clippy**: 静的解析・品質チェック（`clippy.toml`設定済み）
-- **Cargo.toml**: プロジェクト内lint設定（Bevy特化調整済み）
-
-#### 自動化・CI/CD ✅
-- **pre-commit**: コミット前の自動品質チェック（`.pre-commit-config.yaml`）
-- **GitHub Actions**: CI/CDパイプライン（`.github/workflows/ci.yml`）
-  - Windows・Mac・Linux並列テスト
-  - lint・テスト・ビルドの3段階検証
-  - リリースアーティファクト自動生成
-
-#### 品質チェックコマンド
-```bash
-# 手動品質チェック（開発時）
-cargo fmt --check          # フォーマット確認
-cargo clippy -- -D warnings  # lint（警告をエラー扱い）
-cargo test                  # 全テスト実行
-
-# 自動品質チェック（コミット時）
-pre-commit install         # 初回セットアップ
-pre-commit run --all-files # 全ファイル一括チェック
-```
-
-### マルチプラットフォームビルド
-```bash
-# Bevy標準機能で自動対応
-cargo build --release                    # 現在のプラットフォーム
-cargo build --release --target x86_64-pc-windows-gnu    # Windows
-cargo build --release --target x86_64-apple-darwin      # macOS
-cargo build --release --target x86_64-unknown-linux-gnu # Linux
-```
-
 ## 開発方針
 
 ### コード主体・エディタ排除
@@ -438,93 +415,6 @@ cargo build --release --target x86_64-unknown-linux-gnu # Linux
 - **Component**: 純粋なデータ構造（ロジックを持たない）
 - **System**: Component間のロジック処理
 - **Resource**: グローバル状態（シナリオ進行・関係値テーブル等）
-
-## 🛡️ フォント読み込みエラー検知システム（実装済み）
-
-### 概要
-フォントファイル読み込みエラーを事前検知し、詳細な対処法を提示するシステムを実装。日本語表示の問題を未然に防ぎます。
-
-### 実装済み対策システム
-
-#### 1. ファイル存在確認（startup時）
-```rust
-fn setup_fonts(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font_path = "fonts/NotoSansJP-VariableFont_wght.ttf";
-    let full_path = format!("assets/{}", font_path);
-
-    if !std::path::Path::new(&full_path).exists() {
-        eprintln!("❌ フォントファイルが見つかりません: {}", full_path);
-        eprintln!("💡 以下のコマンドでフォントを配置してください:");
-        eprintln!("   mkdir -p assets/fonts");
-        eprintln!("   cp path/to/NotoSansJP-VariableFont_wght.ttf assets/fonts/");
-    }
-}
-```
-
-#### 2. アセット読み込み状態監視（runtime）
-```rust
-fn font_loading_system(
-    asset_server: Res<AssetServer>,
-    fonts: Option<Res<GameFonts>>,
-    mut app_state: ResMut<AppState>,
-) {
-    // LoadState監視: NotLoaded → Loading → Loaded/Failed
-    // 段階的な状況表示とエラーハンドリング
-}
-```
-
-#### 3. デバッグ情報表示（F1キー）
-```rust
-fn debug_font_system(/* ... */) {
-    if keyboard_input.just_pressed(KeyCode::F1) {
-        // フォント状態・ハンドル・ファイル存在確認を一括表示
-        println!("🔍 ===== デバッグ情報 ===== ");
-        // 詳細なデバッグ出力...
-    }
-}
-```
-
-#### 4. 段階的初期化システム
-```rust
-#[derive(Debug, Default, PartialEq)]
-enum InitState {
-    LoadingFonts,  // フォント読み込み待機
-    FontsReady,    // UI初期化準備完了
-    UIReady,       // 通常ゲーム処理
-}
-
-fn initialization_system(/* ... */) {
-    // フォント準備完了を待ってからUI初期化
-    // 確実にフォントが利用可能な状態でUI構築
-}
-```
-
-### 検知可能なエラー
-
-✅ **フォントファイル未配置**: assets/fontsディレクトリにファイルが存在しない
-✅ **アセット読み込み失敗**: Bevyアセットシステムでの読み込みエラー
-✅ **初期化タイミング問題**: フォント読み込み前のUI作成を防止
-✅ **リソース不正状態**: GameFontsリソースの存在確認
-
-### 使用方法
-
-#### 通常運用
-- アプリ起動時に自動でフォント状態をチェック
-- エラーがある場合は詳細な修正手順を表示
-
-#### デバッグ時
-- **F1キー**: フォント読み込み状態の詳細情報を表示
-- **起動ログ**: 段階的な読み込み状況を確認
-
-#### フォント追加・変更時
-1. `assets/fonts/`にフォントファイルを配置
-2. `setup_fonts`関数でパスを更新
-3. 起動時の確認メッセージで成功を確認
-
-### 対応フォント
-- **現在**: Noto Sans JP（日本語完全対応）
-- **パス**: `assets/fonts/NotoSansJP-VariableFont_wght.ttf`
-- **用途**: UI全般（タイトル・メニュー・ダイアログ・ストーリー）
 
 ## Claude Code への指示
 
@@ -589,7 +479,7 @@ cargo build --release
 ```
 
 ### クロスプラットフォーム対応
-- **Bevy標準機能**: Windows・Mac・Linux標準対応
+- **Bevy標準機能**: Windows・Mac標準対応
 - **モバイル・Web（WASM）**: 将来的に検証予定
 - **プラットフォーム固有コード**: 極力避ける
 
