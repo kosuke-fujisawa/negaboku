@@ -1,0 +1,48 @@
+{
+  "rules": {
+    "preset-ja-technical-writing": {
+      "sentence-length": {
+        "max": 120
+      },
+      "max-comma": {
+        "max": 4
+      },
+      "max-ten": {
+        "max": 3
+      },
+      "ja-no-mixed-period": {
+        "allowPeriodMarks": [
+          ":",
+          "：",
+          ".",
+          "。",
+          "!",
+          "！",
+          "?",
+          "？"
+        ],
+        "allowEmojiAtEnd": true,
+        "forceAppendPeriod": false
+      },
+      "ja-no-successive-word": {
+        "allow": ["の", "て", "に", "を", "が", "と", "で", "は", "も", "し", "か", "や"]
+      },
+      "no-exclamation-question-mark": {
+        "allowHalfWidthExclamation": true,
+        "allowFullWidthExclamation": true,
+        "allowHalfWidthQuestion": true,
+        "allowFullWidthQuestion": true
+      }
+    },
+    "preset-ja-spacing": {
+      "ja-space-between-half-and-full-width": {
+        "space": "always"
+      }
+    },
+    "no-mix-dearu-desumasu": {
+      "preferInHeader": "",
+      "preferInBody": "である",
+      "strict": false
+    }
+  }
+}
