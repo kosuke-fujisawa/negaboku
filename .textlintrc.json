@@ -1,4 +1,6 @@
 {
+  "filters": {},
+  "plugins": {},
   "rules": {
     "preset-ja-technical-writing": {
       "sentence-length": {
@@ -44,5 +46,6 @@
       "preferInBody": "である",
       "strict": false
     }
-  }
+  },
+  "validateDefaultLanguage": "ja"
 }

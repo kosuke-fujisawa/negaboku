@@ -3,8 +3,8 @@
   "textlint.run": "onType",
   "textlint.configPath": ".textlintrc.json",
   "textlint.nodePath": "./node_modules",
-  "textlint.trace.server": "verbose",
-  "textlint.validateDefaultLanguage": false,
+  "textlint.trace.server": "messages",
+  "textlint.languages": ["markdown"],
 
   "files.associations": {
     "*.md": "markdown"

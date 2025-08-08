@@ -1,9 +1,9 @@
 /**
- * ゲーム内用語の一貫性チェックルール
- * 正しいゲーム用語のスペルと表記をチェック
+ * ゲーム内用語の一貫性チェック・自動修正ルール
+ * 正しいゲーム用語のスペルと表記をチェック・修正
  */
 module.exports = function(context) {
-  const { Syntax, getSource, report, RuleError } = context;
+  const { Syntax, getSource, report, RuleError, fixer } = context;
 
   // 正しいゲーム内用語の定義
   const correctTerminology = {
@@ -34,25 +34,31 @@ module.exports = function(context) {
     [Syntax.Str](node) {
       const text = getSource(node);
 
-      // ゲーム用語の表記統一チェック
+      // ゲーム用語の表記統一チェック（重複検出対応）
       Object.keys(correctTerminology).forEach(correctTerm => {
         const wrongVariants = correctTerminology[correctTerm];
 
         wrongVariants.forEach(wrongTerm => {
-          const index = text.indexOf(wrongTerm);
-          if (index !== -1) {
+          let searchIndex = 0;
+          while (true) {
+            const index = text.indexOf(wrongTerm, searchIndex);
+            if (index === -1) break;
+
             const ruleError = new RuleError(
               `ゲーム用語は「${correctTerm}」で統一してください（「${wrongTerm}」→「${correctTerm}」）`,
               {
-                index: index
+                index: index,
+                fix: fixer.replaceTextRange([index, index + wrongTerm.length], correctTerm)
               }
             );
             report(node, ruleError);
+
+            searchIndex = index + 1;
           }
         });
       });
 
-      // 技術用語の前後スペースチェック
+      // 技術用語の前後スペースチェック（改善版）
       technicalTerms.forEach(term => {
         // 日本語文字の直後に技術用語がある場合（スペースなし）
         const noSpaceAfterJapanese = new RegExp(`([ぁ-んァ-ヶー一-龠])${term}`, 'g');
@@ -61,7 +67,8 @@ module.exports = function(context) {
           const ruleError = new RuleError(
             `技術用語「${term}」の前に半角スペースを入れてください（「${match[1]}${term}」→「${match[1]} ${term}」）`,
             {
-              index: match.index + match[1].length
+              index: match.index + match[1].length,
+              fix: fixer.replaceTextRange([match.index + match[1].length, match.index + match[1].length], ' ')
             }
           );
           report(node, ruleError);
@@ -73,23 +80,29 @@ module.exports = function(context) {
           const ruleError = new RuleError(
             `技術用語「${term}」の後に半角スペースを入れてください（「${term}${match[1]}」→「${term} ${match[1]}」）`,
             {
-              index: match.index + term.length
+              index: match.index + term.length,
+              fix: fixer.replaceTextRange([match.index + term.length, match.index + term.length], ' ')
             }
           );
           report(node, ruleError);
         }
       });
 
-      // 「版」の前後スペースチェック
+      // 「版」の前後スペースチェック（位置算出修正）
       const versionPattern = /([A-Za-z]+)版/g;
       let versionMatch;
       while ((versionMatch = versionPattern.exec(text)) !== null) {
         // 「Rust版」などの場合、「Rust 版」に修正を提案
-        if (!text.charAt(versionMatch.index - 1).match(/\s/)) {
+        const termStartIndex = versionMatch.index;
+        const termEndIndex = termStartIndex + versionMatch[1].length;
+        const afterTermChar = text.charAt(termEndIndex);
+
+        if (afterTermChar === '版') {
           const ruleError = new RuleError(
             `技術用語と「版」の間に半角スペースを入れてください（「${versionMatch[1]}版」→「${versionMatch[1]} 版」）`,
             {
-              index: versionMatch.index + versionMatch[1].length
+              index: termEndIndex,
+              fix: fixer.replaceTextRange([termEndIndex, termEndIndex], ' ')
             }
           );
           report(node, ruleError);
@@ -101,9 +114,9 @@ module.exports = function(context) {
 
 module.exports.meta = {
   docs: {
-    description: "ゲーム内用語の一貫性をチェックするルール",
+    description: "ゲーム内用語の一貫性をチェック・自動修正するルール",
     category: "style"
   },
-  fixable: false,
+  fixable: "code",
   type: "suggestion"
 };

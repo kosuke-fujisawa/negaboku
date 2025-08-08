@@ -6,7 +6,9 @@ on:
       - 'negaboku-bevy/assets/scenarios/**/*.md'
       - '.textlintrc.json'
       - 'package.json'
+      - 'package-lock.json'
       - 'textlint-rules/**/*.js'
+      - '.github/workflows/textlint.yml'
   push:
     branches:
       - main
@@ -14,7 +16,9 @@ on:
       - 'negaboku-bevy/assets/scenarios/**/*.md'
       - '.textlintrc.json'
       - 'package.json'
+      - 'package-lock.json'
       - 'textlint-rules/**/*.js'
+      - '.github/workflows/textlint.yml'
 
 jobs:
   textlint:
@@ -32,23 +36,27 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci
 
-      - name: Run textlint check
+      - name: Run textlint check (JSON output)
         id: textlint
         run: |
           echo "Running textlint on scenario files..."
+          # JSON形式でtextlint結果を取得
+          npm run textlint:check -- --format json > textlint-results.json || true
+          # 人間可読形式も保存
           npm run textlint:check > textlint-results.txt 2>&1 || echo "TEXTLINT_FAILED=true" >> $GITHUB_ENV
           cat textlint-results.txt
         continue-on-error: true
 
-      - name: Count errors and warnings
+      - name: Count errors and warnings (JSON parsing)
         id: count-issues
         run: |
-          if [ -f textlint-results.txt ]; then
-            ERROR_COUNT=$(grep -E "✖ [0-9]+ problems" textlint-results.txt | grep -oE "[0-9]+ errors" | grep -oE "[0-9]+" || echo "0")
-            WARNING_COUNT=$(grep -E "✖ [0-9]+ problems" textlint-results.txt | grep -oE "[0-9]+ warnings" | grep -oE "[0-9]+" || echo "0")
-            FIXABLE_COUNT=$(grep -E "✓ [0-9]+ fixable problems" textlint-results.txt | grep -oE "[0-9]+" || echo "0")
+          if [ -f textlint-results.json ]; then
+            # JSON結果をjqで厳密に集計
+            ERROR_COUNT=$(cat textlint-results.json | jq '[.[] | .messages | length] | add // 0')
+            WARNING_COUNT=0  # textlintは現在warning区分なし
+            FIXABLE_COUNT=$(cat textlint-results.json | jq '[.[] | .messages | map(select(.fix)) | length] | add // 0')
             echo "ERROR_COUNT=${ERROR_COUNT}" >> $GITHUB_ENV
             echo "WARNING_COUNT=${WARNING_COUNT}" >> $GITHUB_ENV
             echo "FIXABLE_COUNT=${FIXABLE_COUNT}" >> $GITHUB_ENV
@@ -59,12 +67,24 @@ jobs:
             echo "FIXABLE_COUNT=0" >> $GITHUB_ENV
           fi
 
-      - name: Comment PR with results
+      - name: Comment PR with results (fork対応・重複防止)
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
+            const marker = '<!-- textlint-bot-comment -->';
+
+            // 既存コメントをチェック（重複防止）
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes(marker) && comment.user.type === 'Bot'
+            );
 
             let resultsContent = '';
             if (fs.existsSync('textlint-results.txt')) {
@@ -86,7 +106,8 @@ jobs:
               summary = `シナリオファイルに${warningCount}個の警告が見つかりました。`;
             }
 
-            let comment = `## ${status}
+            let comment = `${marker}
+            ## ${status}
 
             ${summary}
 
@@ -134,22 +155,43 @@ jobs:
             🤖 Generated with [Claude Code](https://claude.ai/code) - Scenario Quality Management System
             `;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            if (existingComment) {
+              // 既存コメントを更新
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              // 新規コメント投稿
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Upload TextLint Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: textlint-results
+          path: |
+            textlint-results.json
+            textlint-results.txt
+          retention-days: 30
 
       - name: Fail job if errors found
-        if: env.TEXTLINT_FAILED == 'true'
+        if: env.ERROR_COUNT != '0'
         run: |
           echo "❌ textlint found ${ERROR_COUNT} errors in scenario files"
           echo "Please fix the errors before merging."
           exit 1
 
       - name: Success summary
-        if: env.TEXTLINT_FAILED != 'true'
+        if: env.ERROR_COUNT == '0'
         run: |
           echo "✅ シナリオ品質チェック完了"
           echo "エラー: ${ERROR_COUNT}件, 警告: ${WARNING_COUNT}件, 自動修正可能: ${FIXABLE_COUNT}件"

@@ -1,9 +1,9 @@
 /**
  * キャラクター名の表記統一ルール
- * 正しいキャラクター名のスペルと表記をチェック
+ * 正しいキャラクター名のスペルと表記をチェック・自動修正
  */
 module.exports = function(context) {
-  const { Syntax, getSource, report, RuleError } = context;
+  const { Syntax, getSource, report, RuleError, fixer } = context;
 
   // 正しいキャラクター名の定義
   const correctCharacterNames = {
@@ -16,6 +16,12 @@ module.exports = function(context) {
     'セリーヌ': ['せりーぬ', 'CELINE', 'celine', 'Celine']
   };
 
+  // 語境界をチェックする関数（誤検知防止）
+  function isWordBoundary(text, index) {
+    const char = text.charAt(index);
+    return /[\s\n\r\t、。「」『』（）()[\]【】・！？!?]/.test(char) || index === 0 || index === text.length;
+  }
+
   return {
     [Syntax.Str](node) {
       const text = getSource(node);
@@ -25,39 +31,51 @@ module.exports = function(context) {
         const wrongVariants = correctCharacterNames[correctName];
 
         wrongVariants.forEach(wrongName => {
-          const index = text.indexOf(wrongName);
-          if (index !== -1) {
-            const ruleError = new RuleError(
-              `キャラクター名は「${correctName}」で統一してください（「${wrongName}」→「${correctName}」）`,
-              {
-                index: index
-              }
-            );
-            report(node, ruleError);
-          }
-        });
-      });
+          let searchIndex = 0;
+          while (true) {
+            const index = text.indexOf(wrongName, searchIndex);
+            if (index === -1) break;
 
-      // セリフ記法内のキャラクター名もチェック
-      const dialogueMatches = text.match(/\*\*([^*]+)\*\*/g);
-      if (dialogueMatches) {
-        dialogueMatches.forEach(match => {
-          const speakerName = match.replace(/\*\*/g, '');
-          const index = text.indexOf(match);
+            // 語境界チェック（誤検知防止）
+            const beforeIndex = index - 1;
+            const afterIndex = index + wrongName.length;
 
-          // 間違った表記の可能性をチェック
-          Object.keys(correctCharacterNames).forEach(correctName => {
-            const wrongVariants = correctCharacterNames[correctName];
-            if (wrongVariants.includes(speakerName)) {
+            if (isWordBoundary(text, beforeIndex) && isWordBoundary(text, afterIndex)) {
               const ruleError = new RuleError(
-                `セリフのキャラクター名は「${correctName}」で統一してください（「${speakerName}」→「${correctName}」）`,
+                `キャラクター名は「${correctName}」で統一してください（「${wrongName}」→「${correctName}」）`,
                 {
-                  index: index
+                  index: index,
+                  fix: fixer.replaceTextRange([index, index + wrongName.length], correctName)
                 }
               );
               report(node, ruleError);
             }
-          });
+
+            searchIndex = index + 1;
+          }
+        });
+      });
+
+      // セリフ記法内のキャラクター名もチェック（改善版）
+      const dialogueRegex = /\*\*([^*]+)\*\*/g;
+      let dialogueMatch;
+      while ((dialogueMatch = dialogueRegex.exec(text)) !== null) {
+        const speakerName = dialogueMatch[1].trim();
+        const matchIndex = dialogueMatch.index;
+
+        // 間違った表記の可能性をチェック
+        Object.keys(correctCharacterNames).forEach(correctName => {
+          const wrongVariants = correctCharacterNames[correctName];
+          if (wrongVariants.some(variant => variant.toLowerCase() === speakerName.toLowerCase())) {
+            const ruleError = new RuleError(
+              `セリフのキャラクター名は「${correctName}」で統一してください（「${speakerName}」→「${correctName}」）`,
+              {
+                index: matchIndex + 2, // **の後の位置
+                fix: fixer.replaceTextRange([matchIndex + 2, matchIndex + 2 + speakerName.length], correctName)
+              }
+            );
+            report(node, ruleError);
+          }
         });
       }
     }
@@ -66,9 +84,9 @@ module.exports = function(context) {
 
 module.exports.meta = {
   docs: {
-    description: "キャラクター名の表記統一をチェックするルール",
+    description: "キャラクター名の表記統一をチェック・自動修正するルール",
     category: "style"
   },
-  fixable: false,
+  fixable: "code",
   type: "suggestion"
 };
