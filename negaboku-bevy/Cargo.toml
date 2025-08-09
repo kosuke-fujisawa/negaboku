@@ -24,6 +24,7 @@ tokio = { version = "1.0", features = ["full"] }
 
 [dev-dependencies]
 bevy = { version = "0.15", features = ["dynamic_linking"] }
+regex = "1.0"  # シナリオサニティテスト用
 
 # 最適化設定
 [profile.dev]
