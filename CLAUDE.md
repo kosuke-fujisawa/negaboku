@@ -7,7 +7,7 @@
 <language>Japanese</language>
 <character_code>UTF-8</character_code>
 <law>
-AI 運用 5 原則。
+AI 運用 6 原則
 
 第 1 原則： 抽象語や受け入れ条件を数値・観測可能な形で具体化し、スコープとルーブリック根拠を明示。条件が満たされなければ質問のみ返す。
 
@@ -23,7 +23,7 @@ AI 運用 5 原則。
 </law>
 
 <every_chat>
-[AI 運用 5 原則]。
+[AI 運用 6 原則]
 
 [main_output]
 
