@@ -2,18 +2,18 @@
 
 ## 概要
 
-issue#36「根本的なアーキテクチャを全てRust+Bevyへと移行する」の初期フェーズが完了しました。
+issue#36「根本的なアーキテクチャを全て Rust+Bevy へと移行する」の初期フェーズが完了しました。
 
 ## 完了項目
 
 ### ✅ 1. プロジェクト状態確認・整理
-- 既存のnegaboku-bevyプロジェクト構造を調査
+- 既存の negaboku-bevy プロジェクト構造を調査
 - 不要な`_temp`フォルダ・重複ディレクトリを削除
 - 現在の実装状況を把握
 
 ### ✅ 2. プロジェクト構造策定（Domain/Application/Infrastructure分離）
 - **Clean Architecture + DDD**の実装完了
-- 4層アーキテクチャの明確な分離：
+- 4 層アーキテクチャの明確な分離：
   - `Domain層`: ビジネスロジック（関係値、シナリオ、キャラクター）
   - `Application層`: システム統合（scenario_system、command_executor）
   - `Infrastructure層`: 外部連携（scenario_loader）
@@ -21,16 +21,16 @@ issue#36「根本的なアーキテクチャを全てRust+Bevyへと移行する
 
 **成果物**:
 - `ARCHITECTURE.md`: 設計思想・構造・開発フロー
-- 各層のmod.rs・実装ファイル整理
+- 各層の mod.rs・実装ファイル整理
 
 ### ✅ 3. ECS基盤設計（Component/System/Resource基本方針決定）
 - **Bevy ECS原則**の確立と実装ガイドライン策定
-- Entity/Component/System/Resourceの責務明確化
-- Component命名規則・設計パターンの標準化
+- Entity/Component/System/Resource の責務明確化
+- Component 命名規則・設計パターンの標準化
 
 **成果物**:
-- `ECS_DESIGN_PRINCIPLES.md`: ECS設計原則・パフォーマンスガイドライン
-- `src/presentation/ui_components.rs`: UI Component分離
+- `ECS_DESIGN_PRINCIPLES.md`: ECS 設計原則・パフォーマンスガイドライン
+- `src/presentation/ui_components.rs`: UI Component 分離
 
 ### ✅ 4. MarkdownシナリオパーサーのRust実装
 - **完全なMarkdownパーサー**が既に実装済みを確認
@@ -42,13 +42,13 @@ issue#36「根本的なアーキテクチャを全てRust+Bevyへと移行する
 - `ScenarioLoader::parse_markdown()`: Markdown→構造化データ変換
 - コマンド形式: `[bg storage=filename]`, `[chara_show name=character]`
 - ダイアログ形式: `**キャラ名**「セリフ」`、地の文対応
-- 統合テスト: 7個のテスト全て成功
+- 統合テスト: 7 個のテスト全て成功
 
 ### ✅ 5. テキスト表示・背景切替システム初期実装
 - **VNシステム**の基盤実装済み
 - タイピングエフェクト・背景切り替え・キャラクター表示
 - ログシステム・マウス/キーボード入力対応
-- Markdownシナリオとの統合システム
+- Markdown シナリオとの統合システム
 
 **動作確認済み**:
 - タイトル画面表示・メニュー操作
@@ -62,12 +62,12 @@ issue#36「根本的なアーキテクチャを全てRust+Bevyへと移行する
 - プロンプトテンプレート・コードレビューチェックリスト
 
 **成果物**:
-- `LLM_DEVELOPMENT_GUIDELINES.md`: LLM協働開発の完全ガイド
+- `LLM_DEVELOPMENT_GUIDELINES.md`: LLM 協働開発の完全ガイド
 
 ## 技術基盤の確立
 
 ### アーキテクチャ原則
-- **DDD + Clean Architecture + ECS**: 3つの設計手法の統合
+- **DDD + Clean Architecture + ECS**: 3 つの設計手法の統合
 - **依存方向制御**: Domain ← Application ← Infrastructure
 - **Single Responsibility**: 各層・コンポーネント・システムの単一責務
 - **Test-Driven Development**: cargo test での継続的品質保証
@@ -100,11 +100,11 @@ pub struct Character {
 #### Application層（システム統合）
 - `MarkdownScenarioState`: シナリオ進行状態管理
 - `markdown_scenario_system()`: シナリオ実行システム
-- `CommandExecutor`: シナリオコマンド→ECS実行
+- `CommandExecutor`: シナリオコマンド→ECS 実行
 
 #### Infrastructure層（外部連携）
-- `ScenarioLoader`: Markdownファイル読み込み・パース
-- アセット管理・ファイルIO処理
+- `ScenarioLoader`: Markdown ファイル読み込み・パース
+- アセット管理・ファイル IO 処理
 
 ## 品質保証・開発環境
 
@@ -117,7 +117,7 @@ cargo clippy    # 静的解析・lint
 
 ### CI/CD（既存）
 - **pre-commit hooks**: コミット前品質チェック
-- **GitHub Actions**: Windows・Mac・Linux並列テスト
+- **GitHub Actions**: Windows・Mac・Linux 並列テスト
 - **自動リリースビルド**: マルチプラットフォーム対応
 
 ### 開発コマンド
@@ -138,12 +138,12 @@ cargo watch -x run
 - プロジェクトビルド・実行
 - タイトル画面・メニュー操作
 - アセット読み込み（フォント・画像・音声）
-- Markdownシナリオパーサー（テスト済み）
-- ECSシステム基盤
+- Markdown シナリオパーサー（テスト済み）
+- ECS システム基盤
 
 ### 🔄 統合作業が必要な部分
-- MarkdownシナリオとVNUIの完全統合
-- main.rsのPresentation層への分離
+- Markdown シナリオと VNUI の完全統合
+- main.rs の Presentation 層への分離
 - システム間の依存関係最適化
 
 ## ファイル構成
@@ -179,12 +179,12 @@ negaboku-bevy/
 ## 次のフェーズ計画
 
 ### Phase 2: UI統合・システム最適化
-1. main.rsのPresentation層完全分離
-2. MarkdownシナリオとVNUIの統合完了
+1. main.rs の Presentation 層完全分離
+2. Markdown シナリオと VNUI の統合完了
 3. システム間依存関係の最適化
 
 ### Phase 3: ゲーム機能拡張
-1. 関係値システムとUIの連動
+1. 関係値システムと UI の連動
 2. セーブ・ロードシステム
 3. 設定・環境設定管理
 
@@ -198,16 +198,16 @@ negaboku-bevy/
 **Rust + Bevy への根本的な移行**の初期フェーズが正常に完了しました。
 
 ### 達成された価値
-- **型安全性**: Rustの所有権システムによる実行時エラー防止
-- **高速実行**: Bevyの高性能ECSエンジン活用
-- **クロスプラットフォーム**: Windows・Mac・Linux標準対応
+- **型安全性**: Rust の所有権システムによる実行時エラー防止
+- **高速実行**: Bevy の高性能 ECS エンジン活用
+- **クロスプラットフォーム**: Windows・Mac・Linux 標準対応
 - **保守性**: Clean Architecture + DDD による明確な責務分離
-- **拡張性**: ECS基盤による柔軟なシステム拡張
+- **拡張性**: ECS 基盤による柔軟なシステム拡張
 - **LLM協働**: 明確なガイドラインによる効率的開発
 
 ### 技術的成果
-- **アーキテクチャ基盤**: DDD + Clean + ECS の3手法統合
+- **アーキテクチャ基盤**: DDD + Clean + ECS の 3 手法統合
 - **開発基盤**: TDD + CI/CD + 品質自動チェック
-- **実装基盤**: Markdownシナリオ・VNシステム・アセット管理
+- **実装基盤**: Markdown シナリオ・VN システム・アセット管理
 
 **「願い石と僕たちの絆」の新しい基盤が確立され、本格的なゲーム開発フェーズへ移行準備が完了しました。**
