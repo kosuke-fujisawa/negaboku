@@ -2,7 +2,7 @@
 
 ## 🎯 概要
 
-「願い石と僕たちの絆」プロジェクトでは、シナリオファイル（マークダウン形式）の品質管理にtextlintを導入しています。これにより、誤字脱字・表記揺れの自動検出、統一性チェック、CI/CD統合による継続的品質保証を実現しています。
+「願い石と僕たちの絆」プロジェクトでは、シナリオファイル（マークダウン形式）の品質管理に textlint を導入しています。これにより、誤字脱字・表記揺れの自動検出、統一性チェック、CI/CD 統合による継続的品質保証を実現しています。
 
 ## 📁 対象ファイル
 
@@ -33,8 +33,8 @@ npm run textlint
 
 #### 必要な拡張機能
 - `taichi.vscode-textlint` - リアルタイム品質チェック
-- `davidanson.vscode-markdownlint` - Markdown lint機能
-- `yzhang.markdown-all-in-one` - Markdown編集支援
+- `davidanson.vscode-markdownlint` - Markdown lint 機能
+- `yzhang.markdown-all-in-one` - Markdown 編集支援
 
 #### 設定
 - `.vscode/settings.json`で自動設定済み
@@ -45,7 +45,7 @@ npm run textlint
 
 ### 基本品質ルール
 
-1. **文章長制限**: 1文120文字以内
+1. **文章長制限**: 1 文 120 文字以内
 2. **句読点統一**: 適切な句読点使用
 3. **表記統一**: 半角・全角間スペース調整
 4. **文体統一**: である調で統一（設定可能）
@@ -66,17 +66,19 @@ npm run textlint
 #### 3. セリフ記法正規化 (`dialogue-format`)
 - 正しい記法: `**キャラクター名**「セリフ内容」`
 - 間違い例:
-  - `*キャラクター名*「セリフ」` → アスタリスク1つ
+  - `*キャラクター名*「セリフ」` → アスタリスク 1 つ
   - `**キャラクター名**: セリフ` → コロン使用
   - `キャラクター名「セリフ」` → **囲みなし
 
 ## 🚀 CI/CD統合
 
+> **注記**: OAuth 制約により GitHub Actions ワークフローは別 PR で手動追加予定です。
+
 ### GitHub Actions自動チェック
 
-- **トリガー**: PRまたはmainブランチへのプッシュ
+- **トリガー**: PR または main ブランチへのプッシュ
 - **対象**: シナリオファイル変更時のみ実行
-- **結果**: PRにコメントで詳細表示
+- **結果**: PR にコメントで詳細表示
 
 ### 品質ゲート
 
@@ -96,9 +98,9 @@ pre-commit install
 ### 自動実行内容
 
 1. **textlint**: シナリオファイルの品質チェック
-2. **cargo fmt**: Rustコードフォーマット
-3. **cargo clippy**: Rustコード品質チェック
-4. **基本チェック**: trailing whitespace、JSON/YAML構文等
+2. **cargo fmt**: Rust コードフォーマット
+3. **cargo clippy**: Rust コード品質チェック
+4. **基本チェック**: trailing whitespace、JSON/YAML 構文等
 
 ## 📖 エラーメッセージの読み方
 
@@ -143,7 +145,7 @@ pre-commit run textlint-scenario-check
 ```
 
 #### 3. VS Code拡張機能が動作しない
-1. textlint拡張機能の再起動
+1. textlint 拡張機能の再起動
 2. `Developer: Reload Window`実行
 3. `.vscode/settings.json`設定確認
 

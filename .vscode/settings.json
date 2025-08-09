@@ -5,6 +5,7 @@
   "textlint.nodePath": "./node_modules",
   "textlint.trace.server": "messages",
   "textlint.languages": ["markdown"],
+  "textlint.validateLanguages": ["markdown"],
 
   "files.associations": {
     "*.md": "markdown"
