@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "taichi.vscode-textlint",
+    "esbenp.prettier-vscode",
+    "davidanson.vscode-markdownlint",
+    "yzhang.markdown-all-in-one",
+    "rust-lang.rust-analyzer",
+    "vadimcn.vscode-lldb"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next"
+  ]
+}

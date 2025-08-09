@@ -2,19 +2,19 @@
 
 ## 概要
 
-「願い石と僕たちの絆」プロジェクトにおけるLLM（Large Language Model）協働開発のためのガイドラインです。Claude Code、GitHub Copilot、その他のLLMツールとの効率的な開発を目指します。
+「願い石と僕たちの絆」プロジェクトにおける LLM（Large Language Model）協働開発のためのガイドラインです。Claude Code、GitHub Copilot、その他の LLM ツールとの効率的な開発を目指します。
 
 ## 基本原則
 
 ### 1. コードが唯一の真実（Code as Single Source of Truth）
 - すべての仕様・ロジック・設計はコードで表現
 - ドキュメントと実装の不整合を回避
-- LLMが常に最新のコード状態を参照可能
+- LLM が常に最新のコード状態を参照可能
 
 ### 2. 自動化優先（Automation First）
 - 手作業の代わりに自動化スクリプト
-- LLMが一貫したルールでコード生成
-- CI/CD・pre-commitフックによる品質保証
+- LLM が一貫したルールでコード生成
+- CI/CD・pre-commit フックによる品質保証
 
 ### 3. 段階的実装（Progressive Implementation）
 - MVP（Minimal Viable Product）から開始
@@ -129,7 +129,7 @@ impl Relationship {
 ```
 
 #### Application層
-**責務**: ドメインとECSの統合
+**責務**: ドメインと ECS の統合
 ```rust
 // ✅ Application層の正しい実装
 pub fn relationship_update_system(
@@ -430,10 +430,10 @@ changes
 ### Code Review Checklist
 
 #### Architecture Review
-- [ ] 適切なLayerに実装されているか
-- [ ] Single Responsibility原則に従っているか
-- [ ] Domain層に外部依存が含まれていないか
-- [ ] ECSコンポーネントがdata-onlyになっているか
+- [ ] 適切な Layer に実装されているか
+- [ ] Single Responsibility 原則に従っているか
+- [ ] Domain 層に外部依存が含まれていないか
+- [ ] ECS コンポーネントが data-only になっているか
 
 #### Code Quality Review
 - [ ] 命名規則に従っているか
@@ -488,4 +488,4 @@ changes
 
 ---
 
-このガイドラインにより、LLMとの協働開発において**一貫性・保守性・品質**を確保し、効率的な「願い石と僕たちの絆」の開発を実現します。
+このガイドラインにより、LLM との協働開発において**一貫性・保守性・品質**を確保し、効率的な「願い石と僕たちの絆」の開発を実現します。

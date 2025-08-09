@@ -1,0 +1,33 @@
+{
+  "filters": {},
+  "plugins": {},
+  "rules": {
+    "./textlint-rules/textlint-rule-dialogue-format": true,
+    "./textlint-rules/textlint-rule-character-names": true,
+    "./textlint-rules/textlint-rule-game-terminology": true,
+    "preset-ja-technical-writing": {
+      "sentence-length": {
+        "max": 200
+      },
+      "max-comma": {
+        "max": 6
+      },
+      "max-ten": {
+        "max": 5
+      },
+      "ja-no-mixed-period": false,
+      "ja-no-successive-word": {
+        "allow": ["の", "て", "に", "を", "が", "と", "で", "は", "も", "し", "か", "や", "…", "。", "、"]
+      },
+      "ja-no-weak-phrase": false,
+      "no-exclamation-question-mark": false
+    },
+    "preset-ja-spacing": {
+      "ja-space-between-half-and-full-width": {
+        "space": "always"
+      }
+    },
+    "no-mix-dearu-desumasu": false
+  },
+  "validateDefaultLanguage": "ja"
+}

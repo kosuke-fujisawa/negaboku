@@ -1,0 +1,234 @@
+name: Scenario Quality Check with textlint
+
+on:
+  pull_request:
+    paths:
+      - 'negaboku-bevy/assets/scenarios/**/*.md'
+      - '.textlintrc*.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'textlint-rules/**/*.js'
+      - '.github/workflows/textlint.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'negaboku-bevy/assets/scenarios/**/*.md'
+      - '.textlintrc*.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'textlint-rules/**/*.js'
+      - '.github/workflows/textlint.yml'
+
+jobs:
+  textlint:
+    name: シナリオ品質チェック
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          # jqをインストール（JSON解析用）
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Run textlint check (JSON output)
+        id: textlint
+        run: |
+          echo "Running textlint on scenario files..."
+          echo "Current directory: $(pwd)"
+          echo "Available config files:"
+          ls -la .textlintrc*
+          echo "Target files:"
+          find negaboku-bevy/assets/scenarios -name "*.md" -type f || echo "No scenario files found"
+
+          # JSON形式でtextlint結果を取得（find使用で確実にファイルを指定）
+          SCENARIO_FILES=$(find negaboku-bevy/assets/scenarios -name "*.md" -type f | tr '\n' ' ')
+          if [ -n "$SCENARIO_FILES" ]; then
+            npx textlint -c .textlintrc-scenario.json --format json $SCENARIO_FILES > textlint-results.json 2>/dev/null || true
+            npx textlint -c .textlintrc-scenario.json $SCENARIO_FILES > textlint-results.txt 2>&1 || true
+          else
+            echo "[]" > textlint-results.json
+            echo "No scenario files to check" > textlint-results.txt
+          fi
+
+          # 結果を表示
+          if [ -s textlint-results.txt ]; then
+            echo "TextLint results:"
+            cat textlint-results.txt
+          else
+            echo "No TextLint results found."
+            echo "[]" > textlint-results.json
+          fi
+
+      - name: Count errors and warnings (JSON parsing)
+        id: count-issues
+        run: |
+          if [ -f textlint-results.json ] && [ -s textlint-results.json ]; then
+            # JSON結果をjqで厳密に集計（エラーハンドリング強化）
+            ERROR_COUNT=$(cat textlint-results.json | jq -r '[.[] | .messages | length] | add // 0' 2>/dev/null || echo "0")
+            WARNING_COUNT=0  # textlintは現在warning区分なし
+            FIXABLE_COUNT=$(cat textlint-results.json | jq -r '[.[] | .messages | map(select(.fix)) | length] | add // 0' 2>/dev/null || echo "0")
+
+            # null や空文字列を0に変換
+            ERROR_COUNT=${ERROR_COUNT:-0}
+            WARNING_COUNT=${WARNING_COUNT:-0}
+            FIXABLE_COUNT=${FIXABLE_COUNT:-0}
+
+            # 数値チェック
+            if ! [[ "$ERROR_COUNT" =~ ^[0-9]+$ ]]; then ERROR_COUNT=0; fi
+            if ! [[ "$WARNING_COUNT" =~ ^[0-9]+$ ]]; then WARNING_COUNT=0; fi
+            if ! [[ "$FIXABLE_COUNT" =~ ^[0-9]+$ ]]; then FIXABLE_COUNT=0; fi
+
+            echo "ERROR_COUNT=${ERROR_COUNT}" >> $GITHUB_ENV
+            echo "WARNING_COUNT=${WARNING_COUNT}" >> $GITHUB_ENV
+            echo "FIXABLE_COUNT=${FIXABLE_COUNT}" >> $GITHUB_ENV
+            echo "エラー数: ${ERROR_COUNT}, 警告数: ${WARNING_COUNT}, 自動修正可能: ${FIXABLE_COUNT}"
+          else
+            echo "ERROR_COUNT=0" >> $GITHUB_ENV
+            echo "WARNING_COUNT=0" >> $GITHUB_ENV
+            echo "FIXABLE_COUNT=0" >> $GITHUB_ENV
+            echo "JSON結果ファイルが空または存在しません。エラー数を0として処理します。"
+          fi
+
+      - name: Comment PR with results (fork対応・重複防止)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- textlint-bot-comment -->';
+
+            // 既存コメントをチェック（重複防止）
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.body.includes(marker) && comment.user.type === 'Bot'
+            );
+
+            let resultsContent = '';
+            if (fs.existsSync('textlint-results.txt')) {
+              resultsContent = fs.readFileSync('textlint-results.txt', 'utf8');
+            }
+
+            const errorCount = process.env.ERROR_COUNT || '0';
+            const warningCount = process.env.WARNING_COUNT || '0';
+            const fixableCount = process.env.FIXABLE_COUNT || '0';
+
+            let status = '✅ **品質チェック完了**';
+            let summary = 'シナリオファイルの品質チェックが完了しました。問題は見つかりませんでした。';
+
+            if (parseInt(errorCount) > 0) {
+              status = '❌ **品質チェック失敗**';
+              summary = `シナリオファイルに${errorCount}個のエラーが見つかりました。修正が必要です。`;
+            } else if (parseInt(warningCount) > 0) {
+              status = '⚠️ **品質チェック警告**';
+              summary = `シナリオファイルに${warningCount}個の警告が見つかりました。`;
+            }
+
+            let comment = `${marker}
+            ## ${status}
+
+            ${summary}
+
+            ### 📊 チェック結果サマリー
+            - **エラー**: ${errorCount}件
+            - **警告**: ${warningCount}件
+            - **自動修正可能**: ${fixableCount}件
+
+            ### 🔧 修正方法
+            `;
+
+            if (parseInt(fixableCount) > 0) {
+              comment += `
+            **自動修正可能な問題があります:**
+            \`\`\`bash
+            npm run textlint:fix
+            \`\`\`
+            `;
+            }
+
+            comment += `
+            **手動チェック:**
+            \`\`\`bash
+            npm run textlint:check
+            \`\`\`
+            `;
+
+            if (resultsContent && resultsContent.trim()) {
+              comment += `
+            ### 📝 詳細結果
+            <details>
+            <summary>textlint実行結果を表示</summary>
+
+            \`\`\`
+            ${resultsContent.substring(0, 4000)}${resultsContent.length > 4000 ? '\n... (truncated)' : ''}
+            \`\`\`
+
+            </details>
+            `;
+            }
+
+            comment += `
+
+            ---
+            🤖 Generated with [Claude Code](https://claude.ai/code) - Scenario Quality Management System
+            `;
+
+            if (existingComment) {
+              // 既存コメントを更新
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+            } else {
+              // 新規コメント投稿
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+      - name: Upload TextLint Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: textlint-results
+          path: |
+            textlint-results.json
+            textlint-results.txt
+          retention-days: 30
+
+      - name: Fail job if errors found
+        if: env.ERROR_COUNT != '0'
+        run: |
+          echo "❌ textlint found ${ERROR_COUNT} errors in scenario files"
+          echo "Please fix the errors before merging."
+          exit 1
+
+      - name: Success summary
+        if: env.ERROR_COUNT == '0'
+        run: |
+          echo "✅ シナリオ品質チェック完了"
+          echo "エラー: ${ERROR_COUNT}件, 警告: ${WARNING_COUNT}件, 自動修正可能: ${FIXABLE_COUNT}件"

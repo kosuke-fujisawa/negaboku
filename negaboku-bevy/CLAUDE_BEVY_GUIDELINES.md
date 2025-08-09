@@ -1,7 +1,7 @@
 # Claude Code + Rust + Bevy 開発ガイドライン
 
 ## 概要
-本ドキュメントは、「願い石と僕たちの絆」のRust + Bevy版開発において、Claude Code（claude.ai/code）とのLLM協働開発を効率化するためのガイドラインです。
+本ドキュメントは、「願い石と僕たちの絆」の Rust + Bevy 版開発において、Claude Code（claude.ai/code）との LLM 協働開発を効率化するためのガイドラインです。
 
 ## アーキテクチャ原則
 
@@ -31,10 +31,10 @@ src/
 ```
 
 ### ECS (Entity-Component-System) 設計原則
-- **Entity**: ゲームオブジェクトのID（テキストボックス、キャラクター、背景等）
-- **Component**: データのみ保持（DialogueText, BackgroundImage, CharacterSprite等）
-- **System**: ロジック処理（input_system, text_display_system等）
-- **Resource**: グローバルデータ（CurrentScenario, GameState等）
+- **Entity**: ゲームオブジェクトの ID（テキストボックス、キャラクター、背景等）
+- **Component**: データのみ保持（DialogueText, BackgroundImage, CharacterSprite 等）
+- **System**: ロジック処理（input_system, text_display_system 等）
+- **Resource**: グローバルデータ（CurrentScenario, GameState 等）
 
 ## コーディング規約
 
@@ -102,26 +102,26 @@ pub struct CurrentScenario {
 
 ### Domain層（ビジネスロジック）
 - **責務**: ゲームの核となるルール・データモデル・計算処理
-- **禁止事項**: UI、ファイルI/O、Bevy固有APIへの依存
+- **禁止事項**: UI、ファイル I/O、Bevy 固有 API への依存
 - **例**: 関係値計算、シナリオデータ構造、キャラクター定義
 
 ### Application層（ユースケース）
-- **責務**: Domain層の機能を組み合わせた業務フロー
-- **許可事項**: Domain層とInfrastructure層の呼び出し
+- **責務**: Domain 層の機能を組み合わせた業務フロー
+- **許可事項**: Domain 層と Infrastructure 層の呼び出し
 - **例**: シナリオファイルの読み込み〜パース〜保存の一連の流れ
 
 ### Infrastructure層（外部システム連携）
-- **責務**: ファイルシステム、ネットワーク、データベース等の外部I/O
-- **実装**: Domain層で定義されたインターフェースの具象化
-- **例**: MarkdownファイルのI/O、セーブデータの永続化
+- **責務**: ファイルシステム、ネットワーク、データベース等の外部 I/O
+- **実装**: Domain 層で定義されたインターフェースの具象化
+- **例**: Markdown ファイルの I/O、セーブデータの永続化
 
 ### Systems層（ECS処理）
-- **責務**: Bevyのシステムとして動作するゲームループ処理
-- **連携**: Application層のサービスを呼び出し、UI層を更新
+- **責務**: Bevy のシステムとして動作するゲームループ処理
+- **連携**: Application 層のサービスを呼び出し、UI 層を更新
 - **例**: 入力処理、レンダリング、物理シミュレーション
 
 ### UI層（プレゼンテーション）
-- **責務**: BevyのComponent/Resourceとしてのデータ定義
+- **責務**: Bevy の Component/Resource としてのデータ定義
 - **制約**: 純粋なデータ構造のみ、ビジネスロジック禁止
 - **例**: テキストボックスの座標・フォント、背景画像のハンドル
 
@@ -167,7 +167,7 @@ fn test_scenario_file_loading() {
 ## Claude Code との協働開発ルール
 
 ### 1. タスク分割原則
-- **単一責任**: 1つのタスクは1つのシステムまたは1つの層に集中
+- **単一責任**: 1 つのタスクは 1 つのシステムまたは 1 つの層に集中
 - **段階的実装**: 最小動作版 → 機能拡張 → 最適化の順序で進行
 - **テスト駆動**: 新機能追加前に必ずテストケースを作成
 
@@ -210,7 +210,7 @@ pub fn load_scenario(path: &str) -> Result<ScenarioData, ScenarioError> {
 
 ### 4. パフォーマンス考慮事項
 - **メモリ効率**: 不要なクローンを避け、borrowing を活用
-- **並行処理**: Bevyの並列システム実行を考慮した設計
+- **並行処理**: Bevy の並列システム実行を考慮した設計
 - **アセット管理**: 画像・音声ファイルの遅延ロードとキャッシュ戦略
 
 ## 開発フロー
@@ -226,8 +226,8 @@ pub fn load_scenario(path: &str) -> Result<ScenarioData, ScenarioError> {
 3. エラーハンドリングの実装
 
 ### Phase 3: ECS統合
-1. BevyのComponent/Resource定義
-2. System実装とイベントハンドリング
+1. Bevy の Component/Resource 定義
+2. System 実装とイベントハンドリング
 3. パフォーマンステスト
 
 ### Phase 4: UI/UX実装
@@ -245,7 +245,7 @@ pub fn load_scenario(path: &str) -> Result<ScenarioData, ScenarioError> {
    - 解決策: `RefCell`の使用または設計の見直し
 
 3. **trait bound not satisfied**
-   - 解決策: 必要なtraitのderiveまたは手動実装
+   - 解決策: 必要な trait の derive または手動実装
 
 ### Bevy固有の問題
 1. **SystemParam conflicts**
@@ -255,6 +255,6 @@ pub fn load_scenario(path: &str) -> Result<ScenarioData, ScenarioError> {
    - 解決策: `insert_resource()`による初期化の確認
 
 ## まとめ
-このガイドラインに従うことで、型安全性・保守性・テスト可能性を確保したRust + Bevy実装を、Claude Codeとの協働で効率的に開発できます。
+このガイドラインに従うことで、型安全性・保守性・テスト可能性を確保した Rust + Bevy 実装を、Claude Code との協働で効率的に開発できます。
 
-**重要**: 実装時は常に「データ駆動設計」と「責務分離」の原則を念頭に置き、ビジネスロジックをUI/レンダリングから独立させることを最優先とします。
+**重要**: 実装時は常に「データ駆動設計」と「責務分離」の原則を念頭に置き、ビジネスロジックを UI/レンダリングから独立させることを最優先とします。

@@ -2,7 +2,7 @@
 
 ## 概要
 
-Bevyの**Entity-Component-System（ECS）**パターンに基づく設計原則とガイドラインです。
+Bevy の**Entity-Component-System（ECS）**パターンに基づく設計原則とガイドラインです。
 
 ## ECS三要素の責務
 
@@ -21,9 +21,9 @@ let entity = commands.spawn((
 ```
 
 **原則**:
-- Entityは単なるID
+- Entity は単なる ID
 - データの組み合わせを識別
-- 複数のComponentを組み合わせて意味を表現
+- 複数の Component を組み合わせて意味を表現
 
 ### Component（コンポーネント）
 **定義**: 純粋なデータ構造、ロジックを一切含まない
@@ -47,13 +47,13 @@ struct BadComponent {
 ```
 
 **設計原則**:
-- **Single Responsibility**: 1つの責務のみ
+- **Single Responsibility**: 1 つの責務のみ
 - **Data Only**: ロジックを含めない
 - **Serializable**: 将来的なセーブ/ロード対応
-- **Composable**: 他のComponentと組み合わせ可能
+- **Composable**: 他の Component と組み合わせ可能
 
 ### System（システム）
-**定義**: ComponentやResourceに対する処理ロジック
+**定義**: Component や Resource に対する処理ロジック
 
 ```rust
 // ✅ 正しいSystem設計
@@ -71,9 +71,9 @@ fn text_typing_system(
 ```
 
 **設計原則**:
-- **Single Purpose**: 1システム1機能
+- **Single Purpose**: 1 システム 1 機能
 - **Pure Function**: 副作用を最小化
-- **Query Driven**: 必要なComponentのみクエリ
+- **Query Driven**: 必要な Component のみクエリ
 - **Resource Access**: グローバル状態へのアクセス
 
 ### Resource（リソース）
@@ -96,8 +96,8 @@ struct DialogueLog {
 
 **原則**:
 - **Global State**: アプリケーション全体の状態
-- **Unique**: 1つのタイプにつき1つのインスタンス
-- **Managed**: SystemでRead/Write制御
+- **Unique**: 1 つのタイプにつき 1 つのインスタンス
+- **Managed**: System で Read/Write 制御
 
 ## アーキテクチャとECSの統合
 
@@ -224,15 +224,15 @@ fn system_b(resource: Res<GameState>) {}  // 読み込み専用なら可能
 - [ ] 適切な命名規則
 
 ### System作成時
-- [ ] 1つの機能のみ処理
-- [ ] 必要最小限のQuery
+- [ ] 1 つの機能のみ処理
+- [ ] 必要最小限の Query
 - [ ] 副作用を最小化
 - [ ] エラーハンドリング
 
 ### Resource作成時
 - [ ] グローバル状態として適切
 - [ ] `#[derive(Resource)]`付与
-- [ ] Defaultトレイト実装
+- [ ] Default トレイト実装
 - [ ] ドキュメント記載
 
-このECS設計原則により、**拡張性・保守性・パフォーマンス**を兼ね備えたアーキテクチャを実現します。
+この ECS 設計原則により、**拡張性・保守性・パフォーマンス**を兼ね備えたアーキテクチャを実現します。

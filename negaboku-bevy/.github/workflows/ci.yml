@@ -48,6 +48,17 @@ jobs:
     - name: Run clippy
       run: cargo clippy --all-targets --all-features -- -D warnings
 
+    # Gate: セキュリティ・依存関係チェック
+    - name: Install security tools
+      run: |
+        cargo install --force cargo-audit cargo-deny
+
+    - name: Security audit (Gate)
+      run: cargo audit
+
+    - name: Dependency/License check (Gate)
+      run: cargo deny check advisories bans licenses
+
   test:
     name: Test Suite
     runs-on: ${{ matrix.os }}
@@ -84,6 +95,13 @@ jobs:
 
     - name: Run tests with all features
       run: cargo test --all-features --verbose
+
+    # Gate: Asset/Scenario サニティチェック
+    - name: Asset sanity check (Gate)
+      run: cargo test asset_sanity --verbose
+
+    - name: Scenario sanity check (Gate)
+      run: cargo test scenario_sanity --verbose
 
   build:
     name: Build Release
