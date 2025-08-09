@@ -24,6 +24,9 @@ jobs:
   textlint:
     name: シナリオ品質チェック
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout repository
@@ -36,7 +39,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          # jqをインストール（JSON解析用）
+          sudo apt-get update
+          sudo apt-get install -y jq
 
       - name: Run textlint check (JSON output)
         id: textlint
@@ -46,12 +53,17 @@ jobs:
           echo "Available config files:"
           ls -la .textlintrc*
           echo "Target files:"
-          ls -la negaboku-bevy/assets/scenarios/**/*.md || echo "No scenario files found"
+          find negaboku-bevy/assets/scenarios -name "*.md" -type f || echo "No scenario files found"
 
-          # JSON形式でtextlint結果を取得
-          npm run textlint:check -- --format json > textlint-results.json 2>/dev/null || true
-          # 人間可読形式も保存（エラーでも続行）
-          npm run textlint:check > textlint-results.txt 2>&1 || true
+          # JSON形式でtextlint結果を取得（find使用で確実にファイルを指定）
+          SCENARIO_FILES=$(find negaboku-bevy/assets/scenarios -name "*.md" -type f | tr '\n' ' ')
+          if [ -n "$SCENARIO_FILES" ]; then
+            npx textlint -c .textlintrc-scenario.json --format json $SCENARIO_FILES > textlint-results.json 2>/dev/null || true
+            npx textlint -c .textlintrc-scenario.json $SCENARIO_FILES > textlint-results.txt 2>&1 || true
+          else
+            echo "[]" > textlint-results.json
+            echo "No scenario files to check" > textlint-results.txt
+          fi
 
           # 結果を表示
           if [ -s textlint-results.txt ]; then
@@ -65,11 +77,22 @@ jobs:
       - name: Count errors and warnings (JSON parsing)
         id: count-issues
         run: |
-          if [ -f textlint-results.json ]; then
-            # JSON結果をjqで厳密に集計
-            ERROR_COUNT=$(cat textlint-results.json | jq '[.[] | .messages | length] | add // 0')
+          if [ -f textlint-results.json ] && [ -s textlint-results.json ]; then
+            # JSON結果をjqで厳密に集計（エラーハンドリング強化）
+            ERROR_COUNT=$(cat textlint-results.json | jq -r '[.[] | .messages | length] | add // 0' 2>/dev/null || echo "0")
             WARNING_COUNT=0  # textlintは現在warning区分なし
-            FIXABLE_COUNT=$(cat textlint-results.json | jq '[.[] | .messages | map(select(.fix)) | length] | add // 0')
+            FIXABLE_COUNT=$(cat textlint-results.json | jq -r '[.[] | .messages | map(select(.fix)) | length] | add // 0' 2>/dev/null || echo "0")
+
+            # null や空文字列を0に変換
+            ERROR_COUNT=${ERROR_COUNT:-0}
+            WARNING_COUNT=${WARNING_COUNT:-0}
+            FIXABLE_COUNT=${FIXABLE_COUNT:-0}
+
+            # 数値チェック
+            if ! [[ "$ERROR_COUNT" =~ ^[0-9]+$ ]]; then ERROR_COUNT=0; fi
+            if ! [[ "$WARNING_COUNT" =~ ^[0-9]+$ ]]; then WARNING_COUNT=0; fi
+            if ! [[ "$FIXABLE_COUNT" =~ ^[0-9]+$ ]]; then FIXABLE_COUNT=0; fi
+
             echo "ERROR_COUNT=${ERROR_COUNT}" >> $GITHUB_ENV
             echo "WARNING_COUNT=${WARNING_COUNT}" >> $GITHUB_ENV
             echo "FIXABLE_COUNT=${FIXABLE_COUNT}" >> $GITHUB_ENV
@@ -78,6 +101,7 @@ jobs:
             echo "ERROR_COUNT=0" >> $GITHUB_ENV
             echo "WARNING_COUNT=0" >> $GITHUB_ENV
             echo "FIXABLE_COUNT=0" >> $GITHUB_ENV
+            echo "JSON結果ファイルが空または存在しません。エラー数を0として処理します。"
           fi
 
       - name: Comment PR with results (fork対応・重複防止)
